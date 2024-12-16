@@ -31,8 +31,18 @@ class Zippy_Admin_Settings
 
   public function __construct()
   {
+
+    /* Register Menu Admin Part */
     add_action('admin_menu',  array($this, 'zippy_booking_page'));
+
+    /* Register Assets Admin Part */
     add_action('admin_enqueue_scripts', array($this, 'admin_booking_assets'));
+
+    /* Create New Table For Booking */
+    register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'create_booking_table'));
+
+    /* Delete Table Booking */
+    register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_booking_table'));
   }
 
   public function admin_booking_assets()
@@ -54,7 +64,6 @@ class Zippy_Admin_Settings
     ));
   }
 
-
   public function zippy_booking_page()
   {
     add_menu_page('Zippy Bookings', 'Zippy Bookings', 'manage_options', 'zippy-bookings', array($this, 'render'), 'dashicons-list-view', 6);
@@ -70,10 +79,43 @@ class Zippy_Admin_Settings
     );
   }
 
+  function create_booking_table()
+  {
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'bookings';
+
+    $charset_collate = $wpdb->get_charset_collate();
+
+    // SQL query to create the table
+    $sql = "CREATE TABLE $table_name (
+      ID BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+      user_id BIGINT(20) UNSIGNED DEFAULT NULL,
+      email VARCHAR(255) NOT NULL,
+      product_id BIGINT(20) UNSIGNED NOT NULL,
+      booking_start_date DATETIME NOT NULL,
+      booking_end_date DATETIME NOT NULL,
+      booking_status VARCHAR(50) NOT NULL,
+      PRIMARY KEY  (ID),
+      KEY product_id (product_id)
+    ) $charset_collate;";
+
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+
+    dbDelta($sql);
+  }
+
+  function delete_booking_table()
+  {
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'bookings';
+
+    $wpdb->query("DROP TABLE IF EXISTS $table_name");
+  }
+
   public function render()
   {
     echo Zippy_Utils_Core::get_template('booking-dashboard.php', [], dirname(__FILE__), '/templates');
   }
- 
-
 }
