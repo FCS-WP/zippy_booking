@@ -82,9 +82,8 @@ require ZIPPY_BOOKING_DIR_PATH . '/includes/autoload.php';
 // use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 use  Zippy_Booking\Src\Admin\Zippy_Admin_Settings;
-use  Zippy_Booking\Src\Router\Zippy_Bookings_Router;
 
-// use Zippy_Booking\Src\Woocommerce\Zippy_Woo_Booking;
+use Zippy_Booking\Src\Routers\Zippy_Bookings_Router;
 
 
 
@@ -125,4 +124,3 @@ Zippy_Admin_Settings::get_instance();
 
 Zippy_Bookings_Router::get_instance();
 
-// Zippy_Woo_Booking::get_instance();
