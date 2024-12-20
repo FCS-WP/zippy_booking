@@ -59,9 +59,22 @@ if (!defined('ZIPPY_BOOKING_API_NAMESPACE')) {
   define('ZIPPY_BOOKING_API_NAMESPACE', 'zippy-booking/v1');
 }
 
-/* Set constant enpoint to the plugin directory. */
+/* Booking table name */
 if (!defined('ZIPPY_BOOKING_TABLE_NAME')) {
   define('ZIPPY_BOOKING_TABLE_NAME', 'fcs_data_bookings');
+}
+
+/* Booking status */
+if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_PENDING')) {
+  define('ZIPPY_BOOKING_BOOKING_STATUS_PENDING', 'pending');
+}
+
+if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_COMPLETED')) {
+  define('ZIPPY_BOOKING_BOOKING_STATUS_COMPLETED', 'completed');
+}
+
+if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD')) {
+  define('ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD', 'onhold');
 }
 
 
@@ -88,7 +101,7 @@ require ZIPPY_BOOKING_DIR_PATH . '/includes/autoload.php';
 
 use  Zippy_Booking\Src\Admin\Zippy_Admin_Settings;
 
-use Zippy_Booking\Src\Routers\Zippy_Bookings_Router;
+use Zippy_Booking\Src\Routers\Bookings\Zippy_Bookings_Router;
 
 
 

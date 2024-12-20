@@ -6,7 +6,7 @@
  * @package Shin
  */
 
-namespace Zippy_Booking\Utils;
+namespace Zippy_Booking\App\Models;
 
 defined('ABSPATH') or die();
 
@@ -26,7 +26,7 @@ class Zippy_Request_Validation
   }
 
 
-  // Validate email
+  // Validate numberic
   public static function is_numeric_field($required){
     
     $required = gettype($required) == "boolean" ? $required : false;
@@ -39,10 +39,10 @@ class Zippy_Request_Validation
     );
   }
 
-  
+  // Validate string
   public static function is_string_field($required){
     $required = gettype($required) == "boolean" ? $required : false;
-    
+
     return array(
       'required' => $required,
       'validate_callback' => function ($param) {
