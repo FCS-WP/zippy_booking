@@ -10,8 +10,6 @@ namespace Zippy_Booking\Src\App\Models;
 
 defined('ABSPATH') or die();
 
-use WP_REST_Response;
-
 class Zippy_Api_Booking_Model
 {
   public static function get_booking_args()
