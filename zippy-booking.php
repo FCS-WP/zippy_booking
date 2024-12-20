@@ -60,8 +60,8 @@ if (!defined('ZIPPY_BOOKING_API_NAMESPACE')) {
 }
 
 /* Set constant enpoint to the plugin directory. */
-if (!defined('ZIPPY_BOOKING_DATABASE_NAME')) {
-  define('ZIPPY_BOOKING_DATABASE_NAME', 'fcs_data_bookings');
+if (!defined('ZIPPY_BOOKING_TABLE_NAME')) {
+  define('ZIPPY_BOOKING_TABLE_NAME', 'fcs_data_bookings');
 }
 
 

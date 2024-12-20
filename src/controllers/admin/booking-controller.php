@@ -21,11 +21,11 @@ class Booking_Controller
   public static function get_booking_list(WP_REST_Request $request)
   {
       global $wpdb;
-      $table_name = ZIPPY_BOOKING_DATABASE_NAME;
+      $table_name = ZIPPY_BOOKING_TABLE_NAME;
 
       $product_id = intval($request->get_param('product_id'));
       $status = sanitize_text_field($request->get_param('status'));
-      
+
       if (empty($product_id) || empty($status)) {
           return Zippy_Response_Handler::error('Missing request parameter.');
       }
