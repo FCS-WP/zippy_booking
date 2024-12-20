@@ -83,7 +83,7 @@ require ZIPPY_BOOKING_DIR_PATH . '/includes/autoload.php';
 
 use  Zippy_Booking\Src\Admin\Zippy_Admin_Settings;
 
-use Zippy_Booking\Src\Routers\Zippy_Bookings_Router;
+use Zippy_Booking\Src\Routers\Bookings\Zippy_Bookings_Router;
 
 
 

@@ -9,7 +9,8 @@
 namespace Zippy_Booking\Src\Controller;
 
 use WP_REST_Request;
-use Zippy_Booking\Utils\Zippy_Response_Handler; 
+
+use Zippy_Booking\Src\App\Zippy_Response_Handler;
 
 defined('ABSPATH') or die();
 
