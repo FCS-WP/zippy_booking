@@ -59,6 +59,24 @@ if (!defined('ZIPPY_BOOKING_API_NAMESPACE')) {
   define('ZIPPY_BOOKING_API_NAMESPACE', 'zippy-booking/v1');
 }
 
+/* Booking table name */
+if (!defined('ZIPPY_BOOKING_TABLE_NAME')) {
+  define('ZIPPY_BOOKING_TABLE_NAME', 'fcs_data_bookings');
+}
+
+/* Booking status */
+if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_PENDING')) {
+  define('ZIPPY_BOOKING_BOOKING_STATUS_PENDING', 'pending');
+}
+
+if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_COMPLETED')) {
+  define('ZIPPY_BOOKING_BOOKING_STATUS_COMPLETED', 'completed');
+}
+
+if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD')) {
+  define('ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD', 'onhold');
+}
+
 
 /* ------------------------------------------
 // i18n
@@ -67,9 +85,9 @@ if (!defined('ZIPPY_BOOKING_API_NAMESPACE')) {
 // load_plugin_textdomain('zippy-booking-car', false, basename(dirname(__FILE__)) . '/languages');
 
 
-// ini_set('display_errors', 1);
-// ini_set('display_startup_errors', 1);
-// error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 /* ------------------------------------------
 // Includes

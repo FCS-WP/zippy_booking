@@ -11,6 +11,7 @@ namespace Zippy_Booking\Src\App\Models;
 defined('ABSPATH') or die();
 
 use WP_REST_Response;
+use Zippy_Booking\Src\App\Zippy_Response_Handler;
 
 class Zippy_Api_Booking_Model
 {
@@ -69,6 +70,23 @@ class Zippy_Api_Booking_Model
         'required' => true,
         'validate_callback' => function ($param) {
           return strtotime($param) !== false;
+        }
+      ),
+    );
+  }
+  public static function get_bookings_args()
+  {
+    return array(
+      'product_id' => array(
+        'required' => true,
+        'validate_callback' => function ($param) {
+          return is_numeric($param);
+        }
+      ),
+      'status' => array(
+        'required' => false,
+        'validate_callback' => function ($param) {
+          return is_string($param);
         }
       ),
     );
