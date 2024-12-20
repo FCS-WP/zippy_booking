@@ -10,6 +10,7 @@ namespace Zippy_Booking\Utils;
 
 defined('ABSPATH') or die();
 
+use WP_REST_Response;
 class Zippy_Response_Handler
 {
   // Handle success responses
