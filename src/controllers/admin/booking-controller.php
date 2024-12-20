@@ -6,10 +6,11 @@
  *
  */
 
-namespace Zippy_Booking\Src\Controllers;
+namespace Zippy_Booking\Src\Controllers\Admin;
 
 defined('ABSPATH') or die();
 
+use WP_REST_Request;
 use Zippy_Booking\Utils\Zippy_Utils_Core;
 
 class BookingController
@@ -31,19 +32,10 @@ class BookingController
   public function __construct()
   {
     /* Admin Booking List API  */
-    add_action('rest_api_init', array($this, 'get_booking_list'));
   }
 
-  public function get_booking_list()
+  public static function get_booking_list(WP_REST_Request $request)
   {
-    register_rest_route('zippy-booking/v1', '/bookings', [
-      'methods' => 'GET',
-      'callback' => [$this, 'get_data'],
-      'permission_callback' => '__return_true',
-    ]);
-  }
-
-  public function get_data(){
-    var_dump(1111111111111);
+    var_dump(11111111111111);die;
   }
 }

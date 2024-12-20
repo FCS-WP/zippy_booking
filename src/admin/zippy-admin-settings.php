@@ -121,18 +121,4 @@ class Zippy_Admin_Settings
   {
     echo Zippy_Utils_Core::get_template('booking-dashboard.php', [], dirname(__FILE__), '/templates');
   }
-
-
-  public function get_booking_list()
-  {
-    register_rest_route('zippy-booking/v1', '/bookings', [
-      'methods' => 'GET',
-      'callback' => [$this, 'get_data'],
-      'permission_callback' => '__return_true',
-    ]);
-  }
-
-  public function get_data(){
-    var_dump(1111111111111);
-  }
 }

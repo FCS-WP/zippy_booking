@@ -14,6 +14,7 @@ defined('ABSPATH') or die();
 use WP_REST_Request;
 use WP_Error;
 use Zippy_Booking\Utils\Zippy_Response_Handler;
+use Zippy_Booking\Src\Controllers\Admin\BookingController;
 
 class Zippy_Bookings_Router
 {
@@ -102,6 +103,27 @@ class Zippy_Bookings_Router
             ),
             'permission_callback' => '__return_true',
         ));
+
+        register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/bookings', array(
+            'methods' => 'GET',
+            'callback' => [BookingController::class, 'get_booking_list'],
+            'args' => array(
+                'status' => array(
+                    'required' => false,
+                    'validate_callback' => function ($param) {
+                        return is_string($param);
+                    }
+                ),
+                'product_id' => array(
+                    'required' => true,
+                    'validate_callback' => function ($param) {
+                        return is_numeric($param);
+                    }
+                ),
+            ),
+            'permission_callback' => '__return_true',
+        ));
+
     }
 
     public function create_booking_with_product(WP_REST_Request $request)
