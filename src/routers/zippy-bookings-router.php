@@ -13,6 +13,7 @@ defined('ABSPATH') or die();
 
 use WP_REST_Request;
 use WP_Error;
+use Zippy_Booking\Utils\Zippy_Response_Handler;
 
 class Zippy_Bookings_Router
 {
@@ -153,13 +154,8 @@ class Zippy_Bookings_Router
             'booking_status' => 'pending',
         ));
 
-        $booking_id = $wpdb->insert_id;
-
-        return rest_ensure_response(array(
-            'message' => 'Booking created successfully.',
-            'status' => 'success',
-            'booking_id' => $booking_id,
-            'data' => array(
+        return Zippy_Response_Handler::success(
+            array(
                 'user_id' => $user_id,
                 'email' => $email,
                 'product_id' => $product_id,
@@ -167,7 +163,8 @@ class Zippy_Bookings_Router
                 'booking_end_date' => $booking_end_date,
                 'booking_status' => 'pending'
             ),
-        ));
+            'Booking created successfully.'
+        );
     }
     public function get_booking_with_product(WP_REST_Request $request)
     {
@@ -196,9 +193,11 @@ class Zippy_Bookings_Router
             return new WP_Error('no_booking', 'Booking not found.', array('status' => 404));
         }
 
-        return rest_ensure_response(array(
-            'message' => 'Booking data.',
-            'data' => $results,
-        ));
+        return Zippy_Response_Handler::success(
+            array(
+                $results,
+            ),
+            'Bookings retrieved successfully.'
+        );
     }
 }
