@@ -54,6 +54,11 @@ if (!defined('ZIPPY_BOOKING_URL')) {
   define('ZIPPY_BOOKING_URL', plugin_dir_url(__FILE__));
 }
 
+/* Set constant enpoint to the plugin directory. */
+if (!defined('ZIPPY_BOOKING_API_NAMESPACE')) {
+  define('ZIPPY_BOOKING_API_NAMESPACE', 'zippy-booking/v1');
+}
+
 
 /* ------------------------------------------
 // i18n
@@ -78,9 +83,7 @@ require ZIPPY_BOOKING_DIR_PATH . '/includes/autoload.php';
 
 use  Zippy_Booking\Src\Admin\Zippy_Admin_Settings;
 
-use  Zippy_Booking\Src\Web\Zippy_Booking_Web;
-
-use Zippy_Booking\Src\Woocommerce\Zippy_Woo_Booking;
+use Zippy_Booking\Src\Routers\Zippy_Bookings_Router;
 
 
 
@@ -119,5 +122,5 @@ use Zippy_Booking\Src\Woocommerce\Zippy_Woo_Booking;
 
 Zippy_Admin_Settings::get_instance();
 
-Zippy_Booking_Web::get_instance();
+Zippy_Bookings_Router::get_instance();
 
