@@ -6,7 +6,7 @@
  *
  */
 
-namespace Zippy_Booking\Src\Router;
+namespace Zippy_Booking\Src\Routers;
 
 
 defined('ABSPATH') or die();

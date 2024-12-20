@@ -78,7 +78,7 @@ require ZIPPY_BOOKING_DIR_PATH . '/includes/autoload.php';
 
 use  Zippy_Booking\Src\Admin\Zippy_Admin_Settings;
 
-use Zippy_Booking\Src\Woocommerce\Zippy_Woo_Booking;
+use Zippy_Booking\Src\Routers\Zippy_Bookings_Router;
 
 
 
@@ -117,5 +117,4 @@ use Zippy_Booking\Src\Woocommerce\Zippy_Woo_Booking;
 
 Zippy_Admin_Settings::get_instance();
 
-// Zippy_Woo_Booking::get_instance();
-
+Zippy_Bookings_Router::get_instance();
