@@ -36,7 +36,7 @@ class Booking_Controller
       }
 
       $query = "SELECT * FROM $table_name WHERE 1=1";
-
+      
       if ($product_id) {
           $query .= $wpdb->prepare(" AND product_id = %d", $product_id);
       }
