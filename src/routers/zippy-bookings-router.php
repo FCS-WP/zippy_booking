@@ -9,6 +9,7 @@
 namespace Zippy_Booking\Src\Routers;
 
 use Zippy_Booking\Src\Controllers\Web\Zippy_Booking_Controller;
+use Zippy_Booking\Src\Controllers\Web\Zippy_Booking_Params;
 
 defined('ABSPATH') or die();
 
@@ -39,65 +40,15 @@ class Zippy_Bookings_Router
     {
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/booking', array(
             'methods' => 'GET',
-            'callback' => array(new Zippy_Booking_Controller(), 'get_booking_with_product'),
-            'args' => array(
-                'booking_id' => array(
-                    'required' => false,
-                    'validate_callback' => function ($param) {
-                        return is_numeric($param);
-                    }
-                ),
-                'email' => array(
-                    'required' => false,
-                    'validate_callback' => function ($param) {
-                        return is_email($param);
-                    }
-                ),
-                'product_id' => array(
-                    'required' => false,
-                    'validate_callback' => function ($param) {
-                        return is_numeric($param);
-                    }
-                ),
-            ),
+            'callback' => [Zippy_Booking_Controller::class, 'get_booking_with_product'],
+            'args' => Zippy_Booking_Params::get_booking_with_product_args(),
             'permission_callback' => '__return_true',
         ));
 
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/booking', array(
             'methods' => 'POST',
-            'callback' => array(new Zippy_Booking_Controller(), 'create_booking_with_product'),
-            'args' => array(
-                'product_id' => array(
-                    'required' => true,
-                    'validate_callback' => function ($param) {
-                        return is_numeric($param);
-                    }
-                ),
-                'user_id' => array(
-                    'required' => false,
-                    'validate_callback' => function ($param) {
-                        return is_numeric($param);
-                    }
-                ),
-                'email' => array(
-                    'required' => true,
-                    'validate_callback' => function ($param) {
-                        return is_email($param);
-                    }
-                ),
-                'booking_start_date' => array(
-                    'required' => true,
-                    'validate_callback' => function ($param) {
-                        return strtotime($param) !== false;
-                    }
-                ),
-                'booking_end_date' => array(
-                    'required' => true,
-                    'validate_callback' => function ($param) {
-                        return strtotime($param) !== false;
-                    }
-                ),
-            ),
+            'callback' => [Zippy_Booking_Controller::class, 'create_booking_with_product'],
+            'args' => Zippy_Booking_Params::create_booking_with_product_args(),
             'permission_callback' => '__return_true',
         ));
 
@@ -120,6 +71,5 @@ class Zippy_Bookings_Router
             ),
             'permission_callback' => '__return_true',
         ));
-
     }
 }
