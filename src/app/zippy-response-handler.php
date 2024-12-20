@@ -6,11 +6,12 @@
  * @package Shin
  */
 
-namespace Zippy_Booking\Utils;
+namespace Zippy_Booking\Src\App;
 
 defined('ABSPATH') or die();
 
 use WP_REST_Response;
+
 class Zippy_Response_Handler
 {
   // Handle success responses
