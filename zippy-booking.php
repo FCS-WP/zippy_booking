@@ -59,6 +59,11 @@ if (!defined('ZIPPY_BOOKING_API_NAMESPACE')) {
   define('ZIPPY_BOOKING_API_NAMESPACE', 'zippy-booking/v1');
 }
 
+/* Set constant enpoint to the plugin directory. */
+if (!defined('ZIPPY_BOOKING_DATABASE_NAME')) {
+  define('ZIPPY_BOOKING_DATABASE_NAME', 'fcs_data_bookings');
+}
+
 
 /* ------------------------------------------
 // i18n
@@ -67,9 +72,9 @@ if (!defined('ZIPPY_BOOKING_API_NAMESPACE')) {
 // load_plugin_textdomain('zippy-booking-car', false, basename(dirname(__FILE__)) . '/languages');
 
 
-// ini_set('display_errors', 1);
-// ini_set('display_startup_errors', 1);
-// error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 /* ------------------------------------------
 // Includes

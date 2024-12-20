@@ -8,7 +8,8 @@
 
 namespace Zippy_Booking\Src\Routers;
 
-use Zippy_Booking\Src\Controllers\Web\Zippy_Booking_Controller;
+use Zippy_Booking\Src\Controller\Zippy_Booking_Controller;
+use Zippy_Booking\Src\Controllers\Admin\Booking_Controller;
 
 defined('ABSPATH') or die();
 
@@ -37,6 +38,7 @@ class Zippy_Bookings_Router
 
     public function zippy_booking_init_api()
     {
+
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/booking', array(
             'methods' => 'GET',
             'callback' => array(new Zippy_Booking_Controller(), 'get_booking_with_product'),
@@ -103,7 +105,7 @@ class Zippy_Bookings_Router
 
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/bookings', array(
             'methods' => 'GET',
-            'callback' => [BookingController::class, 'get_booking_list'],
+            'callback' => [new Booking_Controller(), 'get_booking_list'],
             'args' => array(
                 'status' => array(
                     'required' => false,

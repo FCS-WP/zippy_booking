@@ -43,9 +43,6 @@ class Zippy_Admin_Settings
 
     /* Delete Table Booking */
     register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_booking_table'));
-
-    /* Admin Booking List API  */
-    add_action('rest_api_init', array($this, 'get_booking_list'));
   }
 
   public function admin_booking_assets()

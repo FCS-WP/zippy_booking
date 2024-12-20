@@ -6,7 +6,7 @@
  * @package Shin
  */
 
-namespace Zippy_Booking\Src\Controllers\Web;
+namespace Zippy_Booking\Src\Controller;
 
 use WP_REST_Request;
 use Zippy_Booking\Utils\Zippy_Response_Handler; 
