@@ -1,7 +1,7 @@
 <?php
 
 /**
- * API ResponHandler
+ * Request Validation
  *
  * @package Shin
  */
@@ -9,6 +9,8 @@
 namespace Zippy_Booking\App\Models;
 
 defined('ABSPATH') or die();
+
+use DateTime;
 
 class Zippy_Request_Validation
 {
@@ -49,5 +51,10 @@ class Zippy_Request_Validation
           return is_string($param);
       }
     );
+  }
+
+  public static function validateDate($date, $format = 'Y-m-d H:i:s'){
+      $d = DateTime::createFromFormat($format, $date);
+      return $d && $d->format($format) == $date;
   }
 }

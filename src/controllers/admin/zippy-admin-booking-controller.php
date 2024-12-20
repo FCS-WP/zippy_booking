@@ -23,24 +23,32 @@ class Zippy_Admin_Booking_Controller
         global $wpdb;
         $table_name = ZIPPY_BOOKING_TABLE_NAME;
 
-        $product_id = intval($request->get_param('product_id'));
-        $status = sanitize_text_field($request->get_param('status'));
-
-        $product = wc_get_product($product_id);
-        if (!$product) {
-            return Zippy_Response_Handler::error('Product does not exist.');
-        }
+        $query_param = [
+            "product_id" => sanitize_text_field($request->get_param('product_id')),
+            "booking_status" => sanitize_text_field($request->get_param('booking_status')),
+            "email" => sanitize_text_field($request->get_param('email')),
+            "user_id" => sanitize_text_field($request->get_param('user_id')),
+        ];
 
         $query = "SELECT * FROM $table_name WHERE 1=1";
         
-        if ($product_id) {
-            $query .= $wpdb->prepare(" AND product_id = %d", $product_id);
+        foreach ($query_param as $key => $value) {
+            if ($value !== "" && $value !== null) {
+                $query .= $wpdb->prepare(" AND $key = %s", $value);
+            }
         }
 
-        if ($status) {
-            $query .= $wpdb->prepare(" AND booking_status = %s", $status);
+        $booking_start_date = sanitize_text_field($request->get_param('booking_start_date'));
+        $booking_end_date = sanitize_text_field($request->get_param('booking_end_date'));
+
+        if($booking_end_date != ""){
+            $query .= $wpdb->prepare(" AND DATE(booking_end_date) <= %s ", $booking_end_date);
         }
 
+        if($booking_start_date != ""){
+            $query .= $wpdb->prepare(" AND DATE(booking_start_date) >= %s ", $booking_start_date);
+        }
+    
         $results = $wpdb->get_results($query);
 
         if (empty($results)) {
