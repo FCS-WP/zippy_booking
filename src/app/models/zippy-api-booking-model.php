@@ -168,4 +168,26 @@ class Zippy_Api_Booking_Model
       ),
     );
   }
+  public static function get_support_booking_products_args()
+  {
+    return array(
+      'products' => array(
+        'required' => true,
+        'validate_callback' => function ($param) {
+          return is_array($param) && !empty($param);
+        }
+      )
+    );
+  }
+  public static function get_support_booking_product_args()
+  {
+    return array(
+      'product_name' => array(
+        'required' => true,
+        'validate_callback' => function ($param) {
+          return is_string($param) && !empty($param);
+        },
+      ),
+    );
+  }
 }

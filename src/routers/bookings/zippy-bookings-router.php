@@ -83,5 +83,17 @@ class Zippy_Bookings_Router
             'args' => Zippy_Api_Booking_Model::get_update_booking_args(),
             'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
         ));
+        register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/product/', array(
+            'methods' => 'POST',
+            'callback' => [Zippy_Booking_Controller::class , 'handle_support_booking_product'],
+            'args' => Zippy_Api_Booking_Model::get_support_booking_product_args(),
+            'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
+        ));
+        register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/products/(?P<listProductId>[\d,]+)', array(
+            'methods' => 'POST',
+            'callback' => [Zippy_Booking_Controller::class,'handle_support_booking_products'],
+            'args' => Zippy_Api_Booking_Model::get_support_booking_products_args(),
+            'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
+        ));
     }
 }

@@ -228,4 +228,61 @@ class Zippy_Booking_Controller
             return Zippy_Response_Handler::error('You do not have permission to update this booking.');
         }
     }
+    public static function handle_support_booking_product(WP_REST_Request $request)
+    {
+        global $wpdb;
+        $product_id = $request->get_param('productId');
+        $product_name = $request->get_param('product_name');
+
+        $table_name = $wpdb->prefix . 'fcs_data_product_booking_mapping';
+        $result = $wpdb->insert(
+            $table_name,
+            array(
+                'product_id' => $product_id,
+                'product_name' => $product_name,
+            ),
+        );
+
+        if ($result === false) {
+            return Zippy_Response_Handler::error('Error inserting data into the database');
+        }
+
+        return Zippy_Response_Handler::success('Product booking mapping created successfully.');
+    }
+    public static function handle_support_booking_products(WP_REST_Request $request)
+    {
+        global $wpdb;
+        $list_product_ids = explode(',', $request->get_param('listProductId'));
+        $products = $request->get_param('products');
+
+        $table_name = $wpdb->prefix . 'fcs_data_product_booking_mapping';
+        $insert_data = array();
+
+        foreach ($list_product_ids as $index => $product_id) {
+            if (isset($products[$index]['product_name'])) {
+                $insert_data[] = array(
+                    'product_id' => (int) $product_id,
+                    'product_name' => sanitize_text_field($products[$index]['product_name']),
+                );
+            }
+        }
+
+        if (empty($insert_data)) {
+            return Zippy_Response_Handler::error('No valid product data provided.');
+        }
+
+        foreach ($insert_data as $data) {
+            $result = $wpdb->insert(
+                $table_name,
+                $data,
+                array('%d', '%s')
+            );
+
+            if ($result === false) {
+                return Zippy_Response_Handler::error('Error inserting data into the database');
+            }
+        }
+
+        return Zippy_Response_Handler::success('Products booking mappings created successfully.');
+    }
 }
