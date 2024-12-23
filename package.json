@@ -32,11 +32,14 @@
     "axios": "^1.7.7",
     "bootstrap": "^4.6.0",
     "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
+    "flatpickr": "^4.6.13",
     "react": "18.3.1",
     "react-bootstrap": "^2.10.4",
     "react-chartjs-2": "^5.2.0",
-    "react-datepicker": "^7.3.0",
+    "react-datepicker": "^7.5.0",
     "react-dom": "18.3.1",
-    "flatpickr": "^4.6.13"
+    "react-flatpickr": "^3.10.13",
+    "vanilla-calendar-pro": "^3.0.3"
   }
 }

@@ -35,11 +35,12 @@ class Zippy_Booking_Web
 
     /* Booking Assets  */
     add_action('wp_enqueue_scripts', array($this, 'booking_assets'));
+
+    add_shortcode('btn_booking', array($this, 'btn_booking'));
   }
 
   public function booking_assets()
   {
-    if (!is_archive() && !is_single() && !is_checkout()) return;
     $version = time();
 
     $current_user_id = get_current_user_id();
@@ -51,5 +52,9 @@ class Zippy_Booking_Web
     wp_localize_script('booking-js-current-id', 'admin_id', array(
       'userID' => $current_user_id,
     ));
+  }
+
+  public function btn_booking(){
+    echo "<div id='btn_booking'></div>";
   }
 }

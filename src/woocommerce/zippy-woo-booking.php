@@ -40,6 +40,8 @@ class Zippy_Woo_Booking
 
     /* Update Checkout After Applied Coupon */
     add_action('woocommerce_applied_coupon', array($this, 'after_apply_coupon_action'));
+
+    
   }
 
   function after_apply_coupon_action($coupon_code)
@@ -90,4 +92,5 @@ class Zippy_Woo_Booking
 
     return file_exists($path) ? $path : $template;
   }
+
 }

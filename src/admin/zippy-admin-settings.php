@@ -119,3 +119,4 @@ class Zippy_Admin_Settings
     echo Zippy_Utils_Core::get_template('booking-dashboard.php', [], dirname(__FILE__), '/templates');
   }
 }
+

@@ -80,6 +80,8 @@ use  Zippy_Booking\Src\Admin\Zippy_Admin_Settings;
 
 use Zippy_Booking\Src\Woocommerce\Zippy_Woo_Booking;
 
+use Zippy_Booking\Src\Web\Zippy_Booking_Web;
+
 
 
 /**
@@ -117,5 +119,6 @@ use Zippy_Booking\Src\Woocommerce\Zippy_Woo_Booking;
 
 Zippy_Admin_Settings::get_instance();
 
-// Zippy_Woo_Booking::get_instance();
+Zippy_Woo_Booking::get_instance();
 
+Zippy_Booking_Web::get_instance();
