@@ -75,7 +75,7 @@ class Zippy_Admin_Settings
   {
     add_menu_page('Zippy Bookings', 'Zippy Bookings', 'manage_options', 'zippy-bookings', array($this, 'render'), 'dashicons-list-view', 6);
     // SubPage 
-    add_submenu_page('zippy-bookings', 'Bookings', 'Bookings', 'manage_options', 'bookings', array($this, 'render'));
+    add_submenu_page('zippy-bookings', 'Bookings', 'Bookings', 'manage_options', 'bookings', array($this, 'bookings_render'));
     add_submenu_page('zippy-bookings', 'Calander', 'Calander', 'manage_options', 'calander', array($this, 'render'));
     add_submenu_page('zippy-bookings', 'Products Booking', 'Products Booking', 'manage_options', 'products-booking', array($this, 'render'));
     add_submenu_page('zippy-bookings', 'Settings', 'Settings', 'manage_options', 'settings', array($this, 'render'));
@@ -157,5 +157,9 @@ class Zippy_Admin_Settings
   public function render()
   {
     echo Zippy_Utils_Core::get_template('booking-dashboard.php', [], dirname(__FILE__), '/templates');
+  }
+  public function bookings_render()
+  {
+    echo Zippy_Utils_Core::get_template('bookings.php', [], dirname(__FILE__), '/templates');
   }
 }
