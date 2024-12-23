@@ -88,8 +88,7 @@ class Zippy_Bookings_Router
 
 
 
-        /* Plugin Configs */
-
+        /* Plugin Config */
         // CREATE plugin config
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/options', array(
             'methods' => 'POST',

@@ -19,20 +19,17 @@ defined('ABSPATH') or die();
 
 class Zippy_Admin_Booking_Config_Controller{
     public static function zippy_booking_create_configs(WP_REST_Request $request){
-        global $wpdb;
-        $table_name     = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
-        
         $booking_type   = $request["booking_type"];
         $duration       = $request["duration"];
-        $start_time     = $request["start_time"];
-        $end_time       = $request["end_time"];
+        $open_at        = $request["open_at"];
+        $close_at       = $request["close_at"];
         $weekdays       = $request["weekdays"];
 
         // Rules
         $required_fields = [
             "booking_type"  => ["required" => true, "allowed_values" => [ZIPPY_BOOKING_BOOKING_TYPE_SINGLE, ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE]],
-            "start_time"    => ["required" => true, "type" => "datetime"],
-            "end_time"      => ["required" => true, "type" => "datetime"],
+            "open_at"       => ["required" => true, "type" => "datetime"],
+            "close_at"      => ["required" => true, "type" => "datetime"],
             "weekdays"      => ["required" => true, "type" => "array"],
         ];
 
@@ -48,7 +45,7 @@ class Zippy_Admin_Booking_Config_Controller{
                 }
             }
     
-            if (($field === "start_time" || $field === "end_time") && isset($request[$field])) {
+            if (($field === "open_at" || $field === "close_at") && isset($request[$field])) {
                 $datetime = DateTime::createFromFormat('H:i:s', $request[$field]);
                 if (!$datetime || $datetime->format('H:i:s') !== $request[$field]) {
                     return Zippy_Response_Handler::error("$field must be a valid datetime in the format H:i:s.");
@@ -66,13 +63,17 @@ class Zippy_Admin_Booking_Config_Controller{
         }
 
 
+        /* Insert */
+        global $wpdb;
+        $table_name     = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
+
         $result = $wpdb->get_results("SELECT * from $table_name");
         if(empty($result)){
             $data = [
                 'booking_type'  => $booking_type,
                 'weekdays'      => serialize($weekdays),
-                'open_at'       => $start_time,
-                'close_at'      => $end_time,
+                'open_at'       => $open_at,
+                'close_at'      => $close_at,
                 'duration'      => $duration,
             ];
             $wpdb->insert($table_name, $data);
@@ -83,27 +84,25 @@ class Zippy_Admin_Booking_Config_Controller{
 
 
     public static function zippy_booking_update_configs(WP_REST_Request $request){
-        global $wpdb;
-        $table_name     = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
         
         $booking_id     = $request["id"];
         $booking_type   = $request["booking_type"];
         $duration       = $request["duration"];
-        $start_time     = $request["start_time"];
-        $end_time       = $request["end_time"];
+        $open_at        = $request["open_at"];
+        $close_at       = $request["close_at"];
         $weekdays       = $request["weekdays"];
 
-        // Rules
+        /* Rules */
         $required_fields = [
             "id"            => ["required" => true, "type" => "integer"],
             "booking_type"  => ["required" => true, "allowed_values" => [ZIPPY_BOOKING_BOOKING_TYPE_SINGLE, ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE]],
-            "start_time"    => ["required" => true, "type" => "datetime"],
-            "end_time"      => ["required" => true, "type" => "datetime"],
+            "open_at"       => ["required" => true, "type" => "datetime"],
+            "close_at"      => ["required" => true, "type" => "datetime"],
             "weekdays"      => ["required" => true, "type" => "array"],
             
         ];
 
-        // Validate main required fields
+        /* Validate main required fields */
         foreach ($required_fields as $field => $rules) {
             if ($rules['required'] && (!isset($request[$field]) || empty($request[$field]))) {
                 return Zippy_Response_Handler::error("$field is required.");
@@ -115,7 +114,7 @@ class Zippy_Admin_Booking_Config_Controller{
                 }
             }
     
-            if (($field === "start_time" || $field === "end_time") && isset($request[$field])) {
+            if (($field === "open_at" || $field === "close_at") && isset($request[$field])) {
                 $datetime = DateTime::createFromFormat('H:i:s', $request[$field]);
                 if (!$datetime || $datetime->format('H:i:s') !== $request[$field]) {
                     return Zippy_Response_Handler::error("$field must be a valid datetime in the format H:i:s.");
@@ -132,20 +131,22 @@ class Zippy_Admin_Booking_Config_Controller{
             }
         }
 
+        
+        /* Update */
+        global $wpdb;
+        $table_name     = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
 
         $result = $wpdb->get_results("SELECT * from $table_name WHERE id=$booking_id");
         if(!empty($result)){
             $data = [
                 'booking_type'  => $booking_type,
                 'weekdays'      => serialize($weekdays),
-                'open_at'       => $start_time,
-                'close_at'      => $end_time,
+                'open_at'       => $open_at,
+                'close_at'      => $close_at,
                 'duration'      => $duration,
             ];
-            $res = $wpdb->update($table_name, $data, ["id" => $booking_id]);
-            if($res == 1){
-                return Zippy_Response_Handler::success($data);
-            }
+            $wpdb->update($table_name, $data, ["id" => $booking_id]);
+            return Zippy_Response_Handler::success($data);
         }
         return Zippy_Response_Handler::error("No Config found!");
     }
