@@ -22,8 +22,8 @@ module.exports = [
   {
     stats: "minimal",
     entry: {
-      web:[destFileCss,destFileJs],
-      admin: [destAdminFileCss, destAdminFileJs]
+      web: [destFileCss, destFileJs],
+      admin: [destAdminFileCss, destAdminFileJs],
     },
     output: {
       filename: destOutput + "/js/[name].min.js",
@@ -84,6 +84,11 @@ module.exports = [
           issuer: {
             and: [/\.(ts|tsx|js|jsx|md|mdx)$/],
           },
+        },
+        //stype loader
+        {
+          test: /\.css$/i,
+          use: ["style-loader", "css-loader"],
         },
       ],
     },
