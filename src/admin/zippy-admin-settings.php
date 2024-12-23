@@ -45,13 +45,16 @@ class Zippy_Admin_Settings
 
     register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'create_booking_configs_table'));
 
+    /* Create Zippy API Token */
+    register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'generate_zippy_booking_api_token'));
+    
     /* Delete Table Booking */
     register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_booking_table'));
 
-    /* Create Zippy API Token */
-    register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'generate_zippy_booking_api_token'));
+    /* Delete Table Booking Config */
+    register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_booking_config_table'));
 
-    /* Create Zippy API Token */
+    /* Delete Zippy API Token */
     register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'remove_zippy_booking_api_token'));
 
   }
@@ -137,10 +140,11 @@ class Zippy_Admin_Settings
     if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
       $sql = "CREATE TABLE $table_name (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
-            booking_type VARCHAR NOT NULL,
-            duration VARCHAR NOT NULL,
-            start_time DATETIME NOT NULL,
-            end_time DATETIME NOT NULL,
+            booking_type VARCHAR(255) NOT NULL,
+            duration VARCHAR(255) NULL,
+            weekdays VARCHAR(255) NOT NULL,
+            open_at TIME NOT NULL,
+            close_at TIME NOT NULL,
             PRIMARY KEY  (id)
         );";
 
@@ -154,6 +158,15 @@ class Zippy_Admin_Settings
     global $wpdb;
 
     $table_name = $wpdb->prefix . 'bookings';
+
+    $wpdb->query("DROP TABLE IF EXISTS $table_name");
+  }
+
+  function delete_booking_config_table()
+  {
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'booking_configs';
 
     $wpdb->query("DROP TABLE IF EXISTS $table_name");
   }

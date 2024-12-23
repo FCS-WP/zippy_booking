@@ -9,6 +9,7 @@
 namespace Zippy_Booking\Src\Controllers\Admin;
 
 use WP_REST_Request;
+use DateTime;
 use Zippy_Booking\Utils\Zippy_Utils_Core;
 use Zippy_Booking\Src\App\Zippy_Response_Handler;
 
@@ -90,6 +91,8 @@ class Zippy_Admin_Booking_Controller
 
     }
 
+
+    /* Booking Stats */
     public static function get_booking_stats(WP_REST_Request $request){
         global $wpdb;
         $table_name = ZIPPY_BOOKING_TABLE_NAME;
