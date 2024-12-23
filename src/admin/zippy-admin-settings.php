@@ -117,7 +117,7 @@ class Zippy_Admin_Settings
       $sql = "CREATE TABLE $table_name (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
             product_id BIGINT(20) NOT NULL,
-            product_name varchar(255) NOT NULL,
+            product_name VARCHAR(255) NOT NULL,
             PRIMARY KEY  (id)
         );";
 
@@ -133,8 +133,8 @@ class Zippy_Admin_Settings
     if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
       $sql = "CREATE TABLE $table_name (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
-            booking_type INT NOT NULL,
-            duration varchar NOT NULL,
+            booking_type VARCHAR NOT NULL,
+            duration VARCHAR NOT NULL,
             start_time DATETIME NOT NULL,
             end_time DATETIME NOT NULL,
             PRIMARY KEY  (id)
