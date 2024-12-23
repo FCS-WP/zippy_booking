@@ -1,1 +1,16 @@
+
+@import "./utils/bootstrap";
+
+
+// Import các thành phần cốt lõi của Bootstrap
+@import "~bootstrap/scss/root";
+@import "~bootstrap/scss/reboot";
+@import "~bootstrap/scss/containers";
+@import "~bootstrap/scss/grid";
+@import "~bootstrap/scss/utilities/api";
+@import "~bootstrap/scss/buttons";
+@import "~bootstrap/scss/close";
+
+// Import file tuỳ chỉnh sau cùng
 @import "admin-booking-table";
+@import "react-datepicker/dist/react-datepicker.css";
