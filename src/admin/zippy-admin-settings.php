@@ -45,11 +45,18 @@ class Zippy_Admin_Settings
 
     register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'create_booking_configs_table'));
 
+    /* Create Zippy API Token */
+    register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'generate_zippy_booking_api_token'));
+    
     /* Delete Table Booking */
     register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_booking_table'));
 
-     /* Admin Booking List API  */
-    // add_action('rest_api_init', array($this, 'get_booking_list'));
+    /* Delete Table Booking Config */
+    register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_booking_config_table'));
+
+    /* Delete Zippy API Token */
+    register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'remove_zippy_booking_api_token'));
+
   }
 
   public function admin_booking_assets()
@@ -133,10 +140,11 @@ class Zippy_Admin_Settings
     if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
       $sql = "CREATE TABLE $table_name (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
-            booking_type VARCHAR NOT NULL,
-            duration VARCHAR NOT NULL,
-            start_time DATETIME NOT NULL,
-            end_time DATETIME NOT NULL,
+            booking_type VARCHAR(255) NOT NULL,
+            duration VARCHAR(255) NULL,
+            weekdays VARCHAR(255) NOT NULL,
+            open_at TIME NOT NULL,
+            close_at TIME NOT NULL,
             PRIMARY KEY  (id)
         );";
 
@@ -154,12 +162,25 @@ class Zippy_Admin_Settings
     $wpdb->query("DROP TABLE IF EXISTS $table_name");
   }
 
+  function delete_booking_config_table()
+  {
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'booking_configs';
+
+    $wpdb->query("DROP TABLE IF EXISTS $table_name");
+  }
+
   public function render()
   {
     echo Zippy_Utils_Core::get_template('booking-dashboard.php', [], dirname(__FILE__), '/templates');
   }
-  public function bookings_render()
-  {
-    echo Zippy_Utils_Core::get_template('bookings.php', [], dirname(__FILE__), '/templates');
+
+  function generate_zippy_booking_api_token(){
+    add_option('zippy_booking_api_token', Zippy_Utils_Core::encrypt_data_input(ZIPPY_BOOKING_NAME));
   }
+  function remove_zippy_booking_api_token(){
+    delete_option('zippy_booking_api_token');
+  }
+  
 }
