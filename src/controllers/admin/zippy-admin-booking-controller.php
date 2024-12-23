@@ -73,7 +73,6 @@ class Zippy_Admin_Booking_Controller
             $query .= $wpdb->prepare(" OFFSET %d ", $offset);
         }
 
-        
         $results = $wpdb->get_results($query);
 
         if (empty($results)) {
@@ -92,6 +91,47 @@ class Zippy_Admin_Booking_Controller
     }
 
     public static function get_booking_stats(WP_REST_Request $request){
+        global $wpdb;
+        $table_name = ZIPPY_BOOKING_TABLE_NAME;
+
+
+        // Count total
+        $total_query = "SELECT ID, booking_status FROM $table_name WHERE 1=1";
+        $total = $wpdb->get_results($total_query);
+        $total_count = count($total);
+
+
+        $pending_items = array_filter($total, function($item) {
+            return $item->booking_status == ZIPPY_BOOKING_BOOKING_STATUS_PENDING;
+        });
+        $onhold_items = array_filter($total, function($item) {
+            return $item->booking_status == ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD;
+        });
+        $completed_items = array_filter($total, function($item) {
+            return $item->booking_status == ZIPPY_BOOKING_BOOKING_STATUS_COMPLETED;
+        });
+        $processing_items = array_filter($total, function($item) {
+            return $item->booking_status == ZIPPY_BOOKING_BOOKING_STATUS_PROCESSING;
+        });
+        $cancelled_items = array_filter($total, function($item) {
+            return $item->booking_status == ZIPPY_BOOKING_BOOKING_STATUS_CANCELLED;
+        });
+        $pending_count = count($pending_items);
+        $on_hold_count = count($onhold_items);
+        $completed_count = count($completed_items);
+        $processing_count = count($processing_items);
+        $cancelled_count = count($cancelled_items);
+
+        // Prepare Data
+        $data = [
+            "total_count" => $total_count,
+            "pending_count" => $pending_count,
+            "on_hold_count" => $on_hold_count,
+            "completed_count" => $completed_count,
+            "processing_count" => $processing_count,
+            "cancelled_count" => $cancelled_count,
+        ];
         
+        return Zippy_Response_Handler::success($data);
     }
 }

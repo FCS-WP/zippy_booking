@@ -50,19 +50,21 @@ class Zippy_Bookings_Router
             'args' => Zippy_Api_Booking_Model::get_booking_args(),
             'permission_callback' => '__return_true',
         ));
-
+        
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/booking', array(
             'methods' => 'POST',
             'callback' => [Zippy_Booking_Controller::class, 'create_booking_with_product'],
             'args' => Zippy_Api_Booking_Model::create_booking_args(),
-            'permission_callback' => '__return_true',
+            'permission_callback' => array(Zippy_Booking_Permission::class, 'zippy_permission_callback'),
         ));
+
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/bookings', array(
             'methods' => 'GET',
             'callback' => array(Zippy_Admin_Booking_Controller::class, 'get_booking_list_of_a_product'),
             'args' => Zippy_Api_Booking_Model::get_bookings_args(),
             'permission_callback' => array(Zippy_Booking_Permission::class, 'zippy_permission_callback'),
         ));
+        
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/stats', array(
             'methods' => 'GET',
             'callback' => array(Zippy_Admin_Booking_Controller::class, 'get_booking_stats'),

@@ -77,6 +77,14 @@ if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD')) {
   define('ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD', 'onhold');
 }
 
+if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_CANCELLED')) {
+  define('ZIPPY_BOOKING_BOOKING_STATUS_CANCELLED', 'cancelled');
+}
+
+if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_PROCESSING')) {
+  define('ZIPPY_BOOKING_BOOKING_STATUS_PROCESSING', 'processing');
+}
+
 
 /* ------------------------------------------
 // i18n
@@ -142,6 +150,4 @@ use Zippy_Booking\Src\Middleware\Admin\Zippy_Booking_Permission;
 Zippy_Admin_Settings::get_instance();
 
 Zippy_Bookings_Router::get_instance();
-
-Zippy_Booking_Permission::get_instance();
 
