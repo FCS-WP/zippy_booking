@@ -41,6 +41,10 @@ class Zippy_Admin_Settings
     /* Create New Table For Booking */
     register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'create_booking_table'));
 
+    register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'create_product_booking_table'));
+
+    register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'create_booking_configs_table'));
+
     /* Delete Table Booking */
     register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_booking_table'));
 
@@ -70,16 +74,12 @@ class Zippy_Admin_Settings
   public function zippy_booking_page()
   {
     add_menu_page('Zippy Bookings', 'Zippy Bookings', 'manage_options', 'zippy-bookings', array($this, 'render'), 'dashicons-list-view', 6);
-
-    //add Booking History submenu
-    add_submenu_page(
-      'zippy-bookings',
-      'Booking History',
-      'Booking History',
-      'manage_options',
-      'booking-history',
-      array($this, 'render')
-    );
+    // SubPage 
+    add_submenu_page('zippy-bookings', 'Bookings', 'Bookings', 'manage_options', 'bookings', array($this, 'render'));
+    add_submenu_page('zippy-bookings', 'Calander', 'Calander', 'manage_options', 'calander', array($this, 'render'));
+    add_submenu_page('zippy-bookings', 'Products Booking', 'Products Booking', 'manage_options', 'products-booking', array($this, 'render'));
+    add_submenu_page('zippy-bookings', 'Settings', 'Settings', 'manage_options', 'settings', array($this, 'render'));
+    add_submenu_page('zippy-bookings', 'Customize', 'Customize', 'manage_options', 'customize', array($this, 'render'));
   }
 
   function create_booking_table()
@@ -106,6 +106,43 @@ class Zippy_Admin_Settings
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 
     dbDelta($sql);
+  }
+
+  function create_product_booking_table()
+  {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'product_booking_mapping';
+
+    if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
+      $sql = "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            product_id BIGINT(20) NOT NULL,
+            product_name varchar(255) NOT NULL,
+            PRIMARY KEY  (id)
+        );";
+
+      require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+      dbDelta($sql);
+    }
+  }
+  function create_booking_configs_table()
+  {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'booking_configs';
+
+    if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
+      $sql = "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            booking_type INT NOT NULL,
+            duration varchar NOT NULL,
+            start_time DATETIME NOT NULL,
+            end_time DATETIME NOT NULL,
+            PRIMARY KEY  (id)
+        );";
+
+      require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+      dbDelta($sql);
+    }
   }
 
   function delete_booking_table()
