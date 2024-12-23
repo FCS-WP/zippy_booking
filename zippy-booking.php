@@ -64,6 +64,11 @@ if (!defined('ZIPPY_BOOKING_TABLE_NAME')) {
   define('ZIPPY_BOOKING_TABLE_NAME', 'fcs_data_bookings');
 }
 
+/* Booking Configs table name */
+if (!defined('ZIPPY_BOOKING_CONFIG_TABLE_NAME')) {
+  define('ZIPPY_BOOKING_CONFIG_TABLE_NAME', 'fcs_data_booking_configs');
+}
+
 /* Booking status */
 if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_PENDING')) {
   define('ZIPPY_BOOKING_BOOKING_STATUS_PENDING', 'pending');
@@ -83,6 +88,15 @@ if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_CANCELLED')) {
 
 if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_PROCESSING')) {
   define('ZIPPY_BOOKING_BOOKING_STATUS_PROCESSING', 'processing');
+}
+
+
+// Booking type
+if (!defined('ZIPPY_BOOKING_BOOKING_TYPE_SINGLE')) {
+  define('ZIPPY_BOOKING_BOOKING_TYPE_SINGLE', 'single');
+}
+if (!defined('ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE')) {
+  define('ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE', 'multiple');
 }
 
 
