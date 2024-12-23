@@ -48,8 +48,12 @@ class Zippy_Admin_Settings
     /* Delete Table Booking */
     register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_booking_table'));
 
-     /* Admin Booking List API  */
-    // add_action('rest_api_init', array($this, 'get_booking_list'));
+    /* Create Zippy API Token */
+    register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'generate_zippy_booking_api_token'));
+
+    /* Create Zippy API Token */
+    register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'remove_zippy_booking_api_token'));
+
   }
 
   public function admin_booking_assets()
@@ -158,4 +162,12 @@ class Zippy_Admin_Settings
   {
     echo Zippy_Utils_Core::get_template('booking-dashboard.php', [], dirname(__FILE__), '/templates');
   }
+
+  function generate_zippy_booking_api_token(){
+    add_option('zippy_booking_api_token', Zippy_Utils_Core::encrypt_data_input(ZIPPY_BOOKING_NAME));
+  }
+  function remove_zippy_booking_api_token(){
+    delete_option('zippy_booking_api_token');
+  }
+  
 }
