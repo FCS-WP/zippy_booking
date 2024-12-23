@@ -49,13 +49,18 @@ class Zippy_Admin_Booking_Controller
             $query .= $wpdb->prepare(" AND DATE(booking_start_date) >= %s ", $booking_start_date);
         }
     
+        $data = [];
         $results = $wpdb->get_results($query);
-
+        
         if (empty($results)) {
             return Zippy_Response_Handler::error('Booking not found.');
         }
+        
+        $data["bookings"] = $results;
+        $data["count"] = count($results);
 
-        return Zippy_Response_Handler::success(!empty($results) ? $results : []);
+
+        return Zippy_Response_Handler::success($data);
 
     }
 }
