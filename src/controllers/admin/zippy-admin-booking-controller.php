@@ -22,7 +22,6 @@ class Zippy_Admin_Booking_Controller
     {
         global $wpdb;
         $table_name = ZIPPY_BOOKING_TABLE_NAME;
-
         $data = [];
 
         $query_param = [
@@ -90,5 +89,9 @@ class Zippy_Admin_Booking_Controller
 
         return Zippy_Response_Handler::success($data);
 
+    }
+
+    public static function get_booking_stats(WP_REST_Request $request){
+        
     }
 }
