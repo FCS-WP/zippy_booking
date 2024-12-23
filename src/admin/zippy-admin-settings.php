@@ -82,7 +82,7 @@ class Zippy_Admin_Settings
   {
     add_menu_page('Zippy Bookings', 'Zippy Bookings', 'manage_options', 'zippy-bookings', array($this, 'render'), 'dashicons-list-view', 6);
     // SubPage 
-    add_submenu_page('zippy-bookings', 'Bookings', 'Bookings', 'manage_options', 'bookings', array($this, 'render'));
+    add_submenu_page('zippy-bookings', 'Bookings', 'Bookings', 'manage_options', 'bookings', array($this, 'bookings_render'));
     add_submenu_page('zippy-bookings', 'Calander', 'Calander', 'manage_options', 'calander', array($this, 'render'));
     add_submenu_page('zippy-bookings', 'Products Booking', 'Products Booking', 'manage_options', 'products-booking', array($this, 'render'));
     add_submenu_page('zippy-bookings', 'Settings', 'Settings', 'manage_options', 'settings', array($this, 'render'));
@@ -124,7 +124,7 @@ class Zippy_Admin_Settings
       $sql = "CREATE TABLE $table_name (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
             product_id BIGINT(20) NOT NULL,
-            product_name varchar(255) NOT NULL,
+            product_name VARCHAR(255) NOT NULL,
             PRIMARY KEY  (id)
         );";
 
