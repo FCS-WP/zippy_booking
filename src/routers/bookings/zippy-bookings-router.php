@@ -49,7 +49,7 @@ class Zippy_Bookings_Router
             'args' => Zippy_Api_Booking_Model::get_booking_args(),
             'permission_callback' => '__return_true',
         ));
-        
+
 
         /* CREATE a Booking */
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/booking', array(

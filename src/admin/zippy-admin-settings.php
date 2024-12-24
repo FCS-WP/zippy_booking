@@ -201,4 +201,8 @@ class Zippy_Admin_Settings
         wp_enqueue_script('zippy_booking_script');
     }
 }
+  public function bookings_render()
+  {
+    echo Zippy_Utils_Core::get_template('bookings.php', [], dirname(__FILE__), '/templates');
+  }
 }
