@@ -49,7 +49,6 @@ class Zippy_Admin_Booking_Config_Controller{
         $close_at       = $request["close_at"];
         $weekdays       = $request["weekdays"];
 
-
         /* Insert */
         global $wpdb;
         $table_name     = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
@@ -79,7 +78,6 @@ class Zippy_Admin_Booking_Config_Controller{
             "open_at"       => ["required" => true, "data_type" => "time"],
             "close_at"      => ["required" => true, "data_type" => "time"],
             "weekdays"      => ["required" => true, "data_type" => "array"],
-            
         ];
 
 

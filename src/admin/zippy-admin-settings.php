@@ -57,6 +57,8 @@ class Zippy_Admin_Settings
     /* Delete Zippy API Token */
     register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'remove_zippy_booking_api_token'));
 
+    add_action('wp_enqueue_scripts', array($this, 'enqueue_zippy_booking_script'));
+
   }
 
   public function admin_booking_assets()
@@ -183,4 +185,20 @@ class Zippy_Admin_Settings
     delete_option('zippy_booking_api_token');
   }
   
+
+  function enqueue_zippy_booking_script() {
+
+    $version = time();
+    $api_token = get_option('zippy_booking_api_token');
+    
+    if (!empty($api_token)) {
+        wp_register_script('zippy_booking_script', ZIPPY_BOOKING_URL . 'assets/dist/js/zippy-booking.js', array(), $version, true);
+        
+        wp_localize_script('zippy_booking_script', 'zippy_booking', array(
+            'zippy_booking_api_token' => $api_token
+        ));
+
+        wp_enqueue_script('zippy_booking_script');
+    }
+}
 }
