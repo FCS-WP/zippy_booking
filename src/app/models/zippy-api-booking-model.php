@@ -174,18 +174,76 @@ class Zippy_Api_Booking_Model
       'products' => array(
         'required' => true,
         'validate_callback' => function ($param) {
-          return is_array($param) && !empty($param);
-        }
-      )
+          if (!is_array($param)) {
+            return false;
+          }
+          foreach ($param as $product) {
+            if (!isset($product['items_id']) || !is_numeric($product['items_id'])) {
+              return false;
+            }
+            if (!isset($product['mapping_type']) || !is_string($product['mapping_type']) || $product['mapping_type'] !== 'product') {
+              return false;
+            }
+          }
+          return true;
+        },
+      ),
     );
   }
+
   public static function get_support_booking_product_args()
   {
     return array(
-      'product_name' => array(
+      'items_id' => array(
         'required' => true,
         'validate_callback' => function ($param) {
-          return is_string($param) && !empty($param);
+          return is_numeric($param) && $param > 0;
+        },
+      ),
+      'mapping_type' => array(
+        'required' => false,
+        'validate_callback' => function ($param) {
+          return is_string($param) && $param === 'product';
+        },
+      ),
+    );
+  }
+  public static function get_support_booking_categories_args()
+  {
+    return array(
+      'categories' => array(
+        'required' => true,
+        'validate_callback' => function ($param) {
+          if (!is_array($param)) {
+            return false;
+          }
+          foreach ($param as $category) {
+            if (!isset($category['items_id']) || !is_numeric($category['items_id'])) {
+              return false;
+            }
+            if (!isset($category['mapping_type']) || !is_string($category['mapping_type']) || $category['mapping_type'] !== 'category') {
+              return false;
+            }
+          }
+          return true;
+        },
+      ),
+    );
+  }
+
+  public static function get_support_booking_category_args()
+  {
+    return array(
+      'items_id' => array(
+        'required' => true,
+        'validate_callback' => function ($param) {
+          return is_numeric($param) && $param > 0;
+        },
+      ),
+      'mapping_type' => array(
+        'required' => false,
+        'validate_callback' => function ($param) {
+          return is_string($param) && $param === 'category';
         },
       ),
     );
