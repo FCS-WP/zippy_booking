@@ -44,21 +44,13 @@ class Zippy_Admin_Settings
     register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'create_product_booking_table'));
 
     register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'create_booking_configs_table'));
-
-    /* Create Zippy API Token */
-    register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'generate_zippy_booking_api_token'));
     
     /* Delete Table Booking */
     register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_booking_table'));
 
     /* Delete Table Booking Config */
     register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_booking_config_table'));
-
-    /* Delete Zippy API Token */
-    register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'remove_zippy_booking_api_token'));
-
-    add_action('wp_enqueue_scripts', array($this, 'enqueue_zippy_booking_script'));
-
+    
   }
 
   public function admin_booking_assets()
@@ -178,29 +170,6 @@ class Zippy_Admin_Settings
     echo Zippy_Utils_Core::get_template('booking-dashboard.php', [], dirname(__FILE__), '/templates');
   }
 
-  function generate_zippy_booking_api_token(){
-    add_option('zippy_booking_api_token', Zippy_Utils_Core::encrypt_data_input(ZIPPY_BOOKING_NAME));
-  }
-  function remove_zippy_booking_api_token(){
-    delete_option('zippy_booking_api_token');
-  }
-  
-
-  function enqueue_zippy_booking_script() {
-
-    $version = time();
-    $api_token = get_option('zippy_booking_api_token');
-    
-    if (!empty($api_token)) {
-        wp_register_script('zippy_booking_script', ZIPPY_BOOKING_URL . 'assets/dist/js/zippy-booking.js', array(), $version, true);
-        
-        wp_localize_script('zippy_booking_script', 'zippy_booking', array(
-            'zippy_booking_api_token' => $api_token
-        ));
-
-        wp_enqueue_script('zippy_booking_script');
-    }
-}
   public function bookings_render()
   {
     echo Zippy_Utils_Core::get_template('bookings.php', [], dirname(__FILE__), '/templates');

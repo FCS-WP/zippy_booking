@@ -119,9 +119,9 @@ if (!defined('ZIPPY_BOOKING_ERROR')) {
 // load_plugin_textdomain('zippy-booking-car', false, basename(dirname(__FILE__)) . '/languages');
 
 
-// ini_set('display_errors', 1);
-// ini_set('display_startup_errors', 1);
-// error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 /* ------------------------------------------
 // Includes
@@ -177,6 +177,4 @@ use Zippy_Booking\Src\Routers\Bookings\Admin\Zippy_Booking_Admin_Route;
 Zippy_Admin_Settings::get_instance();
 
 Zippy_Bookings_Router::get_instance();
-
-Zippy_Booking_Admin_Route::get_instance();
 

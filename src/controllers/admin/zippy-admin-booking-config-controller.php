@@ -70,7 +70,6 @@ class Zippy_Admin_Booking_Config_Controller{
 
 
     public static function zippy_booking_update_configs(WP_REST_Request $request){
-        
         /* Rules */
         $required_fields = [
             "id"            => ["required" => true, "data_type" => "number"],
@@ -79,7 +78,7 @@ class Zippy_Admin_Booking_Config_Controller{
             "close_at"      => ["required" => true, "data_type" => "time"],
             "weekdays"      => ["required" => true, "data_type" => "array"],
         ];
-
+        
 
         // Validate request fields
         $validate = Zippy_Request_Validation::validate_request($required_fields, $request);
