@@ -98,14 +98,25 @@ class Zippy_Admin_Booking_Controller
         $results = $wpdb->get_results($query);
 
         if (empty($results)) {
-            return Zippy_Response_Handler::error('No Booking Found.');
+            return Zippy_Response_Handler::success([],'No Booking Found.');
         }
 
+
+        // Booking Configs
+        $config_table_name = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
+
+        $config_query = "SELECT booking_type, duration, weekdays, open_at, close_at FROM $config_table_name WHERE 1=1";
+        $config_results = $wpdb->get_results($config_query);
+
+        $configs = $config_results[0];
+        
+        !empty($configs->weekdays) ? $configs->weekdays = unserialize($configs->weekdays) : $configs->weekdays;
 
         // Prepare Data
         $data["bookings"] = $results;
         $data["count"] = count($results);
         $data["total_count"] = $total_count;
+        $data["configs"] = $configs;
 
 
         return Zippy_Response_Handler::success($data);

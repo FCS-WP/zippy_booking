@@ -17,7 +17,7 @@ class Zippy_Request_Validation
   public static function validate_request($required_fields, $request){
     /* Validate main required fields */
     foreach ($required_fields as $field => $rules) {
-        if ($rules['required'] && (!isset($request[$field]) || empty($request[$field]))) {
+        if (isset($rules['required']) && (!isset($request[$field]) || empty($request[$field]))) {
             return "$field is required";
         }
 
@@ -39,18 +39,18 @@ class Zippy_Request_Validation
 
         // datetime
         if ($rules["data_type"] == "time" && !empty($request[$field])) {
-            $datetime = DateTime::createFromFormat('d-m-Y H:i:s', $request[$field]);
-            if (!$datetime || $datetime->format('d-m-Y H:i:s') !== $request[$field]) {
-                return "$field must be a valid datetime in the format d-m-Y H:i:s.";
+            $datetime = DateTime::createFromFormat('Y-m-d H:i:s', $request[$field]);
+            if (!$datetime || $datetime->format('Y-m-d H:i:s') !== $request[$field]) {
+                return "$field must be a valid datetime in the format Y-m-d H:i:s.";
             }
         }
 
 
         // date
         if ($rules["data_type"] == "date" && !empty($request[$field])) {
-          $datetime = DateTime::createFromFormat('d-m-Y', $request[$field]);
-          if (!$datetime || $datetime->format('d-m-Y') !== $request[$field]) {
-              return "$field must be a valid date in the format d-m-Y.";
+          $datetime = DateTime::createFromFormat('Y-m-d', $request[$field]);
+          if (!$datetime || $datetime->format('Y-m-d') !== $request[$field]) {
+              return "$field must be a valid date in the format Y-m-d.";
           }
       }
 

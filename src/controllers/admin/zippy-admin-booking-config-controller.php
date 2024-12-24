@@ -42,14 +42,13 @@ class Zippy_Admin_Booking_Config_Controller{
                 return Zippy_Response_Handler::error("duration must be a positive number.");
             }
         }
-
-        
         
         $booking_type   = $request["booking_type"];
         $duration       = $request["duration"];
         $open_at        = $request["open_at"];
         $close_at       = $request["close_at"];
         $weekdays       = $request["weekdays"];
+
 
         /* Insert */
         global $wpdb;
@@ -124,5 +123,23 @@ class Zippy_Admin_Booking_Config_Controller{
             return Zippy_Response_Handler::success($data);
         }
         return Zippy_Response_Handler::error("No Config found!");
+    }
+
+    public static function zippy_booking_get_configs(WP_REST_Request $request){
+        global $wpdb;
+        $table_name = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
+
+        $query = "SELECT * FROM $table_name WHERE 1=1";
+        $results = $wpdb->get_results($query);
+
+        $data = $results[0];
+
+        if(empty($data)){
+            return Zippy_Response_Handler::success([], "No data found!");
+        }
+
+        !empty($data->weekdays) ? $data->weekdays = unserialize($data->weekdays) : "";
+
+        return Zippy_Response_Handler::success($results);
     }
 }
