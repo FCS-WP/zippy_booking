@@ -183,4 +183,8 @@ class Zippy_Admin_Settings
     delete_option('zippy_booking_api_token');
   }
   
+  public function bookings_render()
+  {
+    echo Zippy_Utils_Core::get_template('bookings.php', [], dirname(__FILE__), '/templates');
+  }
 }

@@ -40,3 +40,11 @@ $status-trash-bg: rgba(220, 53, 69, 0.2);
     color: $status-trash;
   }
 }
+
+#zippy-root {
+  .react-datepicker__input-container {
+    input {
+      max-width: 235px;
+    }
+  }
+}
