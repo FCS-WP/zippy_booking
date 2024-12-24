@@ -19,14 +19,8 @@ defined('ABSPATH') or die();
 
 class Zippy_Admin_Booking_Config_Controller{
     public static function zippy_booking_create_configs(WP_REST_Request $request){
-        $booking_type   = $request["booking_type"];
-        $duration       = $request["duration"];
-        $open_at        = $request["open_at"];
-        $close_at       = $request["close_at"];
-        $weekdays       = $request["weekdays"];
-
         // Rules
-        $required_fields = [
+         $required_fields = [
             "booking_type"  => ["required" => true, "data_type" => "range", "allowed_values" => [ZIPPY_BOOKING_BOOKING_TYPE_SINGLE, ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE]],
             "open_at"       => ["required" => true, "data_type" => "time"],
             "close_at"      => ["required" => true, "data_type" => "time"],
@@ -49,6 +43,13 @@ class Zippy_Admin_Booking_Config_Controller{
             }
         }
 
+        
+        
+        $booking_type   = $request["booking_type"];
+        $duration       = $request["duration"];
+        $open_at        = $request["open_at"];
+        $close_at       = $request["close_at"];
+        $weekdays       = $request["weekdays"];
 
         /* Insert */
         global $wpdb;
@@ -72,14 +73,6 @@ class Zippy_Admin_Booking_Config_Controller{
 
     public static function zippy_booking_update_configs(WP_REST_Request $request){
         
-        $booking_id     = $request["id"];
-        $booking_type   = $request["booking_type"];
-        $duration       = $request["duration"];
-        $open_at        = $request["open_at"];
-        $close_at       = $request["close_at"];
-        $weekdays       = $request["weekdays"];
-
-
         /* Rules */
         $required_fields = [
             "id"            => ["required" => true, "data_type" => "number"],
@@ -107,6 +100,12 @@ class Zippy_Admin_Booking_Config_Controller{
             }
         }
 
+        $booking_id     = $request["id"];
+        $booking_type   = $request["booking_type"];
+        $duration       = $request["duration"];
+        $open_at        = $request["open_at"];
+        $close_at       = $request["close_at"];
+        $weekdays       = $request["weekdays"];
         
         /* Update */
         global $wpdb;

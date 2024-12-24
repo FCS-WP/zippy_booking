@@ -36,7 +36,7 @@ class Zippy_Admin_Booking_Controller
         ];
         
         
-        // Validate Fields
+        // Validate Request Fields
         $validate = Zippy_Request_Validation::validate_request($required_fields, $request);
         if(!empty($validate)){
             return Zippy_Response_Handler::error($validate);
