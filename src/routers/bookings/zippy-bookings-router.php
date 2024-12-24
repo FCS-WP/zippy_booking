@@ -108,8 +108,6 @@ class Zippy_Bookings_Router
             'callback' => [Zippy_Booking_Controller::class, 'handle_support_booking_products'],
             'args' => Zippy_Api_Booking_Model::get_support_booking_products_args(),
             'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
-
-
         ));
 
         /* Plugin Configs */

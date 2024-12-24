@@ -100,6 +100,7 @@ class Zippy_Booking_Controller
         }
 
         $results = $wpdb->get_results($query);
+        var_dump($results);
 
         if (empty($results)) {
             return Zippy_Response_Handler::error('Booking not found.');
@@ -234,7 +235,7 @@ class Zippy_Booking_Controller
         $product_id = $request->get_param('productId');
         $product_name = $request->get_param('product_name');
 
-        $table_name = $wpdb->prefix . 'fcs_data_product_booking_mapping';
+        $table_name = $wpdb->prefix . 'product_booking_mapping';
         $result = $wpdb->insert(
             $table_name,
             array(
@@ -255,7 +256,7 @@ class Zippy_Booking_Controller
         $list_product_ids = explode(',', $request->get_param('listProductId'));
         $products = $request->get_param('products');
 
-        $table_name = $wpdb->prefix . 'fcs_data_product_booking_mapping';
+        $table_name = $wpdb->prefix . 'product_booking_mapping';
         $insert_data = array();
 
         foreach ($list_product_ids as $index => $product_id) {
