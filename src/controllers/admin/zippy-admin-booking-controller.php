@@ -12,6 +12,7 @@ use WP_REST_Request;
 use DateTime;
 use Zippy_Booking\Utils\Zippy_Utils_Core;
 use Zippy_Booking\Src\App\Zippy_Response_Handler;
+use Zippy_Booking\Src\App\Models\Zippy_Request_Validation;
 
 defined('ABSPATH') or die();
 
@@ -21,6 +22,26 @@ class Zippy_Admin_Booking_Controller
 {
     public static function get_booking_list_of_a_product(WP_REST_Request $request)
     {
+        
+        // Rules
+        $required_fields = [
+            "product_id"                => ["data_type" => "number"],
+            "email"                     => ["data_type" => "email"],
+            "user_id"                   => ["data_type" => "number"],
+            "booking_status"            => ["data_type" => "string"],
+            "booking_start_date"        => ["data_type" => "date"],
+            "booking_end_date"          => ["data_type" => "date"],
+            "limit"                     => ["data_type" => "number"],
+            "offset"                    => ["data_type" => "number"],
+        ];
+        
+        
+        // Validate Fields
+        $validate = Zippy_Request_Validation::validate_request($required_fields, $request);
+        if(!empty($validate)){
+            return Zippy_Response_Handler::error($validate);
+        }
+
         global $wpdb;
         $table_name = ZIPPY_BOOKING_TABLE_NAME;
         $data = [];
