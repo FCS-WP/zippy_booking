@@ -59,7 +59,7 @@ class Zippy_Admin_Booking_Controller
 
         // Count total
         $total_query = "SELECT ID FROM $table_name WHERE 1=1";
-        
+
         $total_count = count($wpdb->get_results($total_query));
     
         
@@ -98,7 +98,7 @@ class Zippy_Admin_Booking_Controller
         $results = $wpdb->get_results($query);
 
         if (empty($results)) {
-            return Zippy_Response_Handler::success([],'No Booking Found.');
+            return Zippy_Response_Handler::success([], ZIPPY_BOOKING_NOT_FOUND);
         }
 
 

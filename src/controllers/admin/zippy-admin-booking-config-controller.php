@@ -99,6 +99,7 @@ class Zippy_Admin_Booking_Config_Controller{
             }
         }
 
+
         $booking_id     = $request["id"];
         $booking_type   = $request["booking_type"];
         $duration       = $request["duration"];
@@ -122,8 +123,9 @@ class Zippy_Admin_Booking_Config_Controller{
             $wpdb->update($table_name, $data, ["id" => $booking_id]);
             return Zippy_Response_Handler::success($data);
         }
-        return Zippy_Response_Handler::error("No Config found!");
+        return Zippy_Response_Handler::error(ZIPPY_BOOKING_NOT_FOUND);
     }
+
 
     public static function zippy_booking_get_configs(WP_REST_Request $request){
         global $wpdb;
@@ -135,7 +137,7 @@ class Zippy_Admin_Booking_Config_Controller{
         $data = $results[0];
 
         if(empty($data)){
-            return Zippy_Response_Handler::success([], "No data found!");
+            return Zippy_Response_Handler::success([], ZIPPY_BOOKING_NOT_FOUND);
         }
 
         !empty($data->weekdays) ? $data->weekdays = unserialize($data->weekdays) : "";

@@ -100,6 +100,18 @@ if (!defined('ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE')) {
 }
 
 
+// API Response Message
+if (!defined('ZIPPY_BOOKING_SUCCESS')) {
+  define('ZIPPY_BOOKING_SUCCESS', 'Operation Successful!');
+}
+if (!defined('ZIPPY_BOOKING_NOT_FOUND')) {
+  define('ZIPPY_BOOKING_NOT_FOUND', 'Nothing Found!');
+}
+if (!defined('ZIPPY_BOOKING_ERROR')) {
+  define('ZIPPY_BOOKING_ERROR', 'An Error Occurred!');
+}
+
+
 /* ------------------------------------------
 // i18n
 ---------------------------- --------------------------------------------- */
