@@ -12,7 +12,15 @@ export const webApi = {
 
   async createBooking (params) {
     return await makeRequest("/booking", params, 'POST');
-  }
+  },
+
+  async getConfigs (params) {
+    return await makeRequest("/configs", params);
+  },
+
+  async getSupportCategories (params) {
+    return await makeRequest("/support-booking/categories", params);
+  },
 
 
   // async getWooCategories (params) {
