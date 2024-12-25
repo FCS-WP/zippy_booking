@@ -1,0 +1,7 @@
+#zippy-root {
+    @import 'variables';
+    @import '~bootstrap/scss/bootstrap';
+    @import 'booking-form';
+    @import 'custom_datepicker';
+}
+@import "react-datepicker/dist/react-datepicker.css";
