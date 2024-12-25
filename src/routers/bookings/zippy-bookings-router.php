@@ -97,18 +97,74 @@ class Zippy_Bookings_Router
             'args' => Zippy_Api_Booking_Model::get_update_booking_args(),
             'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
         ));
-        register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/product/', array(
+        register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/product', array(
             'methods' => 'POST',
             'callback' => [Zippy_Booking_Controller::class, 'handle_support_booking_product'],
             'args' => Zippy_Api_Booking_Model::get_support_booking_product_args(),
             'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
         ));
-        register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/products/(?P<listProductId>[\d,]+)', array(
+        register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/products', array(
             'methods' => 'POST',
             'callback' => [Zippy_Booking_Controller::class, 'handle_support_booking_products'],
             'args' => Zippy_Api_Booking_Model::get_support_booking_products_args(),
             'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
         ));
+        register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/products', array(
+            'methods' => 'GET',
+            'callback' => [Zippy_Booking_Controller::class, 'get_all_support_booking_products'],
+            'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
+
+        ));
+        register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/product', array(
+            'methods' => 'DELETE',
+            'callback' => [Zippy_Booking_Controller::class, 'delete_support_booking_product'],
+            'args' => array(
+                'items_ids' => array(
+                    'required' => true,
+                    'validate_callback' => function ($param, $request, $key) {
+                        return is_array($param) && !empty($param) && !in_array(false, array_map('is_numeric', $param));
+                    },
+                ),
+            ),
+            'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
+        ));
+
+
+        register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/category', array(
+            'methods' => 'POST',
+            'callback' => [Zippy_Booking_Controller::class, 'handle_support_booking_category'],
+            'args' => Zippy_Api_Booking_Model::get_support_booking_category_args(),
+            'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
+        ));
+
+        register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/categories', array(
+            'methods' => 'POST',
+            'callback' => [Zippy_Booking_Controller::class, 'handle_support_booking_categories'],
+            'args' => Zippy_Api_Booking_Model::get_support_booking_categories_args(),
+            'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
+        ));
+
+        register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/categories', array(
+            'methods' => 'GET',
+            'callback' => [Zippy_Booking_Controller::class, 'get_all_support_booking_categories'],
+            'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
+        ));
+        register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/category', array(
+            'methods' => 'DELETE',
+            'callback' => [Zippy_Booking_Controller::class, 'delete_support_booking_category'],
+            'args' => array(
+                'items_ids' => array(
+                    'required' => true,
+                    'validate_callback' => function ($param, $request, $key) {
+                        return is_array($param);
+                    },
+                ),
+            ),
+            'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
+        ));
+
+
+
 
         /* Plugin Config */
         // CREATE plugin config
@@ -133,6 +189,5 @@ class Zippy_Bookings_Router
             'callback' => array(Zippy_Admin_Booking_Config_Controller::class, 'zippy_booking_get_configs'),
             'permission_callback' => array(Zippy_Booking_Permission::class, 'zippy_permission_callback'),
         ));
-
     }
 }
