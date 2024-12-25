@@ -50,13 +50,13 @@ class Zippy_Admin_Settings
     /* Create Zippy API Token */
     register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'generate_zippy_booking_api_token'));
 
-
-
     /* Delete Table Booking */
     register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_booking_table'));
 
     /* Delete Table Booking Config */
     register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_booking_config_table'));
+
+    register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_product_booking_mapping'));
 
     /* Delete Zippy API Token */
     register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'remove_zippy_booking_api_token'));
@@ -171,6 +171,14 @@ class Zippy_Admin_Settings
     global $wpdb;
 
     $table_name = $wpdb->prefix . 'booking_configs';
+
+    $wpdb->query("DROP TABLE IF EXISTS $table_name");
+  }
+  function delete_product_booking_mapping()
+  {
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'product_booking_mapping';
 
     $wpdb->query("DROP TABLE IF EXISTS $table_name");
   }
