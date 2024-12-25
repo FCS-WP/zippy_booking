@@ -118,14 +118,7 @@ class Zippy_Bookings_Router
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/product', array(
             'methods' => 'DELETE',
             'callback' => [Zippy_Booking_Controller::class, 'delete_support_booking_product'],
-            'args' => array(
-                'items_ids' => array(
-                    'required' => true,
-                    'validate_callback' => function ($param, $request, $key) {
-                        return is_array($param) && !empty($param) && !in_array(false, array_map('is_numeric', $param));
-                    },
-                ),
-            ),
+            'args' => Zippy_Api_Booking_Model::get_delete_product_args(),
             'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
         ));
 
@@ -152,14 +145,7 @@ class Zippy_Bookings_Router
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/category', array(
             'methods' => 'DELETE',
             'callback' => [Zippy_Booking_Controller::class, 'delete_support_booking_category'],
-            'args' => array(
-                'items_ids' => array(
-                    'required' => true,
-                    'validate_callback' => function ($param, $request, $key) {
-                        return is_array($param);
-                    },
-                ),
-            ),
+            'args' => Zippy_Api_Booking_Model::get_delete_category_args(),
             'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
         ));
 
