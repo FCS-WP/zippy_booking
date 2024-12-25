@@ -20,7 +20,7 @@ defined('ABSPATH') or die();
 
 class Zippy_Admin_Booking_Product_Controller
 {
-    public static function get_products(WP_REST_Request $request)
+    public static function get_products_or_categories(WP_REST_Request $request)
     {
         try {
             // Rules
@@ -88,7 +88,7 @@ class Zippy_Admin_Booking_Product_Controller
                     AND (t.term_id = %d OR t.slug LIKE %s OR t.name LIKE %s)
                     LIMIT %d
                 ";
-                
+
                 $results = $wpdb->get_results($wpdb->prepare(
                     $sql,
                     $keyword,
