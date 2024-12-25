@@ -29,13 +29,12 @@ class Zippy_Booking_Permission
         return self::$_instance;
     }
     public static function zippy_permission_callback() {
-        // $headers = getallheaders();
-        // $token = isset($headers['Authorization']) ? trim(str_replace('Bearer', '', $headers['Authorization'])) : '';
+        $headers = getallheaders();
+        $token = isset($headers['Authorization']) ? trim(str_replace('Bearer', '', $headers['Authorization'])) : '';
         
-        // $valid_token = get_option('zippy_booking_api_token');
+        $valid_token = get_option('zippy_booking_api_token');
 
         // Valid Token
-        // return $token === $valid_token;
-        return true;
+        return $token === $valid_token;
     }
 }
