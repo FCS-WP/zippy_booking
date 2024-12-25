@@ -112,6 +112,11 @@ if (!defined('ZIPPY_BOOKING_ERROR')) {
 }
 
 
+if (!defined('ZIPPY_BOOKING_API_TOKEN')) {
+  define('ZIPPY_BOOKING_API_TOKEN', 'NlLzbAaslg8FtjEArjkX0jo6OS9seUc3TGRKUmhJVytacjRHM1h2dz09');
+}
+
+
 /* ------------------------------------------
 // i18n
 ---------------------------- --------------------------------------------- */
