@@ -14,77 +14,78 @@ use DateTime;
 
 class Zippy_Request_Validation
 {
-  public static function validate_request($required_fields, $request){
-    /* Validate main required fields */
-    foreach ($required_fields as $field => $rules) {
-        if (isset($rules['required']) && (!isset($request[$field]) || empty($request[$field]))) {
-            return "$field is required";
-        }
-
-        if ($rules["data_type"] == "range") {
-            if (!in_array($request[$field], $rules['allowed_values'], true)) {
-                return "$field must be one of: " . implode(", ", $rules['allowed_values']);
+    public static function validate_request($required_fields, $request){
+        /* Validate main required fields */
+        foreach ($required_fields as $field => $rules) {
+            if (isset($rules['required']) && (!isset($request[$field]) || empty($request[$field]))) {
+                return "$field is required";
             }
-        }
 
 
-        // time
-        if ($rules["data_type"] == "time" && !empty($request[$field])) {
-            $datetime = DateTime::createFromFormat('H:i:s', $request[$field]);
-            if (!$datetime || $datetime->format('H:i:s') !== $request[$field]) {
-                return "$field must be a valid time in the format H:i:s.";
+            if ($rules["data_type"] == "range") {
+                if (!in_array($request[$field], $rules['allowed_values'], true)) {
+                    return "$field must be one of: " . implode(", ", $rules['allowed_values']);
+                }
             }
-        }
 
 
-        // datetime
-        if ($rules["data_type"] == "time" && !empty($request[$field])) {
-            $datetime = DateTime::createFromFormat('Y-m-d H:i:s', $request[$field]);
-            if (!$datetime || $datetime->format('Y-m-d H:i:s') !== $request[$field]) {
-                return "$field must be a valid datetime in the format Y-m-d H:i:s.";
+            // time
+            if ($rules["data_type"] == "time" && !empty($request[$field])) {
+                $datetime = DateTime::createFromFormat('H:i:s', $request[$field]);
+                if (!$datetime || $datetime->format('H:i:s') !== $request[$field]) {
+                    return "$field must be a valid time in the format H:i:s.";
+                }
             }
-        }
 
 
-        // date
-        if ($rules["data_type"] == "date" && !empty($request[$field])) {
-          $datetime = DateTime::createFromFormat('Y-m-d', $request[$field]);
-          if (!$datetime || $datetime->format('Y-m-d') !== $request[$field]) {
-              return "$field must be a valid date in the format Y-m-d.";
-          }
-      }
-
-
-        // String
-        if ($rules["data_type"] == "string" && !empty($request[$field])) {
-            if (!is_string($request[$field])) {
-                return "$field must be string";
+            // datetime
+            if ($rules["data_type"] == "datetime" && !empty($request[$field])) {
+                $datetime = DateTime::createFromFormat('Y-m-d H:i:s', $request[$field]);
+                if (!$datetime || $datetime->format('Y-m-d H:i:s') !== $request[$field]) {
+                    return "$field must be a valid datetime in the format Y-m-d H:i:s.";
+                }
             }
-        }
 
 
-        // Number
-        if ($rules["data_type"] == "number" && !empty($request[$field])) {
-            if (!is_numeric($request[$field])) {
-                return "$field must be number";
+            // date
+            if ($rules["data_type"] == "date" && !empty($request[$field])) {
+            $datetime = DateTime::createFromFormat('Y-m-d', $request[$field]);
+            if (!$datetime || $datetime->format('Y-m-d') !== $request[$field]) {
+                return "$field must be a valid date in the format Y-m-d.";
             }
-        }
-
-
-        // Array
-        if ($rules["data_type"] == "array" && !empty($request[$field])) {
-            if (!is_array($request[$field])) {
-                return "$field must be array";
             }
-        }
 
 
-        // Email
-        if ($rules["data_type"] == "email" && !empty($request[$field])) {
-            if (!is_email($request[$field])) {
-                return "$field must be email";
+            // String
+            if ($rules["data_type"] == "string" && !empty($request[$field])) {
+                if (!is_string($request[$field])) {
+                    return "$field must be string";
+                }
+            }
+
+
+            // Number
+            if ($rules["data_type"] == "number" && !empty($request[$field])) {
+                if (!is_numeric($request[$field])) {
+                    return "$field must be number";
+                }
+            }
+
+
+            // Array
+            if ($rules["data_type"] == "array" && !empty($request[$field])) {
+                if (!is_array($request[$field])) {
+                    return "$field must be array";
+                }
+            }
+
+
+            // Email
+            if ($rules["data_type"] == "email" && !empty($request[$field])) {
+                if (!is_email($request[$field])) {
+                    return "$field must be email";
+                }
             }
         }
     }
-  }
 }
