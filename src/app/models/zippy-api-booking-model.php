@@ -96,28 +96,28 @@ class Zippy_Api_Booking_Model
   {
     return array(
       'booking_id' => array(
-          'required' => true,
-          'validate_callback' => function ($param, $request, $key) {
-              return is_numeric($param) && intval($param) > 0;
-          },
+        'required' => true,
+        'validate_callback' => function ($param, $request, $key) {
+          return is_numeric($param) && intval($param) > 0;
+        },
       ),
       'user_id' => array(
-          'required' => true,
-          'validate_callback' => function ($param, $request, $key) {
-              return is_numeric($param) && intval($param) > 0;
-          },
+        'required' => true,
+        'validate_callback' => function ($param, $request, $key) {
+          return is_numeric($param) && intval($param) > 0;
+        },
       ),
       'booking_start_date' => array(
-          'required' => false,
-          'sanitize_callback' => 'sanitize_text_field',
+        'required' => false,
+        'sanitize_callback' => 'sanitize_text_field',
       ),
       'booking_end_date' => array(
-          'required' => false,
-          'sanitize_callback' => 'sanitize_text_field',
+        'required' => false,
+        'sanitize_callback' => 'sanitize_text_field',
       ),
       'booking_status' => array(
-          'required' => false,
-          'sanitize_callback' => 'sanitize_text_field',
+        'required' => false,
+        'sanitize_callback' => 'sanitize_text_field',
       ),
     );
   }
@@ -165,6 +165,28 @@ class Zippy_Api_Booking_Model
           // return is_string($param);
           return true;
         }
+      ),
+    );
+  }
+  public static function get_support_booking_products_args()
+  {
+    return array(
+      'products' => array(
+        'required' => true,
+        'validate_callback' => function ($param) {
+          return is_array($param) && !empty($param);
+        }
+      )
+    );
+  }
+  public static function get_support_booking_product_args()
+  {
+    return array(
+      'product_name' => array(
+        'required' => true,
+        'validate_callback' => function ($param) {
+          return is_string($param) && !empty($param);
+        },
       ),
     );
   }
