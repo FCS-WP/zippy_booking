@@ -9,6 +9,7 @@
 namespace Zippy_Booking\Src\Controllers\Web;
 
 use WP_REST_Request;
+use WP_Query;
 
 use Zippy_Booking\Src\App\Zippy_Response_Handler;
 
@@ -66,8 +67,15 @@ class Zippy_Booking_Controller
             'booking_status' => 'pending',
         ));
 
+        $booking_id = $wpdb->insert_id;
+
+        if (!$booking_id) {
+            return Zippy_Response_Handler::error('Failed to retrieve booking ID.');
+        }
+
         return Zippy_Response_Handler::success(
             array(
+                'booking_id' => $booking_id,
                 'user_id' => $user_id,
                 'email' => $email,
                 'product_id' => $product_id,
@@ -78,6 +86,7 @@ class Zippy_Booking_Controller
             'Booking created successfully.'
         );
     }
+
     public static function get_booking_with_product(WP_REST_Request $request)
     {
         global $wpdb;
@@ -251,6 +260,14 @@ class Zippy_Booking_Controller
             return Zippy_Response_Handler::error('Items ID already exists.');
         }
 
+        $product = wc_get_product($items_id); // Get the WooCommerce product by ID
+        if (!$product) {
+            return Zippy_Response_Handler::error('Product not found.');
+        }
+
+        $product_name = $product->get_name(); // Get product name
+        $product_price = $product->get_price(); // Get product price
+
         $result = $wpdb->insert(
             $table_name,
             array(
@@ -270,6 +287,8 @@ class Zippy_Booking_Controller
         $added_item = array(
             'items_id' => $items_id,
             'mapping_type' => $mapping_type,
+            'product_name' => $product_name,
+            'product_price' => $product_price,
         );
 
         return Zippy_Response_Handler::success($added_item, 'Product booking mapping created successfully.');
@@ -311,6 +330,14 @@ class Zippy_Booking_Controller
                 continue;
             }
 
+            $product_data = wc_get_product($items_id);
+            if (!$product_data) {
+                continue; // Skip if product is not found
+            }
+
+            $product_name = $product_data->get_name();
+            $product_price = $product_data->get_price();
+
             $result = $wpdb->insert(
                 $table_name,
                 array(
@@ -327,6 +354,8 @@ class Zippy_Booking_Controller
                 $added_items[] = array(
                     'items_id' => $items_id,
                     'mapping_type' => $mapping_type,
+                    'product_name' => $product_name,
+                    'product_price' => $product_price,
                 );
             }
         }
@@ -351,17 +380,36 @@ class Zippy_Booking_Controller
     public static function get_all_support_booking_products(WP_REST_Request $request)
     {
         global $wpdb;
-
+    
         $table_name = $wpdb->prefix . 'product_booking_mapping';
-
-        $items = $wpdb->get_results("SELECT items_id, mapping_type FROM {$table_name}", ARRAY_A);
-
+    
+        $items = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT items_id, mapping_type FROM {$table_name} WHERE mapping_type = %s",
+                'product'
+            ),
+            ARRAY_A
+        );
+    
         if (empty($items)) {
             return Zippy_Response_Handler::error('No items found in the database.');
         }
-
-        return Zippy_Response_Handler::success($items, 'Items retrieved successfully.');
+    
+        $items_with_product_info = [];
+        foreach ($items as $item) {
+            $product = wc_get_product($item['items_id']);
+            if ($product) {
+                $item['product_name'] = $product->get_name();
+                $item['product_price'] = $product->get_price();
+            }
+            $items_with_product_info[] = $item;
+        }
+    
+        return Zippy_Response_Handler::success($items_with_product_info, 'Items retrieved successfully.');
     }
+    
+    
+
     public static function handle_support_booking_category(WP_REST_Request $request)
     {
         global $wpdb;
@@ -369,12 +417,8 @@ class Zippy_Booking_Controller
         $items_id = $request->get_param('items_id');
         $mapping_type = $request->get_param('mapping_type');
 
-        if (empty($items_id)) {
-            return Zippy_Response_Handler::error('Items ID is required.');
-        }
-
-        if ($mapping_type !== 'category') {
-            return Zippy_Response_Handler::error('Mapping type must be "category".');
+        if (empty($items_id) || $mapping_type !== 'category') {
+            return Zippy_Response_Handler::error('Items ID is required and mapping type must be "category".');
         }
 
         $table_name = $wpdb->prefix . 'product_booking_mapping';
@@ -405,41 +449,142 @@ class Zippy_Booking_Controller
             return Zippy_Response_Handler::error('Error inserting data into the database.');
         }
 
-        $added_item = array(
+        $term = get_term($items_id, 'product_cat');
+        if (!$term || is_wp_error($term)) {
+            return Zippy_Response_Handler::error('Invalid category ID or category not found.');
+        }
+
+        $category_name = $term->name;
+
+        $product_query = new WP_Query(array(
+            'post_type' => 'product',
+            'posts_per_page' => -1,
+            'post_status' => 'publish',
+            'tax_query' => array(
+                array(
+                    'taxonomy' => 'product_cat',
+                    'field' => 'id',
+                    'terms' => $items_id,
+                ),
+            ),
+        ));
+
+        $products = [];
+        if ($product_query->have_posts()) {
+            while ($product_query->have_posts()) {
+                $product_query->the_post();
+                $product_id = get_the_ID();
+                $product_name = get_the_title();
+                $product_price = get_post_meta($product_id, '_price', true);
+
+                $products[] = array(
+                    'product_id' => $product_id,
+                    'product_name' => $product_name,
+                    'product_price' => $product_price,
+                );
+            }
+            wp_reset_postdata();
+        }
+
+        $subcategories = get_terms(array(
+            'taxonomy' => 'product_cat',
+            'parent' => $items_id,
+            'hide_empty' => false,
+        ));
+
+        $subcategory_data = [];
+        if (!empty($subcategories) && !is_wp_error($subcategories)) {
+            foreach ($subcategories as $subcategory) {
+                $subcategory_query = new WP_Query(array(
+                    'post_type' => 'product',
+                    'posts_per_page' => -1,
+                    'post_status' => 'publish',
+                    'tax_query' => array(
+                        array(
+                            'taxonomy' => 'product_cat',
+                            'field' => 'id',
+                            'terms' => $subcategory->term_id,
+                        ),
+                    ),
+                ));
+
+                $subcategory_products = [];
+                if ($subcategory_query->have_posts()) {
+                    while ($subcategory_query->have_posts()) {
+                        $subcategory_query->the_post();
+                        $product_id = get_the_ID();
+                        $product_name = get_the_title();
+                        $product_price = get_post_meta($product_id, '_price', true);
+
+                        $subcategory_products[] = array(
+                            'product_id' => $product_id,
+                            'product_name' => $product_name,
+                            'product_price' => $product_price,
+                        );
+                    }
+                    wp_reset_postdata();
+                }
+
+                if (!empty($subcategory_products)) {
+                    $subcategory_data[] = array(
+                        'subcategory_id' => $subcategory->term_id,
+                        'subcategory_name' => $subcategory->name,
+                        'subcategory_products' => $subcategory_products,
+                    );
+                }
+            }
+        }
+
+        $response_data = array(
             'items_id' => $items_id,
             'mapping_type' => $mapping_type,
+            'category_name' => $category_name,
         );
 
-        return Zippy_Response_Handler::success($added_item, 'Category booking mapping created successfully.');
+        if (empty($subcategory_data)) {
+            if (!empty($products)) {
+                $response_data['products_in_category'] = $products;
+            } else {
+                $response_data['products_in_category'] = [];
+            }
+        }
+
+        if (!empty($subcategory_data)) {
+            $response_data['subcategories'] = $subcategory_data;
+        }
+
+        return Zippy_Response_Handler::success($response_data, 'Category booking mapping created successfully.');
     }
+
     public static function handle_support_booking_categories(WP_REST_Request $request)
     {
         global $wpdb;
-    
+
         $categories = $request->get_param('categories');
-    
+
         if (empty($categories) || !is_array($categories)) {
             return Zippy_Response_Handler::error('Categories array is required and must be an array.');
         }
-    
+
         $table_name = $wpdb->prefix . 'product_booking_mapping';
-    
+
         $added_items = [];
         $duplicate_items = [];
-    
+
         foreach ($categories as $category) {
             $items_id = isset($category['items_id']) ? intval($category['items_id']) : null;
             $mapping_type = isset($category['mapping_type']) ? sanitize_text_field($category['mapping_type']) : null;
-    
+
             if (!$items_id || $mapping_type !== 'category') {
                 continue;
             }
-    
+
             $exists = $wpdb->get_var($wpdb->prepare(
                 "SELECT COUNT(*) FROM {$table_name} WHERE items_id = %d AND mapping_type = %s",
-                $items_id, $mapping_type
+                $items_id,
+                $mapping_type
             ));
-    
+
             if ($exists > 0) {
                 $duplicate_items[] = array(
                     'items_id' => $items_id,
@@ -447,7 +592,7 @@ class Zippy_Booking_Controller
                 );
                 continue;
             }
-    
+
             $result = $wpdb->insert(
                 $table_name,
                 array(
@@ -459,23 +604,109 @@ class Zippy_Booking_Controller
                     '%s',
                 )
             );
-    
+
             if ($result !== false) {
-                $added_items[] = array(
+                $term = get_term($items_id, 'product_cat');
+                $category_name = $term ? $term->name : 'Unknown Category';
+
+                $subcategories = get_terms(array(
+                    'taxonomy' => 'product_cat',
+                    'parent' => $items_id,
+                    'hide_empty' => false,
+                ));
+
+                $subcategories_data = [];
+                foreach ($subcategories as $subcategory) {
+                    $product_query = new WP_Query(array(
+                        'post_type' => 'product',
+                        'posts_per_page' => -1,
+                        'post_status' => 'publish',
+                        'tax_query' => array(
+                            array(
+                                'taxonomy' => 'product_cat',
+                                'field' => 'id',
+                                'terms' => $subcategory->term_id,
+                            ),
+                        ),
+                    ));
+
+                    $subcategory_products = [];
+                    if ($product_query->have_posts()) {
+                        while ($product_query->have_posts()) {
+                            $product_query->the_post();
+                            $product_id = get_the_ID();
+                            $product_name = get_the_title();
+                            $product_price = get_post_meta($product_id, '_price', true);
+
+                            $subcategory_products[] = array(
+                                'product_id' => $product_id,
+                                'product_name' => $product_name,
+                                'product_price' => $product_price,
+                            );
+                        }
+                        wp_reset_postdata();
+                    }
+
+                    $subcategories_data[] = array(
+                        'subcategory_id' => $subcategory->term_id,
+                        'subcategory_name' => $subcategory->name,
+                        'subcategory_products' => $subcategory_products,
+                    );
+                }
+
+                $category_data = array(
                     'items_id' => $items_id,
                     'mapping_type' => $mapping_type,
+                    'category_name' => $category_name,
+                    'subcategories' => $subcategories_data,
                 );
+
+                if (empty($subcategories_data)) {
+                    $product_query = new WP_Query(array(
+                        'post_type' => 'product',
+                        'posts_per_page' => -1,
+                        'post_status' => 'publish',
+                        'tax_query' => array(
+                            array(
+                                'taxonomy' => 'product_cat',
+                                'field' => 'id',
+                                'terms' => $items_id,
+                            ),
+                        ),
+                    ));
+
+                    $products_in_category = [];
+                    if ($product_query->have_posts()) {
+                        while ($product_query->have_posts()) {
+                            $product_query->the_post();
+                            $product_id = get_the_ID();
+                            $product_name = get_the_title();
+                            $product_price = get_post_meta($product_id, '_price', true);
+
+                            $products_in_category[] = array(
+                                'product_id' => $product_id,
+                                'product_name' => $product_name,
+                                'product_price' => $product_price,
+                            );
+                        }
+                        wp_reset_postdata();
+                    }
+
+                    $category_data['products_in_category'] = $products_in_category;
+                }
+
+                $added_items[] = $category_data;
             }
         }
-    
+
         if (empty($added_items) && !empty($duplicate_items)) {
             return Zippy_Response_Handler::error('All provided categories already exist in the database.', $duplicate_items);
         }
-    
+
         if (empty($added_items)) {
             return Zippy_Response_Handler::error('No valid categories were added to the database.');
         }
-    
+
         return Zippy_Response_Handler::success(
             array(
                 'added_items' => $added_items,
@@ -484,5 +715,126 @@ class Zippy_Booking_Controller
             'Category booking mappings processed successfully.'
         );
     }
-    
+
+
+    public static function get_all_support_booking_categories(WP_REST_Request $request)
+    {
+        global $wpdb;
+
+        $table_name = $wpdb->prefix . 'product_booking_mapping';
+
+        $items = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT items_id, mapping_type FROM {$table_name} WHERE mapping_type = %s",
+                'category'
+            ),
+            ARRAY_A
+        );
+
+        if (empty($items)) {
+            return Zippy_Response_Handler::error('No category items found in the database.');
+        }
+
+        $categories_data = [];
+
+        foreach ($items as $item) {
+            $items_id = $item['items_id'];
+
+            $term = get_term($items_id, 'product_cat');
+            $category_name = $term ? $term->name : 'Unknown Category';
+
+            $subcategories = get_terms(array(
+                'taxonomy' => 'product_cat',
+                'parent' => $items_id,
+                'hide_empty' => false,
+            ));
+
+            $subcategories_data = [];
+            foreach ($subcategories as $subcategory) {
+                $product_query = new WP_Query(array(
+                    'post_type' => 'product',
+                    'posts_per_page' => -1,
+                    'post_status' => 'publish',
+                    'tax_query' => array(
+                        array(
+                            'taxonomy' => 'product_cat',
+                            'field' => 'id',
+                            'terms' => $subcategory->term_id,
+                        ),
+                    ),
+                ));
+
+                $subcategory_products = [];
+                if ($product_query->have_posts()) {
+                    while ($product_query->have_posts()) {
+                        $product_query->the_post();
+                        $product_id = get_the_ID();
+                        $product_name = get_the_title();
+                        $product_price = get_post_meta($product_id, '_price', true);
+
+                        $subcategory_products[] = array(
+                            'product_id' => $product_id,
+                            'product_name' => $product_name,
+                            'product_price' => $product_price,
+                        );
+                    }
+                    wp_reset_postdata();
+                }
+
+                $subcategories_data[] = array(
+                    'subcategory_id' => $subcategory->term_id,
+                    'subcategory_name' => $subcategory->name,
+                    'subcategory_products' => $subcategory_products,
+                );
+            }
+
+            $category_data = array(
+                'items_id' => $items_id,
+                'mapping_type' => $item['mapping_type'],
+                'category_name' => $category_name,
+                'subcategories' => $subcategories_data,
+            );
+
+            if (empty($subcategories_data)) {
+                $product_query = new WP_Query(array(
+                    'post_type' => 'product',
+                    'posts_per_page' => -1,
+                    'post_status' => 'publish',
+                    'tax_query' => array(
+                        array(
+                            'taxonomy' => 'product_cat',
+                            'field' => 'id',
+                            'terms' => $items_id,
+                        ),
+                    ),
+                ));
+
+                $products_in_category = [];
+                if ($product_query->have_posts()) {
+                    while ($product_query->have_posts()) {
+                        $product_query->the_post();
+                        $product_id = get_the_ID();
+                        $product_name = get_the_title();
+                        $product_price = get_post_meta($product_id, '_price', true);
+
+                        $products_in_category[] = array(
+                            'product_id' => $product_id,
+                            'product_name' => $product_name,
+                            'product_price' => $product_price,
+                        );
+                    }
+                    wp_reset_postdata();
+                }
+
+                $category_data['products_in_category'] = $products_in_category;
+            }
+
+            $categories_data[] = $category_data;
+        }
+
+        return Zippy_Response_Handler::success(
+            array('categories' => $categories_data),
+            'Category items retrieved successfully.'
+        );
+    }
 }
