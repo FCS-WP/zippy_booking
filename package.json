@@ -26,7 +26,8 @@
     "sass-loader": "^13.3.2",
     "style-loader": "^4.0.0",
     "webpack": "^5.89.0",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^5.1.4",
+    "html-webpack-plugin": "^5.5.0"
   },
   "dependencies": {
     "axios": "^1.7.7",
@@ -38,6 +39,9 @@
     "react-chartjs-2": "^5.2.0",
     "react-datepicker": "^7.3.0",
     "react-dom": "18.3.1",
-    "sweetalert2": "^11.15.3"
+    "sweetalert2": "^11.15.3",
+    "json-loader": "^0.5.7",
+    "swagger-ui": "^4.14.0",
+    "yaml-loader": "^0.8.0"
   }
 }
