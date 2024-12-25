@@ -194,10 +194,13 @@ class Zippy_Admin_Settings
   }
 
   function generate_zippy_booking_api_token(){
-    add_option('zippy_booking_api_token', ZIPPY_BOOKING_API_TOKEN);
+    if(get_option(ZIPPY_BOOKING_API_TOKEN_NAME) == false){
+      add_option(ZIPPY_BOOKING_API_TOKEN_NAME, ZIPPY_BOOKING_API_TOKEN);
+    }
   }
   function remove_zippy_booking_api_token(){
-    delete_option('zippy_booking_api_token');
+    if(get_option(ZIPPY_BOOKING_API_TOKEN_NAME) == true){
+      delete_option(ZIPPY_BOOKING_API_TOKEN_NAME);
+    }
   }
-
 }

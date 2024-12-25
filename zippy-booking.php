@@ -112,6 +112,10 @@ if (!defined('ZIPPY_BOOKING_ERROR')) {
 }
 
 
+if (!defined('ZIPPY_BOOKING_API_TOKEN_NAME')) {
+  define('ZIPPY_BOOKING_API_TOKEN_NAME', 'zippy_booking_api_token');
+}
+
 if (!defined('ZIPPY_BOOKING_API_TOKEN')) {
   define('ZIPPY_BOOKING_API_TOKEN', 'NlLzbAaslg8FtjEArjkX0jo6OS9seUc3TGRKUmhJVytacjRHM1h2dz09');
 }

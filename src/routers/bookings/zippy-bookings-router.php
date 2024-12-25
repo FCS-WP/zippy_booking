@@ -204,7 +204,7 @@ class Zippy_Bookings_Router
 
 
 
-        // GET product/category
+        /* GET product/category */
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/prodegories', array(
             'methods' => 'GET',
             'callback' => array(Zippy_Admin_Booking_Product_Controller::class, 'get_products_or_categories'),
