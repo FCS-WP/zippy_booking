@@ -18,6 +18,8 @@ use Zippy_Booking\Src\Controllers\Admin\Zippy_Admin_Booking_Controller;
 
 use Zippy_Booking\Src\Controllers\Admin\Zippy_Admin_Booking_Config_Controller;
 
+use Zippy_Booking\Src\Controllers\Admin\Zippy_Admin_Booking_Product_Controller;
+
 
 defined('ABSPATH') or die();
 
@@ -197,6 +199,15 @@ class Zippy_Bookings_Router
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/configs', array(
             'methods' => 'GET',
             'callback' => array(Zippy_Admin_Booking_Config_Controller::class, 'zippy_booking_get_configs'),
+            'permission_callback' => array(Zippy_Booking_Permission::class, 'zippy_permission_callback'),
+        ));
+
+
+
+        // GET plugin config
+        register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/products', array(
+            'methods' => 'GET',
+            'callback' => array(Zippy_Admin_Booking_Product_Controller::class, 'get_products'),
             'permission_callback' => array(Zippy_Booking_Permission::class, 'zippy_permission_callback'),
         ));
     }
