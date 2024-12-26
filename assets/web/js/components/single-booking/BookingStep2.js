@@ -2,9 +2,11 @@ import React, { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import { filterTimeSlots, generateTimeSlots, isWorkingDate } from "../../helper/datetime";
 import { webApi } from "../../api";
-import { showAlert } from "../../helper/showAlert";
 import TimeSlots from "./TimeSlots";
 import { format } from "date-fns";
+import { getBookingsByDate } from "../../helper/booking";
+import { CircularProgress, Stack } from "@mui/material";
+import { toast } from "react-toastify";
 
 const BookingStep2 = ({ handleNextStep, handlePreviousStep, selectedProduct, configs }) => {
     const [timeSlots, setTimeSlots] = useState([]);
@@ -13,16 +15,16 @@ const BookingStep2 = ({ handleNextStep, handlePreviousStep, selectedProduct, con
     const [selectedTimes, setSelectedTimes] = useState();
     const [workingDates, setWorkingDates] = useState([]);
     const [createdBookings, setCreatedBookings] = useState([]);
+    const [isloading, setIsloading] = useState(false);
 
     const handleSelectDate = (date) => {
         setSelectedDate(date);
+        getBookings(date);
     }
 
-    const getCreatedBookings = async () => {
-      const res = await webApi.getBookings();
-      const bookings = res.data.data.bookings;
-      const pendingBookings = bookings.filter((booking) => booking.booking_status == 'pending' && booking.product_id == selectedProduct.product_id);
-      setCreatedBookings(pendingBookings);
+    const getBookings = async (date = new Date()) => {
+      const bookings = await getBookingsByDate(selectedProduct.product_id, date);
+      setCreatedBookings(bookings);
     }
 
     const handleLoadSlots = () => {
@@ -40,7 +42,7 @@ const BookingStep2 = ({ handleNextStep, handlePreviousStep, selectedProduct, con
     }, [configs])
 
     useEffect(()=>{
-      getCreatedBookings();
+      getBookings();
     }, [])
 
     useEffect(()=>{
@@ -49,7 +51,7 @@ const BookingStep2 = ({ handleNextStep, handlePreviousStep, selectedProduct, con
 
     const handleSubmitStep2 = async () => {
         if (!selectedTimes) {
-          showAlert('warning', 'Missing Field','Please fill in all the required information.', 3000);
+          toast.warn('Please fill in all the required information.');
           return;
         }
 
@@ -66,8 +68,13 @@ const BookingStep2 = ({ handleNextStep, handlePreviousStep, selectedProduct, con
         }
 
         const createBooking = await webApi.createBooking(data);
-        createBooking ? showAlert('success', 'Successfully','Booking has been created', 3000) : showAlert('error', 'Error!','Can not create booking. Try again please!', 3000);
+        if (createBooking.data.status != 'success') {
+          toast.error('Can not create booking. Try again please!');
+          return false;
+        }
+        toast.success('Booking has been created') 
         handleNextStep(2, createBooking.data.data);
+        return true;
     }
 
   return (
@@ -104,6 +111,11 @@ const BookingStep2 = ({ handleNextStep, handlePreviousStep, selectedProduct, con
                     onSelectTime={(time) => setSelectedTimes(time)}
                 />
               )}
+              {isloading && (
+                <Stack direction={'row'} justifyContent={'center'}>
+                  <CircularProgress sx={{ marginTop: '20px' }} color="success" />
+                </Stack>
+              )}
             </div>
         </div>
         <div className="btn-container">
@@ -125,6 +137,7 @@ const BookingStep2 = ({ handleNextStep, handlePreviousStep, selectedProduct, con
         </div>
       </div>
       )}
+
     </>
   );
 };

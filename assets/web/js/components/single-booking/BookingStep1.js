@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { webApi } from "../../api";
 import { showAlert } from "../../helper/showAlert";
+import { toast } from "react-toastify";
 
 const BookingStep1 = ({ handleNextStep }) => {
   const [categorySelected, setCategorySelected] = useState({});
@@ -56,7 +57,7 @@ const BookingStep1 = ({ handleNextStep }) => {
 
   const handleSubmitStep1 = () => {
     if (!productSelected) {
-        showAlert('warning', 'Missing Field','Please fill in all the required information.', 3000);
+        toast.warn('Please fill in all the required information.');
         return;
     }
     handleNextStep(1, productSelected);

@@ -3,6 +3,7 @@ import BookingStep1 from "./components/single-booking/BookingStep1";
 import BookingStep2 from "./components/single-booking/BookingStep2";
 import BookingStep3 from "./components/single-booking/BookingStep3";
 import { webApi } from "./api";
+import { ToastContainer } from "react-toastify";
 
 const BookingForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -32,7 +33,8 @@ const BookingForm = () => {
         setCurrentStep(3);
         break;
       case 3:
-        
+        setCurrentStep(1);
+        setSelectedProduct(null);
         break;
       default:
         break;
@@ -79,9 +81,11 @@ const BookingForm = () => {
           <BookingStep3 
             selectedProduct={selectedProduct}
             bookingData={bookingData}
+            handleNextStep={handleNextStep}
           />
         )}
       </div>
+      <ToastContainer />
     </div>
   );
 };
