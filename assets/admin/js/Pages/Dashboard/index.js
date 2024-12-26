@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import { Box, Grid, Card, CardContent, Typography } from "@mui/material";
-import { makeRequest } from "../../api/axios";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import { Bookings } from "../../api/bookings";
 
@@ -58,7 +57,8 @@ const Dashboard = () => {
     const { start, end } = dateRange;
     const filtered = bookings.filter((booking) => {
       const bookingStartDate = new Date(booking.booking_start_date);
-
+      console.log(bookingStartDate);
+      
       return bookingStartDate >= start && bookingStartDate <= end;
     });
     setFilteredBookings(filtered);
@@ -87,6 +87,7 @@ const Dashboard = () => {
             selectsRange
             inline={false}
             className="form-control"
+            dateFormat="MMMM d, yyyy"
           />
         </div>
       </Box>

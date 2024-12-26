@@ -1,10 +1,14 @@
 #zippy-root {
-  .react-datepicker__input-container {
-    input {
-      max-width: 235px !important;
-      text-align: center;
+  .react-datepicker-wrapper {
+    width: 350px;
+    .react-datepicker__input-container {
+      input {
+        max-width: 100% !important;
+        text-align: center;
+      }
     }
   }
+
   .date-picker {
     position: relative;
     .MuiSvgIcon-root {
@@ -18,5 +22,4 @@
       padding-left: 40px;
     }
   }
- 
 }
