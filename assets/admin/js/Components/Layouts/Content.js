@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import { Box, Grid, Card, CardContent, Typography } from "@mui/material";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
 import { makeRequest } from "../../api/axios";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 
+// Hàm tính toán khoảng thời gian, từ hiện tại đến 7 ngày trước
 const getDateRange = (baseDate, startOffset, endOffset) => {
   const start = new Date(baseDate);
   start.setDate(start.getDate() + startOffset);
@@ -15,10 +15,9 @@ const getDateRange = (baseDate, startOffset, endOffset) => {
   return { start, end };
 };
 
-
 const Content = () => {
   const [startDate, setStartDate] = useState(() => {
-    const initialDateRange = getDateRange(new Date(), -7, 0);
+    const initialDateRange = getDateRange(new Date(), -7, 0); // Lấy khoảng thời gian 7 ngày trước đến ngày hiện tại
     return initialDateRange.start;
   });
   const [endDate, setEndDate] = useState(() => {
@@ -64,8 +63,8 @@ const Content = () => {
     const { start, end } = dateRange;
     const filtered = bookings.filter((booking) => {
       const bookingStartDate = new Date(booking.booking_start_date);
-      const bookingEndDate = new Date(booking.booking_end_date);
-      return bookingStartDate >= start && bookingEndDate <= end;
+      // Lọc các booking có start_date nằm trong khoảng thời gian đã chọn
+      return bookingStartDate >= start && bookingStartDate <= end;
     });
     setFilteredBookings(filtered);
   };
@@ -83,17 +82,8 @@ const Content = () => {
   return (
     <Box p={4}>
       <Box display="flex" justifyContent="flex-end" mb={4}>
-      <div className="position-relative">
-          <FontAwesomeIcon
-            icon={faCalendarAlt}
-            className="calendar-icon position-absolute z-index-1"
-            style={{
-              top: "50%",
-              left: "10px",
-              transform: "translateY(-50%)",
-              pointerEvents: "none",
-            }}
-          />
+        <div className="date-picker">
+          <CalendarMonthIcon />
           <DatePicker
             selected={startDate}
             onChange={handleDateChange}
@@ -106,16 +96,16 @@ const Content = () => {
         </div>
       </Box>
       <Grid container spacing={3}>
-      <DashboardCard title="Total Bookings" value={getTotalBookings()} />
+        <DashboardCard title="Total Bookings" value={getTotalBookings()} />
         <DashboardCard
           title="Completed Bookings"
           value={getCompletedBookings()}
-          highlight="text-success"
+          highlight="success.main"
         />
         <DashboardCard
           title="Pending Bookings"
           value={getPendingBookings()}
-          highlight="text-warning"
+          highlight="warning.main"
         />
       </Grid>
     </Box>
@@ -127,7 +117,11 @@ const DashboardCard = ({ title, value, highlight }) => {
     <Grid item xs={12} sm={6} md={4} lg={2}>
       <Card elevation={3}>
         <CardContent>
-          <Typography variant="h3" color={highlight || "text.primary"} gutterBottom>
+          <Typography
+            variant="h3"
+            color={highlight || "text.primary"}
+            gutterBottom
+          >
             {value}
           </Typography>
           <Typography variant="body1" color="text.secondary">

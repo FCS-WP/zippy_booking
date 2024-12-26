@@ -4,7 +4,7 @@ import Content from "../../Components/Layouts/Content";
 function Dashboard() {
   return (
     <>
-      <Header />
+      {/* <Header /> */}
       <Content />
     </>
   );
