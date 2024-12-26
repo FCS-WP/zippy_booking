@@ -1,10 +1,19 @@
 import React, { useEffect } from "react";
 import TableView from "../../Components/TableView";
 import Header from "../../Components/Layouts/Header";
-// Zippy Dashboard
 
-const Bookings = () => {
+import { Bookings } from "../../api/bookings";
+
+const Index = () => {
   const pageTitle = "Bookings";
+
+  const fetchData = useCallback(async (params) => {
+    const { data } = await Bookings.getBookings(params);
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [third]);
 
   const columns = [
     "ID",
@@ -45,4 +54,4 @@ const Bookings = () => {
   );
 };
 
-export default Bookings;
+export default Index;
