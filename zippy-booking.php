@@ -59,6 +59,46 @@ if (!defined('ZIPPY_BOOKING_API_NAMESPACE')) {
   define('ZIPPY_BOOKING_API_NAMESPACE', 'zippy-booking/v1');
 }
 
+/* Booking table name */
+if (!defined('ZIPPY_BOOKING_TABLE_NAME')) {
+  define('ZIPPY_BOOKING_TABLE_NAME', 'fcs_data_bookings');
+}
+
+/* Booking Configs table name */
+if (!defined('ZIPPY_BOOKING_CONFIG_TABLE_NAME')) {
+  define('ZIPPY_BOOKING_CONFIG_TABLE_NAME', 'fcs_data_booking_configs');
+}
+
+/* Booking status */
+if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_PENDING')) {
+  define('ZIPPY_BOOKING_BOOKING_STATUS_PENDING', 'pending');
+}
+
+if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_COMPLETED')) {
+  define('ZIPPY_BOOKING_BOOKING_STATUS_COMPLETED', 'completed');
+}
+
+if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD')) {
+  define('ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD', 'onhold');
+}
+
+if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_CANCELLED')) {
+  define('ZIPPY_BOOKING_BOOKING_STATUS_CANCELLED', 'cancelled');
+}
+
+if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_PROCESSING')) {
+  define('ZIPPY_BOOKING_BOOKING_STATUS_PROCESSING', 'processing');
+}
+
+
+// Booking type
+if (!defined('ZIPPY_BOOKING_BOOKING_TYPE_SINGLE')) {
+  define('ZIPPY_BOOKING_BOOKING_TYPE_SINGLE', 'single');
+}
+if (!defined('ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE')) {
+  define('ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE', 'multiple');
+}
+
 
 /* ------------------------------------------
 // i18n
@@ -85,9 +125,8 @@ use  Zippy_Booking\Src\Admin\Zippy_Admin_Settings;
 
 use Zippy_Booking\Src\Routers\Bookings\Zippy_Bookings_Router;
 
+use Zippy_Booking\Src\Middleware\Admin\Zippy_Booking_Permission;
 use Zippy_Booking\Src\Web\Zippy_Booking_Web;
-
-
 
 /**
  * Zippy Plugin update
@@ -127,3 +166,4 @@ Zippy_Admin_Settings::get_instance();
 Zippy_Bookings_Router::get_instance();
 
 Zippy_Booking_Web::get_instance();
+

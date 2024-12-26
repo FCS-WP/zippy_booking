@@ -1,3 +1,10 @@
 @import "./overwrite_css_calendar_react";
 @import "./pop_up_booking_content";
 @import 'react-datepicker/dist/react-datepicker.css';
+#zippy-root {
+    @import 'variables';
+    @import 'booking-form';
+    @import 'custom-datepicker';
+}
+@import "react-datepicker/dist/react-datepicker.css";
+@import 'custom_alert';

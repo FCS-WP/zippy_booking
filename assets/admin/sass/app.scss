@@ -1,1 +1,5 @@
-@import "admin-booking-table";
+//
+@import "./utils/pages";
+// Import file tuỳ chỉnh sau cùng
+@import "admin-booking-dashboard";
+@import "react-datepicker/dist/react-datepicker.css";

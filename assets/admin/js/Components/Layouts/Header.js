@@ -1,7 +1,10 @@
-import React, { useEffect } from "react";
-import ReactDOM from "react-dom";
+import React from "react";
 
 const Header = ({ title, ...props }) => {
-  return <div>{title}</div>;
+  return (
+    <div className="booking-page-title">
+      <h1>{title}</h1>
+    </div>
+  );
 };
 export default Header;
