@@ -57,7 +57,6 @@ const Dashboard = () => {
     const { start, end } = dateRange;
     const filtered = bookings.filter((booking) => {
       const bookingStartDate = new Date(booking.booking_start_date);
-      console.log(bookingStartDate);
       
       return bookingStartDate >= start && bookingStartDate <= end;
     });
