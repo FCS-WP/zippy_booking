@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { getBookingsByDate } from "../../helper/booking";
 import { CircularProgress, Stack } from "@mui/material";
 import { toast } from "react-toastify";
+import { alertInputEmail } from "../../helper/showAlert";
 
 const BookingStep2 = ({ handleNextStep, handlePreviousStep, selectedProduct, configs }) => {
     const [timeSlots, setTimeSlots] = useState([]);
@@ -16,6 +17,7 @@ const BookingStep2 = ({ handleNextStep, handlePreviousStep, selectedProduct, con
     const [workingDates, setWorkingDates] = useState([]);
     const [createdBookings, setCreatedBookings] = useState([]);
     const [isloading, setIsloading] = useState(false);
+    const adminData = window.admin_data ? window.admin_data : null;
 
     const handleSelectDate = (date) => {
         setSelectedDate(date);
@@ -50,31 +52,39 @@ const BookingStep2 = ({ handleNextStep, handlePreviousStep, selectedProduct, con
     }, [timeSlots, createdBookings, selectedDate])
 
     const handleSubmitStep2 = async () => {
-        if (!selectedTimes) {
-          toast.warn('Please fill in all the required information.');
+      let userEmail = '';
+      if (!selectedTimes) {
+        toast.warn('Please fill in all the required information.');
+        return;
+      }
+
+      if (!adminData.user_email) {
+        const inputEmail = await alertInputEmail();
+        if (!inputEmail) {
           return;
         }
+        userEmail = inputEmail;
+      }
 
-        let bookingStartDateString = format(selectedDate, 'yyyy-MM-dd') + 'T' + selectedTimes.start;
-        let bookingEndDateString = format(selectedDate, 'yyyy-MM-dd') + 'T' + selectedTimes.end;
-        const bookingStartDate = new Date(bookingStartDateString);
-        const bookingEndDate = new Date(bookingEndDateString);
+      let bookingStartDateString = format(selectedDate, 'yyyy-MM-dd') + 'T' + selectedTimes.start;
+      let bookingEndDateString = format(selectedDate, 'yyyy-MM-dd') + 'T' + selectedTimes.end;
+      const bookingStartDate = new Date(bookingStartDateString);
+      const bookingEndDate = new Date(bookingEndDateString);
 
-        const data = {
-            product_id: selectedProduct.product_id,
-            email: "demobooking@zippy.com",
-            booking_start_date: format(bookingStartDate, 'yyyy-MM-dd HH:mm'),
-            booking_end_date: format(bookingEndDate, 'yyyy-MM-dd HH:mm'),
-        }
-
-        const createBooking = await webApi.createBooking(data);
-        if (createBooking.data.status != 'success') {
-          toast.error('Can not create booking. Try again please!');
-          return false;
-        }
-        toast.success('Booking has been created') 
-        handleNextStep(2, createBooking.data.data);
-        return true;
+      const data = {
+        product_id: selectedProduct.product_id,
+        email: adminData.user_email ?? userEmail ,
+        booking_start_date: format(bookingStartDate, 'yyyy-MM-dd HH:mm'),
+        booking_end_date: format(bookingEndDate, 'yyyy-MM-dd HH:mm'),
+      }
+      const createBooking = await webApi.createBooking(data);
+      if (!createBooking || createBooking.data?.status != 'success' ) {
+        toast.error('Booking Failed!');
+        return false;
+      }
+      toast.success('Booking has been created') 
+      handleNextStep(2, createBooking.data.data);
+      return true;
     }
 
   return (

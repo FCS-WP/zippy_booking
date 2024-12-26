@@ -35,6 +35,12 @@ const BookingStep3 = ({ selectedProduct, bookingData,handleNextStep }) => {
               </li>
               <li>
                 <div className="summary-item">
+                  <span>Email address:</span>
+                  <h4>{bookingData.email}</h4>
+                </div>
+              </li>
+              <li>
+                <div className="summary-item">
                   <span>Booking Start Date:</span>
                   <h4>{bookingData.booking_start_date}</h4>
                 </div>
