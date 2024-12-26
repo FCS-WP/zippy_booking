@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Card, Container, Row, Col } from "react-bootstrap";
 import DatePicker from "react-datepicker";
+import { Box, Grid, Card, CardContent, Typography } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
 import { makeRequest } from "../../api/axios";
@@ -14,6 +14,7 @@ const getDateRange = (baseDate, startOffset, endOffset) => {
 
   return { start, end };
 };
+
 
 const Content = () => {
   const [startDate, setStartDate] = useState(() => {
@@ -80,9 +81,9 @@ const Content = () => {
       .length;
 
   return (
-    <Container fluid className="py-4">
-      <header className="d-flex justify-content-end align-items-center">
-        <div className="position-relative">
+    <Box p={4}>
+      <Box display="flex" justifyContent="flex-end" mb={4}>
+      <div className="position-relative">
           <FontAwesomeIcon
             icon={faCalendarAlt}
             className="calendar-icon position-absolute z-index-1"
@@ -103,9 +104,9 @@ const Content = () => {
             className="form-control"
           />
         </div>
-      </header>
-      <Row>
-        <DashboardCard title="Total Bookings" value={getTotalBookings()} />
+      </Box>
+      <Grid container spacing={3}>
+      <DashboardCard title="Total Bookings" value={getTotalBookings()} />
         <DashboardCard
           title="Completed Bookings"
           value={getCompletedBookings()}
@@ -116,23 +117,25 @@ const Content = () => {
           value={getPendingBookings()}
           highlight="text-warning"
         />
-      </Row>
-    </Container>
+      </Grid>
+    </Box>
   );
 };
 
 const DashboardCard = ({ title, value, highlight }) => {
   return (
-    <Col xs={12} sm={6} md={4} lg={2}>
-      <Card className="text-center shadow-sm rounded">
-        <Card.Body>
-          <Card.Title as="h3" className={highlight || ""}>
+    <Grid item xs={12} sm={6} md={4} lg={2}>
+      <Card elevation={3}>
+        <CardContent>
+          <Typography variant="h3" color={highlight || "text.primary"} gutterBottom>
             {value}
-          </Card.Title>
-          <Card.Text>{title}</Card.Text>
-        </Card.Body>
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            {title}
+          </Typography>
+        </CardContent>
       </Card>
-    </Col>
+    </Grid>
   );
 };
 
