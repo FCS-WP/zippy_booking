@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Card, Container, Row, Col } from "react-bootstrap";
 import DatePicker from "react-datepicker";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
 import { makeRequest } from "../../api/axios";
 
-// Function to get the date range
 const getDateRange = (baseDate, startOffset, endOffset) => {
   const start = new Date(baseDate);
   start.setDate(start.getDate() + startOffset);
@@ -30,7 +31,6 @@ const Content = () => {
     fetchBookings();
   }, []);
 
-  
   const fetchBookings = async () => {
     try {
       const response = await makeRequest(
@@ -42,8 +42,8 @@ const Content = () => {
 
       if (response.data && response.data.status === "success") {
         const bookingsData = response.data.data.bookings;
-        setBookings(bookingsData); 
-        filterBookings(bookingsData, { start: startDate, end: endDate }); 
+        setBookings(bookingsData);
+        filterBookings(bookingsData, { start: startDate, end: endDate });
       } else {
         console.error("Error fetching bookings:", response.error);
       }
@@ -82,7 +82,17 @@ const Content = () => {
   return (
     <Container fluid className="py-4">
       <header className="d-flex justify-content-end align-items-center">
-        <div>
+        <div className="position-relative">
+          <FontAwesomeIcon
+            icon={faCalendarAlt}
+            className="calendar-icon position-absolute z-index-1"
+            style={{
+              top: "50%",
+              left: "10px",
+              transform: "translateY(-50%)",
+              pointerEvents: "none",
+            }}
+          />
           <DatePicker
             selected={startDate}
             onChange={handleDateChange}

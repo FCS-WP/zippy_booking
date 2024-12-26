@@ -47,4 +47,12 @@ $status-trash-bg: rgba(220, 53, 69, 0.2);
       max-width: 235px;
     }
   }
+  .calendar-icon {
+    color: #6c757d; 
+    font-size: 1rem;
+    z-index: 99;
+  }
+  .form-control {
+    padding-left: 2.2rem !important;
+  }
 }
