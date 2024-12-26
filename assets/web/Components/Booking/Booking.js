@@ -3,6 +3,7 @@ import { useState } from "react";
 import Calendar from "../Calendar/Calendar";
 import Timepicker from "../TimePicker/Timepicker";
 import Prebooking from "../TimePicker/Prebooking";
+import TestTime from "../TimePicker/test";
 import { DateProvider } from './DateContext';
 
 function Booking() {
@@ -41,8 +42,8 @@ function Booking() {
                   </div>
                 </DateProvider>
                 <div class="flex-space-between">
-                    <button>Cancel</button>
-                    <button>Continute</button>
+                    <button onClick={closePopup}>Cancel</button>
+                    <button onClick={closePopup}>Continute</button>
                   </div>
               </div>
             </div>

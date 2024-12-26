@@ -1,55 +1,45 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from "react";
+import dataBooking from "../../js/json/booking_list.json";
+import { useDateContext } from '../Booking/DateContext';
 
 function Prebooking() {
-  const [startDate, setStartDate] = useState(new Date());
+    const { selectedDate } = useDateContext();
+
+    const isMatchingDate = (selectedDate, targetDate) => {
+
+      const selectedDateObj = new Date(selectedDate);
     
-      return (
-        <div>
+      const selectedDateFormatted = selectedDateObj.toISOString().split("T")[0];
+      return selectedDateFormatted === targetDate;
+    };
+    
+      if (dataBooking.status === "success") {
+        return (
+          <div>
             <h6>Pre-order Schedule</h6>
-            <div class="row-booking">
-                <div class="col_booking_time">
-                    <div class="pre_booking_items">
-                        <div class="pre_booking_items__time">
-                            <span>09:00 AM - 10:00 AM</span>
+            <div className="row-booking">
+              {dataBooking.data.booking.map((item) => {
+                if(isMatchingDate(selectedDate, item.start_date)){
+                    return (
+                        <div className="col_booking_time" key={item.ID}>
+                          <div className="pre_booking_items">
+                            <div className="pre_booking_items__time">
+                              <span>{item.start_time} - {item.end_time}</span>
+                            </div>
+                            <div className="pre_booking_items__name">
+                              <span>Customer #{item.user_id}</span>
+                            </div>
+                          </div>
                         </div>
-                        <div class="pre_booking_items__name">
-                            <span>Customer #0348</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col_booking_time">
-                    <div class="pre_booking_items">
-                        <div class="pre_booking_items__time">
-                            <span>11:00 AM - 12:00 AM</span>
-                        </div>
-                        <div class="pre_booking_items__name">
-                            <span>Customer #0331</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col_booking_time">
-                    <div class="pre_booking_items">
-                        <div class="pre_booking_items__time">
-                            <span>01:00 PM - 02:00 PM</span>
-                        </div>
-                        <div class="pre_booking_items__name">
-                            <span>Customer #0329</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col_booking_time">
-                    <div class="pre_booking_items">
-                        <div class="pre_booking_items__time">
-                            <span>06:00 PM - 07:00 PM</span>
-                        </div>
-                        <div class="pre_booking_items__name">
-                            <span>Customer #0312</span>
-                        </div>
-                    </div>
-                </div>
+                      );   
+                }
+              })}
+              
             </div>
-        </div>
-      );
+          </div>
+          
+        );
+      }
     
 }
 
