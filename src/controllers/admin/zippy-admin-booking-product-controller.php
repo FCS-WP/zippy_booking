@@ -48,7 +48,7 @@ class Zippy_Admin_Booking_Product_Controller
             if($type == "product"){
                 // Product    
                 $sql = "
-                    SELECT DISTINCT p.ID, p.post_title, pm.meta_value as sku 
+                    SELECT p.ID, p.post_title, pm.meta_value as sku 
                     FROM {$wpdb->posts} p
                     LEFT JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id AND pm.meta_key = '_sku'
                     WHERE p.post_type = 'product' 
@@ -81,7 +81,7 @@ class Zippy_Admin_Booking_Product_Controller
             } else {
                 // Category
                 $sql = "
-                    SELECT DISTINCT t.term_id, t.name, t.slug
+                    SELECT t.term_id, t.name, t.slug
                     FROM {$wpdb->terms} t
                     INNER JOIN {$wpdb->term_taxonomy} tt ON t.term_id = tt.term_id
                     WHERE tt.taxonomy = 'product_cat'
