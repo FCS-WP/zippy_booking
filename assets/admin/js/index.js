@@ -15,13 +15,10 @@ function initializeApp() {
       </React.StrictMode>
     );
   }
-
   if (zippyDashboard) {
     const root = ReactDOM.createRoot(zippyDashboard);
     root.render(
-      <React.StrictMode>
         <Dashboard />
-      </React.StrictMode>
     );
   }
 }
