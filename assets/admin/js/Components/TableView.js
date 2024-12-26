@@ -45,8 +45,8 @@ const TableView = ({ cols, rows }) => {
 
   return (
     <TableContainer component={Paper}>
-      <Table>
-        <TableHead>
+      <Table >
+        <TableHead >
           <TableRow>
             <TableCell padding="checkbox">
               <FormControlLabel

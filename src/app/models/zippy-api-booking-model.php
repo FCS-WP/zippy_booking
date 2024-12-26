@@ -101,12 +101,6 @@ class Zippy_Api_Booking_Model
           return is_numeric($param) && intval($param) > 0;
         },
       ),
-      'user_id' => array(
-        'required' => true,
-        'validate_callback' => function ($param, $request, $key) {
-          return is_numeric($param) && intval($param) > 0;
-        },
-      ),
       'booking_start_date' => array(
         'required' => false,
         'sanitize_callback' => 'sanitize_text_field',
