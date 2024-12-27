@@ -13,14 +13,14 @@ const StatusSelect = ({ currentStatus, onStatusChange, isLoading }) => {
   const getStatusStyles = (status) => {
     const colors = {
       pending: {
-        background:yellow[600],
-        text: orange[900],
-        border: yellow[600],
+        background:orange[500],
+        text: orange[50],
+        border: orange[500],
       },
       completed: {
-        background: green[400],
-        text: green[900],
-        border: green[400],
+        background: green[900],
+        text: green[50],
+        border: green[900],
       },
     };
 

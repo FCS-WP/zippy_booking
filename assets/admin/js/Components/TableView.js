@@ -48,15 +48,17 @@ const TableView = ({ cols, rows, columnWidths = {} }) => {
       <Table>
         <TableHead sx={{ backgroundColor: "#f1f1f1" }}>
           <TableRow>
-            <TableCell padding="checkbox" style={{ width: "50px" }}>
+            <TableCell padding="checkbox" style={{ width: "50px" , textAlign: "center" }}>
               <FormControlLabel
                 control={
                   <Checkbox
                     checked={isMasterChecked}
                     indeterminate={isMasterIndeterminate}
                     onChange={handleMasterCheckboxChange}
+                    sx={{ textAlign: "center" }}
                   />
                 }
+                style={{ marginRight:0, }}
               />
             </TableCell>
             {cols.map((col, index) => (
@@ -72,7 +74,7 @@ const TableView = ({ cols, rows, columnWidths = {} }) => {
         <TableBody sx={{ backgroundColor: "#fff" }}>
           {rows.map((row, rowIndex) => (
             <TableRow key={rowIndex} sx={{ backgroundColor: rowIndex % 2 === 0 ? "#fafafa" : "#fff" }}>
-              <TableCell padding="checkbox">
+              <TableCell padding="checkbox" style={{ textAlign: "center" }}>
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -80,6 +82,7 @@ const TableView = ({ cols, rows, columnWidths = {} }) => {
                       onChange={() => handleRowCheckboxChange(rowIndex)}
                     />
                   }
+                  style={{ marginRight:0, }}
                 />
               </TableCell>
               {cols.map((col, colIndex) => (
