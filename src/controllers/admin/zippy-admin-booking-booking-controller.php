@@ -82,7 +82,7 @@ class Zippy_Admin_Booking_Booking_Controller
             $query .= $wpdb->prepare(" AND DATE(booking_end_date) <= %s ", $booking_end_date);
         }
 
-        if($booking_end_date != ""){
+        if($booking_end_time != ""){
             $query .= $wpdb->prepare(" AND DATE(booking_end_time) <= %s ", $booking_end_time);
         }
 
@@ -90,7 +90,7 @@ class Zippy_Admin_Booking_Booking_Controller
             $query .= $wpdb->prepare(" AND DATE(booking_start_date) >= %s ", $booking_start_date);
         }
         
-        if($booking_start_date != ""){
+        if($booking_start_time != ""){
             $query .= $wpdb->prepare(" AND DATE(booking_start_time) >= %s ", $booking_start_time);
         }
 
@@ -154,26 +154,33 @@ class Zippy_Admin_Booking_Booking_Controller
         $total_count = count($total);
 
 
-        $pending_items = array_filter($total, function($item) {
-            return $item->booking_status == ZIPPY_BOOKING_BOOKING_STATUS_PENDING;
-        });
-        $onhold_items = array_filter($total, function($item) {
-            return $item->booking_status == ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD;
-        });
-        $completed_items = array_filter($total, function($item) {
-            return $item->booking_status == ZIPPY_BOOKING_BOOKING_STATUS_COMPLETED;
-        });
-        $processing_items = array_filter($total, function($item) {
-            return $item->booking_status == ZIPPY_BOOKING_BOOKING_STATUS_PROCESSING;
-        });
-        $cancelled_items = array_filter($total, function($item) {
-            return $item->booking_status == ZIPPY_BOOKING_BOOKING_STATUS_CANCELLED;
-        });
-        $pending_count = count($pending_items);
-        $on_hold_count = count($onhold_items);
-        $completed_count = count($completed_items);
-        $processing_count = count($processing_items);
-        $cancelled_count = count($cancelled_items);
+        // Initialize counters
+        $pending_count = 0;
+        $on_hold_count = 0;
+        $completed_count = 0;
+        $processing_count = 0;
+        $cancelled_count = 0;
+
+        // Count statuses in a single loop
+        foreach ($total as $item) {
+            switch ($item->booking_status) {
+                case ZIPPY_BOOKING_BOOKING_STATUS_PENDING:
+                    $pending_count++;
+                    break;
+                case ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD:
+                    $on_hold_count++;
+                    break;
+                case ZIPPY_BOOKING_BOOKING_STATUS_COMPLETED:
+                    $completed_count++;
+                    break;
+                case ZIPPY_BOOKING_BOOKING_STATUS_PROCESSING:
+                    $processing_count++;
+                    break;
+                case ZIPPY_BOOKING_BOOKING_STATUS_CANCELLED:
+                    $cancelled_count++;
+                    break;
+            }
+        }
 
         // Prepare Data
         $data = [
