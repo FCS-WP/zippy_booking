@@ -43,8 +43,9 @@
     "react-chartjs-2": "^5.2.0",
     "react-datepicker": "^7.3.0",
     "react-dom": "18.3.1",
-    "style-loader": "^4.0.0",
+    "react-toastify": "^11.0.2",
     "swagger-ui": "^4.14.0",
+    "sweetalert2": "^11.15.3",
     "yaml-loader": "^0.8.0"
   }
 }
