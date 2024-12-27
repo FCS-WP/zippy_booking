@@ -1,0 +1,11 @@
+.booking-page-title {
+  padding: 35px 0px 30px 0px;
+}
+body {
+  &.bookings_page_calander,
+  &.zippy-bookings_page_bookings,
+  &.toplevel_page_zippy-bookings {
+    background: #fff;
+  }
+}
+

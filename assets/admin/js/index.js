@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import Bookings from "./Pages/Bookings";
+import Index from "./Pages/Bookings";
 import Dashboard from "./Pages/Dashboard";
 
 function initializeApp() {
@@ -11,7 +11,7 @@ function initializeApp() {
     const root = ReactDOM.createRoot(zippyBookings);
     root.render(
       <React.StrictMode>
-        <Bookings />
+        <Index />
       </React.StrictMode>
     );
   }
@@ -20,7 +20,7 @@ function initializeApp() {
     const root = ReactDOM.createRoot(zippyDashboard);
     root.render(
       <React.StrictMode>
-       <Dashboard />
+        <Dashboard />
       </React.StrictMode>
     );
   }

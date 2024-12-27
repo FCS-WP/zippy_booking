@@ -36,7 +36,6 @@ class Zippy_Admin_Booking_Booking_Controller
             "offset"                    => ["data_type" => "number"],
         ];
         
-        
         // Validate Request Fields
         $validate = Zippy_Request_Validation::validate_request($required_fields, $request);
         if(!empty($validate)){

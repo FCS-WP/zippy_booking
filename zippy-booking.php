@@ -149,8 +149,10 @@ require ZIPPY_BOOKING_DIR_PATH . 'vendor/autoload.php';
 
 use  Zippy_Booking\Src\Admin\Zippy_Admin_Settings;
 
-use Zippy_Booking\Src\Routers\Bookings\Zippy_Booking_Router;
+use Zippy_Booking\Src\Routers\Bookings\Zippy_Bookings_Router;
 
+use Zippy_Booking\Src\Middleware\Admin\Zippy_Booking_Permission;
+use Zippy_Booking\Src\Web\Zippy_Booking_Web;
 
 /**
  * Zippy Plugin update
@@ -187,5 +189,7 @@ use Zippy_Booking\Src\Routers\Bookings\Zippy_Booking_Router;
 
 Zippy_Admin_Settings::get_instance();
 
-Zippy_Booking_Router::get_instance();
+Zippy_Bookings_Router::get_instance();
+
+Zippy_Booking_Web::get_instance();
 
