@@ -65,3 +65,13 @@ export const isWorkingDate = (date, checkArr = []) => {
   const day = date.getDay();
   return checkArr.includes(day);
 };
+
+export const getBookingTime = (time) => {
+  const date = new Date(time);
+  return format(date, 'HH:mm aa');
+}
+
+export const getBookingDate = (time) => {
+  const date = new Date(time);
+  return format(date, 'yyyy-MM-dd');
+}
