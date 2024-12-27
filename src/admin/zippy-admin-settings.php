@@ -50,6 +50,8 @@ class Zippy_Admin_Settings
     /* Create Zippy API Token */
     register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'generate_zippy_booking_api_token'));
 
+    register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'create_zippy_booking_log_table'));
+
     /* Delete Table Booking */
     register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_booking_table'));
 
@@ -57,6 +59,8 @@ class Zippy_Admin_Settings
     register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_booking_config_table'));
 
     register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_product_booking_mapping'));
+
+    register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_zippy_booking_log_table'));
 
     /* Delete Zippy API Token */
     register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'remove_zippy_booking_api_token'));
@@ -190,6 +194,7 @@ class Zippy_Admin_Settings
     $wpdb->query("DROP TABLE IF EXISTS $table_name");
   }
 
+
   public function render()
   {
     echo Zippy_Utils_Core::get_template('booking-dashboard.php', [], dirname(__FILE__), '/templates');
@@ -209,5 +214,35 @@ class Zippy_Admin_Settings
     if(get_option(ZIPPY_BOOKING_API_TOKEN_NAME) == true){
       delete_option(ZIPPY_BOOKING_API_TOKEN_NAME);
     }
+  }
+
+
+  function create_zippy_booking_log_table() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'zippy_booking_log';
+
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $table_name (
+        id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+        action VARCHAR(255) NOT NULL,
+        details LONGTEXT NOT NULL,
+        status VARCHAR(20) NOT NULL,
+        message LONGTEXT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id)
+    ) $charset_collate;";
+
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+  }
+
+  function delete_zippy_booking_log_table()
+  {
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'zippy_booking_log';
+
+    $wpdb->query("DROP TABLE IF EXISTS $table_name");
   }
 }

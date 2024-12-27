@@ -4,6 +4,7 @@ namespace Zippy_booking\Src\Controllers\Mail;
 use WP_REST_Request;
 use Zippy_Booking\Src\App\Zippy_Response_Handler;
 use Zippy_Booking\Src\App\Models\Zippy_Request_Validation;
+use Zippy_booking\Src\App\Models\Zippy_Log_Action;
 
 defined('ABSPATH') or die();
 class Zippy_Booking_Mail_Controller
@@ -11,24 +12,24 @@ class Zippy_Booking_Mail_Controller
     public static function send_mail(WP_REST_Request $request){
 
         try {
+
             $required_fields = [
                 "subject" => ["required" => true, "data_type" => "string"],
                 "content" => ["required" => true, "data_type" => "string"],
                 "customer_email" => ["required" => true, "data_type" => "email"]
             ];
-            
+
             // Validate Request Fields
             $validate = Zippy_Request_Validation::validate_request($required_fields, $request);
             if(!empty($validate)){
                 return Zippy_Response_Handler::error($validate);
             }
-    
-    
+
             $sender_name = get_bloginfo('name');
             $subject = sanitize_text_field($request["subject"]);
             $content = $request["content"];
             $customer_email = sanitize_text_field($request["customer_email"]);
-    
+
             global $wpdb;
             $table_name     = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
             $query = "SELECT store_email FROM $table_name WHERE 1=1";
@@ -39,18 +40,36 @@ class Zippy_Booking_Mail_Controller
                 "From: $sender_name <$store_email>",
             ];
     
-            if (wp_mail($customer_email, $subject, $content, $headers)) {
-                return Zippy_Response_Handler::success([
-                    "subject" => $subject,
-                    "content" => $content,
-                    "customer_email" => $customer_email,
-                ]);
+            $status = wp_mail($customer_email, $subject, $content, $headers);
+
+            if ($status) {
+                $log = Zippy_Log_Action::log(
+                    'mail',
+                    json_encode(['to' => $customer_email, 'subject' => $subject, 'content' => $content]),
+                    $status ? 'success' : 'failure',
+                    $status ? ZIPPY_BOOKING_SUCCESS : 'Email failed to send.'
+                );
+
+                if($log){
+                    return Zippy_Response_Handler::success([
+                        "subject" => $subject,
+                        "content" => $content,
+                        "customer_email" => $customer_email,
+                    ]);
+                } else {
+                    return Zippy_Response_Handler::error(ZIPPY_BOOKING_ERROR);    
+                }
             } else {
-                return Zippy_Response_Handler::error(ZIPPY_BOOKING_ERROR);
+                return Zippy_Response_Handler::error("Fail to send email, please check the log!");
             }
         } catch (Exception $e) {
-            return Zippy_Response_Handler::error($e->getMessage());
+            Zippy_Log_Action::log(
+                'mail',
+                json_encode(['to' => $customer_email, 'subject' => $subject, 'content' => $content]),
+                'failure',
+                $e->getMessage()
+            );
+            return Zippy_Response_Handler::error("Fail to send email, please check the log!");
         }
-        
     }
 }

@@ -74,6 +74,11 @@ if (!defined('ZIPPY_BOOKING_PRODUCT_MAPPING_TABLE_NAME')) {
   define('ZIPPY_BOOKING_PRODUCT_MAPPING_TABLE_NAME', 'fcs_data_product_booking_mapping');
 }
 
+/* Booking Product Mapping table name */
+if (!defined('ZIPPY_BOOKING_LOG_TABLE_NAME')) {
+  define('ZIPPY_BOOKING_LOG_TABLE_NAME', 'fcs_data_zippy_booking_log');
+}
+
 /* Booking status */
 if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_PENDING')) {
   define('ZIPPY_BOOKING_BOOKING_STATUS_PENDING', 'pending');
@@ -149,7 +154,7 @@ require ZIPPY_BOOKING_DIR_PATH . 'vendor/autoload.php';
 
 use  Zippy_Booking\Src\Admin\Zippy_Admin_Settings;
 
-use Zippy_Booking\Src\Routers\Bookings\Zippy_Bookings_Router;
+use Zippy_Booking\Src\Routers\Bookings\Zippy_Booking_Router;
 
 use Zippy_Booking\Src\Middleware\Admin\Zippy_Booking_Permission;
 use Zippy_Booking\Src\Web\Zippy_Booking_Web;
@@ -189,7 +194,7 @@ use Zippy_Booking\Src\Web\Zippy_Booking_Web;
 
 Zippy_Admin_Settings::get_instance();
 
-Zippy_Bookings_Router::get_instance();
+Zippy_Booking_Router::get_instance();
 
 Zippy_Booking_Web::get_instance();
 
