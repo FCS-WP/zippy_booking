@@ -2,6 +2,7 @@ import React from "react";
 import { Select, MenuItem, CircularProgress } from "@mui/material";
 import FormControl from "@mui/material/FormControl";
 import Box from "@mui/material/Box";
+import { amber, yellow,orange,green } from "@mui/material/colors";
 
 const StatusSelect = ({ currentStatus, onStatusChange, isLoading }) => {
   const handleChange = (event) => {
@@ -9,8 +10,33 @@ const StatusSelect = ({ currentStatus, onStatusChange, isLoading }) => {
     onStatusChange(newStatus);
   };
 
+  const getStatusStyles = (status) => {
+    const colors = {
+      pending: {
+        background:yellow[600],
+        text: orange[900],
+        border: yellow[600],
+      },
+      completed: {
+        background: green[400],
+        text: green[900],
+        border: green[400],
+      },
+    };
+
+    return (
+      colors[status] || {
+        background: "inherit",
+        text: "inherit",
+        border: "inherit",
+      }
+    );
+  };
+
+  const { background, text, border } = getStatusStyles(currentStatus);
+
   return (
-    <FormControl sx={{ m: 1, width: "100%", position: "relative" }}>
+    <FormControl sx={{width: "100%", position: "relative" }}>
       <Box sx={{ display: "flex", alignItems: "center", position: "relative" }}>
         <Select
           value={currentStatus}
@@ -19,8 +45,25 @@ const StatusSelect = ({ currentStatus, onStatusChange, isLoading }) => {
           disabled={isLoading}
           sx={{
             flexGrow: 1,
-            backgroundColor: isLoading ? "rgba(255, 255, 255, 0.7)" : "inherit",
+            backgroundColor: isLoading
+              ? "rgba(255, 255, 255, 0.7)"
+              : background,
+            color: isLoading ? "rgba(0, 0, 0, 0.38)" : text,
+            borderColor: border,
+            borderWidth: 1,
+            borderStyle: "solid",
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderColor: border,
+            },
+            "&:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: border,
+            },
+            "&.Mui-disabled": {
+              color: "rgba(0, 0, 0, 0.38)",
+              borderColor: "rgba(0, 0, 0, 0.12)",
+            },
           }}
+          variant="outlined"
         >
           <MenuItem key={"pending"} value={"pending"}>
             Pending

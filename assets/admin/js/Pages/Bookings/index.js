@@ -15,13 +15,13 @@ const Index = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const [loadingState, setLoadingState] = useState({
-    global: true, 
+    global: true, // global loading state to show the loader for fetching data
     rows: {}, 
   });
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (page, rowsPerPage) => {
     try {
-      setLoadingState((prev) => ({ ...prev, global: true })); 
+      setLoadingState((prev) => ({ ...prev, global: true })); // set global loading true when fetching
       const { data: responseData } = await Bookings.getBookings();
 
       if (responseData.status === "success") {
@@ -45,7 +45,7 @@ const Index = () => {
     } catch (error) {
       console.error("Error fetching bookings data:", error);
     } finally {
-      setLoadingState((prev) => ({ ...prev, global: false }));
+      setLoadingState((prev) => ({ ...prev, global: false })); // stop global loading when done
     }
   }, []);
 
@@ -83,8 +83,8 @@ const Index = () => {
   };
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchData(page, rowsPerPage); // Fetch data initially
+  }, [fetchData, page, rowsPerPage]); // Re-fetch when page or rowsPerPage changes
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -92,7 +92,7 @@ const Index = () => {
 
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+    setPage(0); // Reset page to 0 when rows per page change
   };
 
   const columns = [
@@ -158,6 +158,7 @@ const Index = () => {
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
       />
     </div>
   );

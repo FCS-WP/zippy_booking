@@ -39,13 +39,14 @@ const TableView = ({ cols, rows, columnWidths = {} }) => {
 
   const isMasterChecked =
     rows.length > 0 && Object.values(selectedRows).every(Boolean);
+
   const isMasterIndeterminate =
     !isMasterChecked && Object.values(selectedRows).some((checked) => checked);
 
   return (
     <TableContainer component={Paper}>
       <Table>
-        <TableHead>
+        <TableHead sx={{ backgroundColor: "#f1f1f1" }}>
           <TableRow>
             <TableCell padding="checkbox" style={{ width: "50px" }}>
               <FormControlLabel
@@ -61,16 +62,16 @@ const TableView = ({ cols, rows, columnWidths = {} }) => {
             {cols.map((col, index) => (
               <TableCell
                 key={index}
-                style={{ width: columnWidths[col] || "auto" }}
+                style={{ width: columnWidths[col] || "auto", backgroundColor: "#f1f1f1" }}
               >
                 {col}
               </TableCell>
             ))}
           </TableRow>
         </TableHead>
-        <TableBody>
+        <TableBody sx={{ backgroundColor: "#fff" }}>
           {rows.map((row, rowIndex) => (
-            <TableRow key={rowIndex}>
+            <TableRow key={rowIndex} sx={{ backgroundColor: rowIndex % 2 === 0 ? "#fafafa" : "#fff" }}>
               <TableCell padding="checkbox">
                 <FormControlLabel
                   control={
@@ -82,10 +83,7 @@ const TableView = ({ cols, rows, columnWidths = {} }) => {
                 />
               </TableCell>
               {cols.map((col, colIndex) => (
-                <TableCell
-                  key={colIndex}
-                  style={{ width: columnWidths[col] || "auto" }}
-                >
+                <TableCell key={colIndex} style={{ width: columnWidths[col] || "auto" }}>
                   {row[col]}
                 </TableCell>
               ))}
