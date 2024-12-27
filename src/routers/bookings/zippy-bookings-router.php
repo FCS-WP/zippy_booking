@@ -92,7 +92,7 @@ class Zippy_Bookings_Router
         ));
 
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/update-booking', array(
-            'methods' => 'POST',
+            'methods' => 'PUT',
             'callback' => [Zippy_Booking_Controller::class, 'update_booking'],
             'args' => Zippy_Api_Booking_Model::get_update_booking_args(),
             'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],

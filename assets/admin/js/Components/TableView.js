@@ -11,7 +11,7 @@ import {
   FormControlLabel,
 } from "@mui/material";
 
-const TableView = ({ cols, rows }) => {
+const TableView = ({ cols, rows, columnWidths = {} }) => {
   const [selectedRows, setSelectedRows] = useState({});
 
   useEffect(() => {
@@ -19,7 +19,6 @@ const TableView = ({ cols, rows }) => {
       acc[index] = false;
       return acc;
     }, {});
-
     setSelectedRows(initialSelection);
   }, [rows]);
 
@@ -45,10 +44,10 @@ const TableView = ({ cols, rows }) => {
 
   return (
     <TableContainer component={Paper}>
-      <Table >
-        <TableHead >
+      <Table>
+        <TableHead>
           <TableRow>
-            <TableCell padding="checkbox">
+            <TableCell padding="checkbox" style={{ width: "50px" }}>
               <FormControlLabel
                 control={
                   <Checkbox
@@ -60,7 +59,12 @@ const TableView = ({ cols, rows }) => {
               />
             </TableCell>
             {cols.map((col, index) => (
-              <TableCell key={index}>{col}</TableCell>
+              <TableCell
+                key={index}
+                style={{ width: columnWidths[col] || "auto" }}
+              >
+                {col}
+              </TableCell>
             ))}
           </TableRow>
         </TableHead>
@@ -78,7 +82,12 @@ const TableView = ({ cols, rows }) => {
                 />
               </TableCell>
               {cols.map((col, colIndex) => (
-                <TableCell key={colIndex}>{row[col]}</TableCell>
+                <TableCell
+                  key={colIndex}
+                  style={{ width: columnWidths[col] || "auto" }}
+                >
+                  {row[col]}
+                </TableCell>
               ))}
             </TableRow>
           ))}

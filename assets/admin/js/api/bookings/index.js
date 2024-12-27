@@ -6,6 +6,6 @@ export const Bookings = {
   },
 
   async updateBooking(params) {
-    return await makeRequest("/update-booking", params , "POST" , "TNi+FEhI30q7ySHtMfzvSDo6RkxZUDVaQ1BBU3lBcGhYS3BrQStIUT09");
+    return await makeRequest("/update-booking", params , "PUT" , "TNi+FEhI30q7ySHtMfzvSDo6RkxZUDVaQ1BBU3lBcGhYS3BrQStIUT09");
   },
 };

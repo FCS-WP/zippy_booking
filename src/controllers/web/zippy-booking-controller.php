@@ -178,9 +178,6 @@ class Zippy_Booking_Controller
         if (!$booking) {
             return Zippy_Response_Handler::error('Booking not found.');
         }
-        if (!current_user_can('administrator') && $booking->user_id != $user_id) {
-            return Zippy_Response_Handler::error('You do not have permission to update this booking.');
-        }
 
         $data_to_update = array();
         $where = array('ID' => $booking_id);
@@ -228,12 +225,6 @@ class Zippy_Booking_Controller
         );
 
         if (!$booking) {
-            return Zippy_Response_Handler::error('You do not have permission to update this booking.');
-        }
-
-        if (current_user_can('administrator')) {
-            return true;
-        } else {
             return Zippy_Response_Handler::error('You do not have permission to update this booking.');
         }
     }
