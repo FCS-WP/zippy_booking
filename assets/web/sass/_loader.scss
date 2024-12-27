@@ -1,0 +1,9 @@
+.loader-container {
+    display: flex;
+    justify-content: center;
+    margin: 1.5rem;
+    transition: all 0.3s linear;
+    .loader-item {
+        width: 50px;
+    }
+}
