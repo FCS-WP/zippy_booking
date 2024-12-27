@@ -21,10 +21,12 @@ class Zippy_Admin_Booking_Config_Controller{
     public static function zippy_booking_create_configs(WP_REST_Request $request){
         // Rules
          $required_fields = [
-            "booking_type"  => ["required" => true, "data_type" => "range", "allowed_values" => [ZIPPY_BOOKING_BOOKING_TYPE_SINGLE, ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE]],
-            "open_at"       => ["required" => true, "data_type" => "time"],
-            "close_at"      => ["required" => true, "data_type" => "time"],
-            "weekdays"      => ["required" => true, "data_type" => "array"],
+            "booking_type" => ["required" => true, "data_type" => "string", "field_type" => "range", "allowed_values" => [ZIPPY_BOOKING_BOOKING_TYPE_SINGLE, ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE]],
+            "store_email" => ["required" => true, "data_type" => "email"],
+            "allow_overlap" => ["required" => true, "data_type" => "boolean"],
+            "open_at" => ["required" => true, "data_type" => "time"],
+            "close_at" => ["required" => true, "data_type" => "time"],
+            "weekdays" => ["required" => true, "data_type" => "array"],
         ];
 
 
@@ -43,11 +45,13 @@ class Zippy_Admin_Booking_Config_Controller{
             }
         }
         
-        $booking_type   = $request["booking_type"];
-        $duration       = $request["duration"];
-        $open_at        = $request["open_at"];
-        $close_at       = $request["close_at"];
-        $weekdays       = $request["weekdays"];
+        $booking_type = $request["booking_type"];
+        $store_email = $request["store_email"];
+        $allow_overlap = $request["allow_overlap"];
+        $duration = $request["duration"];
+        $open_at = $request["open_at"];
+        $close_at = $request["close_at"];
+        $weekdays = $request["weekdays"];
 
         /* Insert */
         global $wpdb;
@@ -57,6 +61,8 @@ class Zippy_Admin_Booking_Config_Controller{
         if(empty($result)){
             $data = [
                 'booking_type'  => $booking_type,
+                'store_email'  => $store_email,
+                'allow_overlap'  => $allow_overlap,
                 'weekdays'      => serialize($weekdays),
                 'open_at'       => $open_at,
                 'close_at'      => $close_at,
@@ -72,11 +78,13 @@ class Zippy_Admin_Booking_Config_Controller{
     public static function zippy_booking_update_configs(WP_REST_Request $request){
         /* Rules */
         $required_fields = [
-            "id"            => ["required" => true, "data_type" => "number"],
-            "booking_type"  => ["required" => true, "data_type" => "string", "field_type" => "range", "allowed_values" => [ZIPPY_BOOKING_BOOKING_TYPE_SINGLE, ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE]],
-            "open_at"       => ["required" => true, "data_type" => "time"],
-            "close_at"      => ["required" => true, "data_type" => "time"],
-            "weekdays"      => ["required" => true, "data_type" => "array"],
+            "id" => ["required" => true, "data_type" => "number"],
+            "booking_type" => ["required" => true, "data_type" => "string", "field_type" => "range", "allowed_values" => [ZIPPY_BOOKING_BOOKING_TYPE_SINGLE, ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE]],
+            "store_email" => ["required" => true, "data_type" => "email"],
+            "allow_overlap" => ["data_type" => "boolean"],
+            "open_at" => ["required" => true, "data_type" => "time"],
+            "close_at" => ["required" => true, "data_type" => "time"],
+            "weekdays" => ["required" => true, "data_type" => "array"],
         ];
         
 
@@ -96,14 +104,15 @@ class Zippy_Admin_Booking_Config_Controller{
             }
         }
 
+        $booking_id = $request["id"];
+        $booking_type = $request["booking_type"];
+        $store_email = $request["store_email"];
+        $allow_overlap = $request["allow_overlap"];
+        $duration = $request["duration"];
+        $open_at = $request["open_at"];
+        $close_at = $request["close_at"];
+        $weekdays = $request["weekdays"];
 
-        $booking_id     = $request["id"];
-        $booking_type   = $request["booking_type"];
-        $duration       = $request["duration"];
-        $open_at        = $request["open_at"];
-        $close_at       = $request["close_at"];
-        $weekdays       = $request["weekdays"];
-        
         /* Update */
         global $wpdb;
         $table_name     = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
@@ -112,6 +121,8 @@ class Zippy_Admin_Booking_Config_Controller{
         if(!empty($result)){
             $data = [
                 'booking_type'  => $booking_type,
+                'store_email'  => $store_email,
+                'allow_overlap'  => $allow_overlap,
                 'weekdays'      => serialize($weekdays),
                 'open_at'       => $open_at,
                 'close_at'      => $close_at,

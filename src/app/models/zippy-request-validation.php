@@ -17,7 +17,7 @@ class Zippy_Request_Validation
     public static function validate_request($required_fields, $request){
         /* Validate main required fields */
         foreach ($required_fields as $field => $rules) {
-            if (isset($rules['required']) && (!isset($request[$field]) || empty($request[$field]))) {
+            if (isset($rules['required']) &&  empty($request[$field])) {
                 return "$field is required";
             }
 
@@ -33,7 +33,7 @@ class Zippy_Request_Validation
             if ($rules["data_type"] == "time" && !empty($request[$field])) {
                 $datetime = DateTime::createFromFormat('H:i:s', $request[$field]);
                 if (!$datetime || $datetime->format('H:i:s') !== $request[$field]) {
-                    return "$field must be a valid time in the format H:i:s.";
+                    return "$field must be a valid time in the format H:i:s";
                 }
             }
 
@@ -84,6 +84,13 @@ class Zippy_Request_Validation
             if ($rules["data_type"] == "email" && !empty($request[$field])) {
                 if (!is_email($request[$field])) {
                     return "$field must be email";
+                }
+            }
+
+            // Boolean
+            if ($rules["data_type"] == "boolean" && !empty($request[$field])) {
+                if (!in_array($request[$field], [0,1])) {
+                    return "$field must be 0 or 1";
                 }
             }
         }

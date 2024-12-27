@@ -112,6 +112,7 @@ class Zippy_Admin_Settings
       booking_end_date DATE NOT NULL,
       booking_end_time TIME NOT NULL,
       booking_status VARCHAR(50) NOT NULL,
+      created_at DATETIME NOT NULL,
       PRIMARY KEY  (ID),
       KEY product_id (product_id)
     ) $charset_collate;";
@@ -149,6 +150,7 @@ class Zippy_Admin_Settings
             booking_type VARCHAR(255) NOT NULL,
             duration VARCHAR(255) NULL,
             store_email VARCHAR(255) NULL,
+            allow_overlap BOOLEAN NOT NULL,
             weekdays VARCHAR(255) NOT NULL,
             open_at TIME NOT NULL,
             close_at TIME NOT NULL,

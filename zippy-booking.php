@@ -143,7 +143,7 @@ error_reporting(E_ALL);
 require ZIPPY_BOOKING_DIR_PATH . '/includes/autoload.php';
 // require ZIPPY_BOOKING_DIR_PATH . 'vendor/plugin-update-checker/plugin-update-checker.php';
 
-require ZIPPY_BOOKING_DIR_PATH . '/vendor/autoload.php';
+require ZIPPY_BOOKING_DIR_PATH . 'vendor/autoload.php';
 
 // use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 

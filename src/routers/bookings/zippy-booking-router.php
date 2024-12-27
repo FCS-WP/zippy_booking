@@ -20,6 +20,8 @@ use Zippy_Booking\Src\Routers\Bookings\Admin\Zippy_Admin_Booking_Booking_Route;
 
 use Zippy_Booking\Src\Routers\Bookings\Admin\Zippy_Admin_Booking_Seeding_Route;
 
+use Zippy_Booking\Src\Routers\Bookings\Mail\Zippy_Booking_Mail_Route;
+
 
 
 defined('ABSPATH') or die();
@@ -49,6 +51,7 @@ class Zippy_Booking_Router
         new Zippy_Admin_Booking_Product_Route();
         new Zippy_Admin_Booking_Booking_Route();
         new Zippy_Admin_Booking_Seeding_Route();
+        new Zippy_Booking_Mail_Route();
     }
 
 

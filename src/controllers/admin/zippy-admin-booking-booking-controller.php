@@ -9,8 +9,6 @@
 namespace Zippy_Booking\Src\Controllers\Admin;
 
 use WP_REST_Request;
-use DateTime;
-use Zippy_Booking\Utils\Zippy_Utils_Core;
 use Zippy_Booking\Src\App\Zippy_Response_Handler;
 use Zippy_Booking\Src\App\Models\Zippy_Request_Validation;
 
@@ -105,7 +103,7 @@ class Zippy_Admin_Booking_Booking_Controller
         // Booking Configs
         $config_table_name = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
 
-        $config_query = "SELECT booking_type, duration, weekdays, open_at, close_at FROM $config_table_name WHERE 1=1";
+        $config_query = "SELECT booking_type, duration, weekdays, open_at, close_at, created_at FROM $config_table_name WHERE 1=1";
         $config_results = $wpdb->get_results($config_query);
 
         $configs = $config_results[0];
