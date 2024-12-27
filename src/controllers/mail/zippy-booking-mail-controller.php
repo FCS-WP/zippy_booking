@@ -62,12 +62,12 @@ class Zippy_Booking_Mail_Controller
             } else {
                 return Zippy_Response_Handler::error("Fail to send email, please check the log!");
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $th) {
             Zippy_Log_Action::log(
                 'mail',
                 json_encode(['to' => $customer_email, 'subject' => $subject, 'content' => $content]),
                 'failure',
-                $e->getMessage()
+                $th->getMessage()
             );
             return Zippy_Response_Handler::error("Fail to send email, please check the log!");
         }

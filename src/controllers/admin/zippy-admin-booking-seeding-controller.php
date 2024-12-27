@@ -104,16 +104,16 @@ class Zippy_Admin_Booking_Seeding_Controller
 
             $seeder->table(ZIPPY_BOOKING_TABLE_NAME)->columns([
                 'id',
-                'user_id'               => $faker->numberBetween(1, 20),
-                'email'                 => $faker->email(),
-                'product_id'            => $faker->randomElement($product_ids),
-                'order_id'            => $faker->randomElement($order_ids),
-                'booking_start_date'    => $faker->date("Y-m-d", '2024-01-10'),
-                'booking_start_time'    => $faker->time(),
-                'booking_end_date'      => $faker->date("Y-m-d", 'now'),
-                'booking_end_time'      => $faker->time(),
-                'booking_status'        => $faker->randomElement(['completed', 'cancelled', 'onhold', 'processing', 'pending']),
-                'created_at'        => date("Y-m-d H:i:s"),
+                'user_id' => $faker->numberBetween(1, 20),
+                'email' => $faker->email(),
+                'product_id' => $faker->randomElement($product_ids),
+                'order_id' => $faker->randomElement($order_ids),
+                'booking_start_date' => $faker->date("Y-m-d", '2024-01-10'),
+                'booking_start_time' => $faker->time(),
+                'booking_end_date' => $faker->date("Y-m-d", 'now'),
+                'booking_end_time' => $faker->time(),
+                'booking_status' => $faker->randomElement(['completed', 'cancelled', 'onhold', 'processing', 'pending']),
+                'created_at' => current_time('mysql'),
             ])->rowQuantity($request["row"]);
         
             $seeder->refill();
