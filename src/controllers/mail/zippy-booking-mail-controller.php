@@ -25,9 +25,9 @@ class Zippy_Booking_Mail_Controller
     
     
             $sender_name = get_bloginfo('name');
-            $subject = $request["subject"];
+            $subject = sanitize_text_field($request["subject"]);
             $content = $request["content"];
-            $customer_email = $request["customer_email"];
+            $customer_email = sanitize_text_field($request["customer_email"]);
     
             global $wpdb;
             $table_name     = ZIPPY_BOOKING_CONFIG_TABLE_NAME;

@@ -107,6 +107,7 @@ class Zippy_Admin_Settings
       user_id BIGINT(20) UNSIGNED DEFAULT NULL,
       email VARCHAR(255) NOT NULL,
       product_id BIGINT(20) UNSIGNED NOT NULL,
+      order_id BIGINT(20) UNSIGNED NOT NULL,
       booking_start_date DATE NOT NULL,
       booking_start_time TIME NOT NULL,
       booking_end_date DATE NOT NULL,
@@ -114,7 +115,8 @@ class Zippy_Admin_Settings
       booking_status VARCHAR(50) NOT NULL,
       created_at DATETIME NOT NULL,
       PRIMARY KEY  (ID),
-      KEY product_id (product_id)
+      KEY product_id (product_id),
+      FOREIGN KEY (order_id) REFERENCES {$wpdb->prefix}wc_orders(ID) ON DELETE CASCADE
     ) $charset_collate;";
 
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');

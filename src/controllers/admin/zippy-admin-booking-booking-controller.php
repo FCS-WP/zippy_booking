@@ -26,9 +26,12 @@ class Zippy_Admin_Booking_Booking_Controller
             "product_id"                => ["data_type" => "number"],
             "email"                     => ["data_type" => "email"],
             "user_id"                   => ["data_type" => "number"],
+            "order_id"                   => ["data_type" => "number"],
             "booking_status"            => ["data_type" => "string"],
             "booking_start_date"        => ["data_type" => "date"],
+            "booking_start_time"        => ["data_type" => "time"],
             "booking_end_date"          => ["data_type" => "date"],
+            "booking_end_time"          => ["data_type" => "time"],
             "limit"                     => ["data_type" => "number"],
             "offset"                    => ["data_type" => "number"],
         ];
@@ -46,14 +49,14 @@ class Zippy_Admin_Booking_Booking_Controller
 
         $query_param = [
             "product_id" => sanitize_text_field($request->get_param('product_id')),
-            "booking_status" => sanitize_text_field($request->get_param('booking_status')),
             "email" => sanitize_text_field($request->get_param('email')),
             "user_id" => sanitize_text_field($request->get_param('user_id')),
+            "order_id" => sanitize_text_field($request->get_param('user_id')),
+            "booking_status" => sanitize_text_field($request->get_param('booking_status')),
         ];
 
-        $limit = $request->get_param('limit');
-        $offset = $request->get_param('offset');
-
+        $limit = sanitize_text_field($request->get_param('limit'));
+        $offset = sanitize_text_field($request->get_param('offset'));
 
         // Count total
         $total_query = "SELECT ID FROM $table_name WHERE 1=1";
@@ -72,14 +75,24 @@ class Zippy_Admin_Booking_Booking_Controller
         }
 
         $booking_start_date = sanitize_text_field($request->get_param('booking_start_date'));
+        $booking_start_time = sanitize_text_field($request->get_param('booking_start_time'));
         $booking_end_date = sanitize_text_field($request->get_param('booking_end_date'));
+        $booking_end_time = sanitize_text_field($request->get_param('booking_end_time'));
 
         if($booking_end_date != ""){
             $query .= $wpdb->prepare(" AND DATE(booking_end_date) <= %s ", $booking_end_date);
         }
 
+        if($booking_end_date != ""){
+            $query .= $wpdb->prepare(" AND DATE(booking_end_time) <= %s ", $booking_end_time);
+        }
+
         if($booking_start_date != ""){
             $query .= $wpdb->prepare(" AND DATE(booking_start_date) >= %s ", $booking_start_date);
+        }
+        
+        if($booking_start_date != ""){
+            $query .= $wpdb->prepare(" AND DATE(booking_start_time) >= %s ", $booking_start_time);
         }
 
         if(!empty($limit)){
@@ -99,11 +112,20 @@ class Zippy_Admin_Booking_Booking_Controller
             return Zippy_Response_Handler::success([], ZIPPY_BOOKING_NOT_FOUND);
         }
 
+        $products = [];
+
+        foreach ($results as $res) {
+            $product_id = $res->product_id;
+            $product_name = wc_get_product($product_id)->get_name();
+            $res->product_name = $product_name;
+            $products[] = $res;
+        }
+
 
         // Booking Configs
         $config_table_name = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
 
-        $config_query = "SELECT booking_type, duration, weekdays, open_at, close_at, created_at FROM $config_table_name WHERE 1=1";
+        $config_query = "SELECT booking_type, duration, store_email, allow_overlap, weekdays, open_at, close_at FROM $config_table_name WHERE 1=1";
         $config_results = $wpdb->get_results($config_query);
 
         $configs = $config_results[0];
@@ -111,11 +133,10 @@ class Zippy_Admin_Booking_Booking_Controller
         !empty($configs->weekdays) ? $configs->weekdays = unserialize($configs->weekdays) : $configs->weekdays;
 
         // Prepare Data
-        $data["bookings"] = $results;
+        $data["bookings"] = $products;
         $data["count"] = count($results);
         $data["total_count"] = $total_count;
         $data["configs"] = $configs;
-
 
         return Zippy_Response_Handler::success($data);
 

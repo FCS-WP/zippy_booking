@@ -85,21 +85,35 @@ class Zippy_Admin_Booking_Seeding_Controller
             ]);
     
             $product_ids = [];
-    
-            foreach ($products as $product) {
-                $product_ids[] = $product->get_id();
+            if(!empty($products)){
+                foreach ($products as $product) {
+                    $product_ids[] = $product->get_id();
+                }
             }
-    
+            
+            $query = new WC_Order_Query(["limit" => -1]);
+            $orders = $query->get_orders();
+
+            $order_ids = [];
+
+            if(!empty($orders)){
+                foreach ($orders as $order) {
+                    $order_ids[] = $order->get_id();
+                }
+            }
+
             $seeder->table(ZIPPY_BOOKING_TABLE_NAME)->columns([
                 'id',
                 'user_id'               => $faker->numberBetween(1, 20),
                 'email'                 => $faker->email(),
                 'product_id'            => $faker->randomElement($product_ids),
+                'order_id'            => $faker->randomElement($order_ids),
                 'booking_start_date'    => $faker->date("Y-m-d", '2024-01-10'),
                 'booking_start_time'    => $faker->time(),
                 'booking_end_date'      => $faker->date("Y-m-d", 'now'),
                 'booking_end_time'      => $faker->time(),
                 'booking_status'        => $faker->randomElement(['completed', 'cancelled', 'onhold', 'processing', 'pending']),
+                'created_at'        => date("Y-m-d H:i:s"),
             ])->rowQuantity($request["row"]);
         
             $seeder->refill();
@@ -152,6 +166,7 @@ class Zippy_Admin_Booking_Seeding_Controller
                 'booking_type' => $faker->randomElement(["single", "multiple"]),
                 'duration' => $faker->randomElement([5,10,20,30,60]),
                 'store_email' => $faker->email(),
+                'allow_overlap' => $faker->randomElement([0,1]),
                 'weekdays' => serialize([0,1,2,3,4,5,6]),
                 'open_at' => "8:00",
                 'close_at' => "20:00",
