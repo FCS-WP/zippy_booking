@@ -127,7 +127,7 @@ if (!defined('ZIPPY_BOOKING_API_TOKEN_NAME')) {
 }
 
 if (!defined('ZIPPY_BOOKING_API_TOKEN')) {
-  define('ZIPPY_BOOKING_API_TOKEN', 'NlLzbAaslg8FtjEArjkX0jo6OS9seUc3TGRKUmhJVytacjRHM1h2dz09');
+  define('ZIPPY_BOOKING_API_TOKEN', 'FEhI30q7ySHtMfzvSDo6RkxZUDVaQ1BBU3lBcGhYS3BrQStIUT09');
 }
 
 
@@ -148,7 +148,7 @@ if (!defined('ZIPPY_BOOKING_API_TOKEN')) {
 require ZIPPY_BOOKING_DIR_PATH . '/includes/autoload.php';
 // require ZIPPY_BOOKING_DIR_PATH . 'vendor/plugin-update-checker/plugin-update-checker.php';
 
-require ZIPPY_BOOKING_DIR_PATH . 'vendor/autoload.php';
+// require ZIPPY_BOOKING_DIR_PATH . 'vendor/autoload.php';
 
 // use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 

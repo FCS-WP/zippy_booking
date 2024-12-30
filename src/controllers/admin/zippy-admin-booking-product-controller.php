@@ -25,8 +25,8 @@ class Zippy_Admin_Booking_Product_Controller
         try {
             // Rules
             $required_fields = [
-                "keyword"                => ["required" => true, "data_type" => "string"],
-                "type"                   => ["required" => true, "data_type" => "range", "allowed_values" => ["product", "category"]],
+                "keyword" => ["required" => true, "data_type" => "string"],
+                "type" => ["required" => true, "data_type" => "range", "allowed_values" => ["product", "category"]],
             ];
             
             // Validate Request Fields

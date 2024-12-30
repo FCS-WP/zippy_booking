@@ -11,7 +11,7 @@ import {
   FormControlLabel,
 } from "@mui/material";
 
-const TableView = ({ cols, rows }) => {
+const TableView = ({ cols, rows, columnWidths = {} }) => {
   const [selectedRows, setSelectedRows] = useState({});
 
   useEffect(() => {
@@ -19,7 +19,6 @@ const TableView = ({ cols, rows }) => {
       acc[index] = false;
       return acc;
     }, {});
-
     setSelectedRows(initialSelection);
   }, [rows]);
 
@@ -40,34 +39,42 @@ const TableView = ({ cols, rows }) => {
 
   const isMasterChecked =
     rows.length > 0 && Object.values(selectedRows).every(Boolean);
+
   const isMasterIndeterminate =
     !isMasterChecked && Object.values(selectedRows).some((checked) => checked);
 
   return (
     <TableContainer component={Paper}>
       <Table>
-        <TableHead>
+        <TableHead sx={{ backgroundColor: "#f1f1f1" }}>
           <TableRow>
-            <TableCell padding="checkbox">
+            <TableCell padding="checkbox" style={{ width: "50px" , textAlign: "center" }}>
               <FormControlLabel
                 control={
                   <Checkbox
                     checked={isMasterChecked}
                     indeterminate={isMasterIndeterminate}
                     onChange={handleMasterCheckboxChange}
+                    sx={{ textAlign: "center" }}
                   />
                 }
+                style={{ marginRight:0, }}
               />
             </TableCell>
             {cols.map((col, index) => (
-              <TableCell key={index}>{col}</TableCell>
+              <TableCell
+                key={index}
+                style={{ width: columnWidths[col] || "auto", backgroundColor: "#f1f1f1" }}
+              >
+                {col}
+              </TableCell>
             ))}
           </TableRow>
         </TableHead>
-        <TableBody>
+        <TableBody sx={{ backgroundColor: "#fff" }}>
           {rows.map((row, rowIndex) => (
-            <TableRow key={rowIndex}>
-              <TableCell padding="checkbox">
+            <TableRow key={rowIndex} sx={{ backgroundColor: rowIndex % 2 === 0 ? "#fafafa" : "#fff" }}>
+              <TableCell padding="checkbox" style={{ textAlign: "center" }}>
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -75,10 +82,13 @@ const TableView = ({ cols, rows }) => {
                       onChange={() => handleRowCheckboxChange(rowIndex)}
                     />
                   }
+                  style={{ marginRight:0, }}
                 />
               </TableCell>
               {cols.map((col, colIndex) => (
-                <TableCell key={colIndex}>{row[col]}</TableCell>
+                <TableCell key={colIndex} style={{ width: columnWidths[col] || "auto" }}>
+                  {row[col]}
+                </TableCell>
               ))}
             </TableRow>
           ))}
