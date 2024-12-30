@@ -119,35 +119,41 @@ class Zippy_Booking_Controller
     {
         global $wpdb;
         $table_name = 'fcs_data_bookings';
-
+    
         $booking_id = $request->get_param('booking_id');
         $email = $request->get_param('email');
         $product_id = $request->get_param('product_id');
-
-        $query = "SELECT * FROM $table_name WHERE 1=1";
-
+    
+        $query = "
+            SELECT b.*, o.ID AS order_id
+            FROM $table_name b
+            LEFT JOIN {$wpdb->prefix}posts o ON o.post_type = 'shop_order' 
+            LEFT JOIN {$wpdb->prefix}postmeta pm ON o.ID = pm.post_id AND pm.meta_key = 'booking_id' 
+            WHERE 1=1
+        ";
+    
         if ($booking_id) {
-            $query .= $wpdb->prepare(" AND ID = %d", $booking_id);
+            $query .= $wpdb->prepare(" AND b.ID = %d", $booking_id);
         }
         if ($email) {
-            $query .= $wpdb->prepare(" AND email = %s", $email);
+            $query .= $wpdb->prepare(" AND b.email = %s", $email);
         }
         if ($product_id) {
-            $query .= $wpdb->prepare(" AND product_id = %d", $product_id);
+            $query .= $wpdb->prepare(" AND b.product_id = %d", $product_id);
         }
-
+    
         $results = $wpdb->get_results($query);
-        var_dump($results);
-
+    
         if (empty($results)) {
             return Zippy_Response_Handler::error('Booking not found.');
         }
-
+    
         return Zippy_Response_Handler::success(
             !empty($results) ? $results[0] : array(),
             'Bookings retrieved successfully.'
         );
     }
+    
     public static function delete_booking(WP_REST_Request $request)
     {
         global $wpdb;
@@ -259,33 +265,34 @@ class Zippy_Booking_Controller
     public static function handle_support_booking_product(WP_REST_Request $request)
     {
         global $wpdb;
-
+    
+       
         $items_id = $request->get_param('items_id');
         $mapping_type = $request->get_param('mapping_type');
-
+    
         if (empty($items_id)) {
             return Zippy_Response_Handler::error('Items ID is required.');
         }
-
+    
         $table_name = $wpdb->prefix . 'product_booking_mapping';
-
+    
         $exists = $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM {$table_name} WHERE items_id = %d",
             $items_id
         ));
-
+    
         if ($exists > 0) {
             return Zippy_Response_Handler::error('Items ID already exists.');
         }
-
-        $product = wc_get_product($items_id); // Get the WooCommerce product by ID
+    
+        $product = wc_get_product($items_id); 
         if (!$product) {
             return Zippy_Response_Handler::error('Product not found.');
         }
-
-        $product_name = $product->get_name(); // Get product name
-        $product_price = $product->get_price(); // Get product price
-
+    
+        $product_name = $product->get_name(); 
+        $product_price = $product->get_price();
+    
         $result = $wpdb->insert(
             $table_name,
             array(
@@ -297,20 +304,36 @@ class Zippy_Booking_Controller
                 '%s',
             )
         );
-
+    
         if ($result === false) {
             return Zippy_Response_Handler::error('Error inserting data into the database.');
         }
-
+    
+        $meta_key = 'product_booking_mapping';
+        $meta_value = array(
+            'items_id' => $items_id,
+            'mapping_type' => $mapping_type,
+            'product_name' => $product_name,
+            'product_price' => $product_price
+        );
+    
+        $update_meta = update_post_meta($items_id, $meta_key, $meta_value);
+    
+        if (!$update_meta) {
+            return Zippy_Response_Handler::error('Failed to add meta to the product.');
+        }
+    
         $added_item = array(
             'items_id' => $items_id,
             'mapping_type' => $mapping_type,
             'product_name' => $product_name,
             'product_price' => $product_price,
+            'meta_key' => $meta_key,
         );
-
+    
         return Zippy_Response_Handler::success($added_item, 'Product booking mapping created successfully.');
     }
+    
 
     public static function handle_support_booking_products(WP_REST_Request $request)
     {
