@@ -58,8 +58,24 @@ class Zippy_Booking_Web
   }
 
   public function btn_booking(){
-    echo "<div id='btn_booking'></div>";
-  }
+    if ( is_product() ) {
+        global $post;
+        $product_id = $post->ID;
+
+        if ( is_user_logged_in() ) {
+            $user_id = get_current_user_id();
+            $user_email = wp_get_current_user()->user_email; 
+
+            echo "<div id='btn_booking' data-id-product='" . esc_attr( $product_id ) . "' data-id-user='" . esc_attr( $user_id ) . "' data-user-email='" . esc_attr( $user_email ) . "'></div>";
+        } else {
+            echo "<div id='btn_booking' data-id-product='" . esc_attr( $product_id ) . "' data-id-user='0'></div>";
+        }
+    } else {
+        echo "<div id='btn_booking'></div>";
+    }
+}
+
+
   function zippy_booking_form_shortcode() {
     // Output content for the shortcode
     return '<div id="zippy-root">Loading booking app...</div>';

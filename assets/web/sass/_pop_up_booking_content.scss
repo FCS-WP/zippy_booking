@@ -5,7 +5,9 @@
     
     .col_booking_time{
         width: 49%;
-
+        .react-datepicker-wrapper{
+            width: 100%;
+        }
         
     }
 
@@ -50,5 +52,15 @@
 .col_booking_5{
     h6{
         margin-bottom: 15px !important;
+    }
+    #BookingInfoUser{
+        input{
+            width: 100%;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
     }
 }

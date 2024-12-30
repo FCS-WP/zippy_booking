@@ -1,152 +1,86 @@
-import React, { useState } from 'react';
-import DatePicker from 'react-datepicker';
+import React, { useEffect, useState } from "react";
 import { useDateContext } from '../Booking/DateContext';
-import dataBooking from "../../js/json/booking_list.json";
+import DatePicker from "react-datepicker";
+import { webApi } from "../../js/api";
 
 function Timepicker() {
   const { selectedDate } = useDateContext();
-  
+  const [dataBooking, setDataBooking] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date(new Date().getTime() + 15 * 60 * 1000));
 
-  const openHour = dataBooking.data.config.open_at.split(':')[0];
-  const closeHour = dataBooking.data.config.close_at.split(':')[0];
+  const getTimeFunction = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
+      const formattedDate = selectedDate.toISOString().split("T")[0];
+      const params = {
+        booking_start_date: formattedDate,
+        booking_end_date: formattedDate,
+      };
+
+      const bookings = await webApi.getBookings(params);
+      setDataBooking(bookings.data || []);
+
+      // console.log("Bookings data:", bookings.data);
+    } catch (err) {
+      setError(err.message || "An unknown error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getTimeFunction();
+  }, [selectedDate]);
+
+  
   const today = new Date();
+  const isFutureDate = selectedDate > today;
 
-  const isFutureTimeForBegin = (time) => {
-    const currentDate = new Date();
-    return (time >= currentDate);
-  };
-  
-  const minTime = new Date();
-  minTime.setHours(openHour, 0, 0); 
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
-  const maxTime = new Date();
-  maxTime.setHours(closeHour, 0, 0);
-
-
-  const isFutureTimeForEnd = (time) => {
-    return (time > startDate);
-  };
-
-  const isMatchingDate = (selectedDate, targetDate) => {
-
-    const selectedDateObj = new Date(selectedDate);
-  
-    const selectedDateFormatted = selectedDateObj.toISOString().split("T")[0];
-    return selectedDateFormatted === targetDate;
-  };
-  
-  const BookedTime = (time) =>{
-    const hours = time.getHours(); 
-    const bookedTimes = [];
-
-    dataBooking.data.booking.forEach((item) => {
-      if (isMatchingDate(selectedDate, item.start_date)) {
-        const startTime = parseInt(item.start_time.split(':')[0], 10);
-        const endTime = parseInt(item.end_time.split(':')[0], 10);
-        
-        bookedTimes.push({ start_time: startTime, end_time: endTime });
-      }
-    });
-
-    return !bookedTimes.some((item) => item.start_time <= hours && item.end_time > hours);
-    
-  }
-
-  const filterTimeStart = (time) => {
-    return isFutureTimeForBegin(time) && BookedTime(time);
-  };
-
-  const filterTimeEnd = (time) => {
-    return isFutureTimeForEnd(time) && BookedTime(time);
-  };
-  if (selectedDate > today) {
-    
-    // BookedTime();
-    return (
-      <div class="row-booking">
-        <div class="col_booking_time">
-          <h6>Begin Time: </h6>
-          <DatePicker
-             selected={startDate}
-             onChange={(date) => {
-               setStartDate(date);
-
-               if (date >= endDate) {
-                 setEndDate(new Date(date.getTime() + 15 * 60 * 1000)); 
-               }
-             }}
-             showTimeSelect
-             showTimeSelectOnly
-             timeIntervals={15}
-             timeCaption="Start Time"
-             minTime={minTime}  // Set the minimum time
-              maxTime={maxTime}  // Set the maximum time
-             dateFormat="h:mm aa"
-             filterTime={BookedTime}
-          />
-        </div>
-        <div class="col_booking_time">
-          <h6>End Time: </h6>
-          <DatePicker
-            selected={endDate}
-            onChange={(date) => setEndDate(date)}
-            showTimeSelect
-            showTimeSelectOnly
-            timeIntervals={15}
-            timeCaption="End Time"
-            dateFormat="h:mm aa"
-            minTime={minTime}  // Set the minimum time
-            maxTime={maxTime}  // Set the maximum time
-            filterTime={filterTimeEnd}
-          />
-        </div>
+  return (
+    <div className="row-booking">
+      <div className="col_booking_time">
+        <h6>Begin Time:</h6>
+        <DatePicker
+          selected={startDate}
+          onChange={(date) => {
+            setStartDate(date);
+            if (date >= endDate) {
+              setEndDate(new Date(date.getTime() + 15 * 60 * 1000));
+            }
+          }}
+          showTimeSelect
+          showTimeSelectOnly
+          timeIntervals={15}
+          timeCaption="Start Time"
+          dateFormat="h:mm aa"
+          // minTime={minTime} // 
+          // maxTime={maxTime} // 
+        />
       </div>
-    );
-  }else{
-    return (
-        <div class="row-booking">
-          <div class="col_booking_time">
-            <h6>Begin Time: </h6>
-            <DatePicker
-               selected={startDate}
-               onChange={(date) => {
-                 setStartDate(date);
-
-                 if (date >= endDate) {
-                   setEndDate(new Date(date.getTime() + 15 * 60 * 1000)); 
-                 }
-               }}
-               showTimeSelect
-               showTimeSelectOnly
-               timeIntervals={15}
-               timeCaption="Start Time"
-               dateFormat="h:mm aa"
-               minTime={minTime}  // Set the minimum time
-                maxTime={maxTime}  // Set the maximum time
-               filterTime={filterTimeStart}
-            />
-          </div>
-          <div class="col_booking_time">
-            <h6>End Time: </h6>
-            <DatePicker
-              selected={endDate}
-              onChange={(date) => setEndDate(date)}
-              showTimeSelect
-              showTimeSelectOnly
-              timeIntervals={15}
-              timeCaption="End Time"
-              minTime={minTime}  // Set the minimum time
-              maxTime={maxTime}  // Set the maximum time
-              dateFormat="h:mm aa"
-              filterTime={filterTimeEnd}
-            />
-          </div>
-        </div>
-      );
-  }
+      <div className="col_booking_time">
+        <h6>End Time:</h6>
+        <DatePicker
+          selected={endDate}
+          onChange={(date) => setEndDate(date)}
+          showTimeSelect
+          showTimeSelectOnly
+          timeIntervals={15}
+          timeCaption="End Time"
+          dateFormat="h:mm aa"
+          // minTime={minTime} 
+          // maxTime={maxTime} 
+        />
+      </div>
+    </div>
+  );
     
 }
 

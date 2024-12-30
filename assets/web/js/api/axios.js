@@ -12,7 +12,7 @@ export const makeRequest = async (endpoint, params = {}, method = "GET") => {
     method: method,
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer CN4VnbilgwKivycLQRxvsDo6SFpoYVBpL0pZaldBcmt2L0EwcDA5Zz09`
+      "Authorization": `Bearer yzDWppovX8EN3URj2i35hTo6Rm1hZW91SXVybUhaR0hnMjNhSnhLQT09`
   },
 
   };

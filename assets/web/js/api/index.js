@@ -31,3 +31,12 @@ export const webApi = {
   // }
 
 };
+
+
+// export const webApiBookingSingleProducts = {
+//   async getBookings(params) {
+//     return await makeRequest("/bookings", params);
+//   },
+
+
+// };

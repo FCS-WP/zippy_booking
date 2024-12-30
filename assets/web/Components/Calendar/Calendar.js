@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import DatePicker from 'react-datepicker';
 import { useDateContext } from '../Booking/DateContext';
-import dataBooking from "../../js/json/booking_list.json";
 
 function Calendar() {
     const { selectedDate, setSelectedDate } = useDateContext();
-    const weekdays = dataBooking.data.config.weekdays.map(Number);
+    // const weekdays = dataBooking.data.config.weekdays.map(Number);
 
 
     const isWeekday = (date) => {
@@ -21,7 +20,7 @@ function Calendar() {
         dateFormat="dd/MM/yyyy"
         inline
         minDate={new Date()}
-        filterDate={isWeekday}
+        // filterDate={isWeekday}
         />
       </>
     );
