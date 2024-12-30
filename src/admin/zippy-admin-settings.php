@@ -38,15 +38,19 @@ class Zippy_Admin_Settings
     /* Register Assets Admin Part */
     add_action('admin_enqueue_scripts', array($this, 'admin_booking_assets'));
 
+
+
     /* Create New Table For Booking */
     register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'create_booking_table'));
 
     register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'create_product_booking_table'));
 
     register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'create_booking_configs_table'));
-
+    
     /* Create Zippy API Token */
     register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'generate_zippy_booking_api_token'));
+
+    register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'create_zippy_booking_log_table'));
 
     /* Delete Table Booking */
     register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_booking_table'));
@@ -56,9 +60,11 @@ class Zippy_Admin_Settings
 
     register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_product_booking_mapping'));
 
+    register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_zippy_booking_log_table'));
+
     /* Delete Zippy API Token */
     register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'remove_zippy_booking_api_token'));
-
+    
   }
 
   public function admin_booking_assets()
@@ -105,11 +111,16 @@ class Zippy_Admin_Settings
       user_id BIGINT(20) UNSIGNED DEFAULT NULL,
       email VARCHAR(255) NOT NULL,
       product_id BIGINT(20) UNSIGNED NOT NULL,
-      booking_start_date DATETIME NOT NULL,
-      booking_end_date DATETIME NOT NULL,
+      order_id BIGINT(20) UNSIGNED NOT NULL,
+      booking_start_date DATE NOT NULL,
+      booking_start_time TIME NOT NULL,
+      booking_end_date DATE NOT NULL,
+      booking_end_time TIME NOT NULL,
       booking_status VARCHAR(50) NOT NULL,
+      created_at DATETIME NOT NULL,
       PRIMARY KEY  (ID),
-      KEY product_id (product_id)
+      KEY product_id (product_id),
+      FOREIGN KEY (order_id) REFERENCES {$wpdb->prefix}wc_orders(ID) ON DELETE CASCADE
     ) $charset_collate;";
 
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -144,6 +155,8 @@ class Zippy_Admin_Settings
             id mediumint(9) NOT NULL AUTO_INCREMENT,
             booking_type VARCHAR(255) NOT NULL,
             duration VARCHAR(255) NULL,
+            store_email VARCHAR(255) NULL,
+            allow_overlap BOOLEAN NOT NULL,
             weekdays VARCHAR(255) NOT NULL,
             open_at TIME NOT NULL,
             close_at TIME NOT NULL,
@@ -181,20 +194,55 @@ class Zippy_Admin_Settings
     $wpdb->query("DROP TABLE IF EXISTS $table_name");
   }
 
+
   public function render()
   {
     echo Zippy_Utils_Core::get_template('booking-dashboard.php', [], dirname(__FILE__), '/templates');
   }
 
-  function generate_zippy_booking_api_token(){
-    add_option('zippy_booking_api_token', Zippy_Utils_Core::encrypt_data_input(ZIPPY_BOOKING_NAME));
-  }
-  function remove_zippy_booking_api_token(){
-    delete_option('zippy_booking_api_token');
-  }
-  
   public function bookings_render()
   {
     echo Zippy_Utils_Core::get_template('bookings.php', [], dirname(__FILE__), '/templates');
+  }
+
+  function generate_zippy_booking_api_token(){
+    if(get_option(ZIPPY_BOOKING_API_TOKEN_NAME) == false){
+      add_option(ZIPPY_BOOKING_API_TOKEN_NAME, ZIPPY_BOOKING_API_TOKEN);
+    }
+  }
+  function remove_zippy_booking_api_token(){
+    if(get_option(ZIPPY_BOOKING_API_TOKEN_NAME) == true){
+      delete_option(ZIPPY_BOOKING_API_TOKEN_NAME);
+    }
+  }
+
+
+  function create_zippy_booking_log_table() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'zippy_booking_log';
+
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $table_name (
+        id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+        action VARCHAR(255) NOT NULL,
+        details LONGTEXT NOT NULL,
+        status VARCHAR(20) NOT NULL,
+        message LONGTEXT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id)
+    ) $charset_collate;";
+
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+  }
+
+  function delete_zippy_booking_log_table()
+  {
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'zippy_booking_log';
+
+    $wpdb->query("DROP TABLE IF EXISTS $table_name");
   }
 }

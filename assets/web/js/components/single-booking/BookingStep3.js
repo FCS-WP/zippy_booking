@@ -1,18 +1,16 @@
 import { Container } from "@mui/material";
 import React, { useEffect } from "react";
 
-const BookingStep3 = ({ selectedProduct, bookingData,handleNextStep }) => {
+const BookingStep3 = ({ selectedProduct, bookingData, handleNextStep }) => {
   const backToHome = () => {
     window.location.href = window.location.origin;
-  }
+  };
 
   const newAppointment = () => {
-    handleNextStep(3, null)
-  } 
+    handleNextStep(3, null);
+  };
 
-  useEffect(() => {
-
-  }, []);
+  useEffect(() => {}, []);
 
   return (
     <div className="booking-step-3">
@@ -66,22 +64,22 @@ const BookingStep3 = ({ selectedProduct, bookingData,handleNextStep }) => {
             </ul>
           </div>
           <div className="btn-container">
-          <span
-            role="button"
-            onClick={() => backToHome()}
-            className="prev-step-btn"
-          >
-            Back To Home
-          </span>
-          <span
-            role="button"
-            onClick={() => newAppointment()}
-            className="next-step-btn"
-            id="next-step-btn"
-          >
-            Make New Appointment
-          </span>
-        </div>
+            <span
+              role="button"
+              onClick={() => backToHome()}
+              className="prev-step-btn"
+            >
+              Back To Home
+            </span>
+            <span
+              role="button"
+              onClick={() => newAppointment()}
+              className="next-step-btn"
+              id="next-step-btn"
+            >
+              Make New Appointment
+            </span>
+          </div>
         </div>
       )}
     </div>
