@@ -10,7 +10,6 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  TextField,
   Chip,
   IconButton,
   Container,
@@ -18,22 +17,27 @@ import {
   Stack,
 } from "@mui/material";
 import { styled } from "@mui/system";
-import { FaSearch, FaEye, FaTimes } from "react-icons/fa";
+import { FaEye, FaTimes } from "react-icons/fa";
 
 import { toast } from "react-toastify";
 import { webApi } from "../../api";
 import CustomLoader from "../CustomLoader";
-import { getBookingDate, getBookingTime } from "../../helper/datetime";
+import {
+  getBookingDate,
+  getBookingTime,
+  isInFilterDates,
+} from "../../helper/datetime";
+import FilterContainer from "./FilterContainer";
 
 const StyledCard = styled(Card)(({ theme }) => ({
-    cursor: "pointer",
-    transition: "transform 0.2s",
-    "&:hover": {
-      transform: "translateY(-4px)",
-      boxShadow:
-        "rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;",
-    },
-  }));
+  cursor: "pointer",
+  transition: "transform 0.2s",
+  "&:hover": {
+    transform: "translateY(-4px)",
+    boxShadow:
+      "rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;",
+  },
+}));
 
 const ListBooking = () => {
   const adminData = window.admin_data ? window.admin_data : null;
@@ -41,13 +45,14 @@ const ListBooking = () => {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
   const [totalPage, setTotalPage] = useState(1);
   const [currentBookings, setCurrentBookings] = useState([]);
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [isShowPagination, setIsShowPagination] = useState(false);
   const [filteredBookings, setFilteredBookings] = useState([]);
+  const [filterDates, setFilterDates] = useState(null);
+  const [filterStatus, setFilterStatus] = useState(``);
   const BOOKINGS_PER_PAGE = 9;
   const pageFocusRef = useRef(null);
 
@@ -83,9 +88,9 @@ const ListBooking = () => {
       ? setProducts(dataProducts)
       : toast.error("No data: Products");
 
-    setTimeout(()=>{
+    setTimeout(() => {
       setIsLoading(false);
-    }, [1500])
+    }, [1000]);
   };
 
   const getBookingsData = async () => {
@@ -124,9 +129,24 @@ const ListBooking = () => {
   };
 
   const handleFilterBooking = (data) => {
-    const filtered = data.filter((booking) =>
-      booking.booking_status.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filtered = data.filter((booking) => {
+      if (!filterDates?.start) {
+        return booking.booking_status
+          .toLowerCase()
+          .includes(filterStatus.toLowerCase());
+      }
+      return (
+        booking.booking_status
+          .toLowerCase()
+          .includes(filterStatus.toLowerCase()) &&
+        isInFilterDates(
+          booking.booking_start_date,
+          filterDates?.start,
+          filterDates?.end
+        )
+      );
+    });
+
     setFilteredBookings(filtered);
     const getTotalPage = Math.ceil(filtered.length / BOOKINGS_PER_PAGE);
     setTotalPage(getTotalPage);
@@ -139,6 +159,19 @@ const ListBooking = () => {
 
     setTotalPage(getTotalPage);
     setIsShowPagination(true);
+  };
+
+  const handleFilterDate = (dates) => {
+    const [start, end] = dates;
+    setFilterDates({
+      start,
+      end,
+    });
+    console.log([start, end]);
+  };
+
+  const handleFilterStatus = (status) => {
+    setFilterStatus(status);
   };
 
   const setDefaultPagination = (data) => {
@@ -177,7 +210,7 @@ const ListBooking = () => {
     if (bookings.length > 0) {
       handleFilterBooking(bookings);
     }
-  }, [searchQuery]);
+  }, [filterDates, filterStatus]);
 
   useEffect(() => {
     if (pageFocusRef.current) {
@@ -189,22 +222,21 @@ const ListBooking = () => {
   }, [page]);
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }} ref={pageFocusRef}>
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" gutterBottom ref={pageFocusRef}>
-          Booking Management
-        </Typography>
-        <TextField
-          fullWidth
-          variant="outlined"
-          sx={{ border: "none" }}
-          placeholder="Search bookings by title or status"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          InputProps={{
-            startAdornment: <FaSearch style={{ marginRight: 8 }} />,
-          }}
-        />
+        <Stack
+          direction={"row"}
+          justifyContent={"space-between"}
+          alignContent={"center"}
+        >
+          <Typography variant="h4" gutterBottom>
+            Booking Management
+          </Typography>
+          <FilterContainer
+            handleFilterDate={handleFilterDate}
+            handleFilterStatus={handleFilterStatus}
+          />
+        </Stack>
       </Box>
       {isLoading ? (
         <CustomLoader />
@@ -212,13 +244,7 @@ const ListBooking = () => {
         <Grid container spacing={3}>
           {currentBookings.length != 0 ? (
             currentBookings.map((booking, index) => (
-              <Grid
-                item
-                xs={12}
-                sm={6}
-                md={4}
-                key={booking.ID}
-              >
+              <Grid item xs={12} sm={6} md={4} key={booking.ID}>
                 <StyledCard onClick={() => handleBookingClick(booking)}>
                   <CardContent>
                     <Box

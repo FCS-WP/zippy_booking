@@ -68,10 +68,31 @@ export const isWorkingDate = (date, checkArr = []) => {
 
 export const getBookingTime = (time) => {
   const date = new Date(time);
-  return format(date, 'HH:mm aa');
-}
+  return format(date, "HH:mm aa");
+};
 
 export const getBookingDate = (time) => {
   const date = new Date(time);
-  return format(date, 'yyyy-MM-dd');
-}
+  return format(date, "yyyy-MM-dd");
+};
+
+export const isInFilterDates = (bookingStart, start, end) => {
+  if (!start) {
+    return false;
+  }
+  const filterDate = new Date(bookingStart);
+  let startDate = new Date(start);
+  let endDate = new Date(end);
+  startDate.setHours(0, 0, 0);
+  endDate.setHours(0, 0, 0);
+
+  if (startDate.getTime() <= filterDate.getTime()) {
+    if (!end) {
+      return true;
+    }
+    if (end && filterDate.getTime() <= endDate.getTime()) {
+      return true;
+    }
+  }
+  return false;
+};
