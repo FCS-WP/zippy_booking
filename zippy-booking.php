@@ -127,7 +127,7 @@ if (!defined('ZIPPY_BOOKING_API_TOKEN_NAME')) {
 }
 
 if (!defined('ZIPPY_BOOKING_API_TOKEN')) {
-  define('ZIPPY_BOOKING_API_TOKEN', 'NlLzbAaslg8FtjEArjkX0jo6OS9seUc3TGRKUmhJVytacjRHM1h2dz09');
+  define('ZIPPY_BOOKING_API_TOKEN', 'FEhI30q7ySHtMfzvSDo6RkxZUDVaQ1BBU3lBcGhYS3BrQStIUT09');
 }
 
 
@@ -138,9 +138,9 @@ if (!defined('ZIPPY_BOOKING_API_TOKEN')) {
 // load_plugin_textdomain('zippy-booking-car', false, basename(dirname(__FILE__)) . '/languages');
 
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
 
 /* ------------------------------------------
 // Includes

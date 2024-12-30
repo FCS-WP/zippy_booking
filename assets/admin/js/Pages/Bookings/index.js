@@ -33,7 +33,7 @@ const Index = () => {
               " - " +
               formatDate(booking.booking_end_date),
             Customer: booking.email,
-            Product: booking.product_id,
+            Product: booking.product_name,
             duration: booking.duration,
             Status: booking.booking_status,
             "Created Date": formatDate(booking.booking_start_date),
