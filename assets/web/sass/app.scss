@@ -3,5 +3,9 @@
     @import 'booking-form';
     @import 'custom-datepicker';
 }
+#zippy-booking-history {
+    @import 'booking-history';
+}
 @import "react-datepicker/dist/react-datepicker.css";
-@import 'custom_alert';
+@import 'custom-alert';
+@import 'loader';
