@@ -34,6 +34,8 @@ class Zippy_Admin_Booking_Booking_Controller
             "booking_end_time" => ["data_type" => "time"],
             "limit" => ["data_type" => "number"],
             "offset" => ["data_type" => "number"],
+            "order_by" => ["data_type" => "string"],
+            "sort_order" => ["data_type" => "range", "allowed_values" => ["ASC", "DESC"]],
         ];
         
         // Validate Request Fields
@@ -104,21 +106,30 @@ class Zippy_Admin_Booking_Booking_Controller
             return Zippy_Response_Handler::error('limit is required');
         }
 
-        $results = $wpdb->get_results($query);
+        $order_by = !empty($request->get_param('order_by')) ? sanitize_text_field($request->get_param('order_by')) : "id";
+        $sort_order = !empty($request->get_param('sort_order')) ? sanitize_text_field($request->get_param('sort_order')) : "DESC";
 
+        $query .= " ORDER BY $order_by $sort_order";
+        $results = $wpdb->get_results($query);
+        
         if (empty($results)) {
             return Zippy_Response_Handler::success([], ZIPPY_BOOKING_NOT_FOUND);
         }
 
+        
+        // get product info
         $products = [];
 
         foreach ($results as $res) {
             $product_id = $res->product_id;
-            $product_name = wc_get_product($product_id)->get_name();
-            $res->product_name = $product_name;
+            $product = wc_get_product($product_id);
+            if (!empty($product)) {
+                $res->product = $product->get_data();
+            } else {
+                $res->product = [];
+            }
             $products[] = $res;
         }
-
 
         // Booking Configs
         $config_table_name = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
@@ -126,9 +137,13 @@ class Zippy_Admin_Booking_Booking_Controller
         $config_query = "SELECT booking_type, duration, store_email, allow_overlap, weekdays, open_at, close_at FROM $config_table_name WHERE 1=1";
         $config_results = $wpdb->get_results($config_query);
 
-        $configs = $config_results[0];
-        
-        !empty($configs->weekdays) ? $configs->weekdays = unserialize($configs->weekdays) : $configs->weekdays;
+        $configs = [];
+
+        if(!empty($config_results)){
+            $configs = $config_results[0];
+            !empty($configs->weekdays) ? $configs->weekdays = unserialize($configs->weekdays) : $configs->weekdays;
+        }
+
 
         // Prepare Data
         $data["bookings"] = $products;

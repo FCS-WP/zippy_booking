@@ -10,6 +10,7 @@ namespace Zippy_Booking\Src\Controllers\Admin;
 
 
 use WP_REST_Request;
+use WC_Order_Query;
 use PDO;
 use Zippy_Booking\Src\App\Models\Zippy_Request_Validation;
 use Zippy_Booking\Src\App\Zippy_Response_Handler;
@@ -110,7 +111,7 @@ class Zippy_Admin_Booking_Seeding_Controller
                 'order_id' => $faker->randomElement($order_ids),
                 'booking_start_date' => $faker->date("Y-m-d", '2024-01-10'),
                 'booking_start_time' => $faker->time(),
-                'booking_end_date' => $faker->date("Y-m-d", 'now'),
+                'booking_end_date' => $faker->date("Y-m-d", 'now'), 
                 'booking_end_time' => $faker->time(),
                 'booking_status' => $faker->randomElement(['completed', 'cancelled', 'onhold', 'processing', 'pending']),
                 'created_at' => current_time('mysql'),
@@ -163,7 +164,7 @@ class Zippy_Admin_Booking_Seeding_Controller
 
         if ($type == "configs") {
             $seeder->table(ZIPPY_BOOKING_CONFIG_TABLE_NAME)->columns([
-                'booking_type' => $faker->randomElement(["single", "multiple"]),
+                'booking_type' => $faker->randomElement([ZIPPY_BOOKING_BOOKING_TYPE_SINGLE, ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE]),
                 'duration' => $faker->randomElement([5,10,20,30,60]),
                 'store_email' => $faker->email(),
                 'allow_overlap' => $faker->randomElement([0,1]),
