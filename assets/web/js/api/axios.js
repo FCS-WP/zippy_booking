@@ -1,20 +1,22 @@
 import axios from "axios";
 
-export const makeRequest = async (endpoint, params = {}, method = "GET") => {
+export const makeRequest = async (
+  endpoint,
+  params = {},
+  method = "GET",
+  token = "NlLzbAaslg8FtjEArjkX0jo6OS9seUc3TGRKUmhJVytacjRHM1h2dz09"
+) => {
   const baseURL = "/wp-json";
   const api = axios.create({
     baseURL: baseURL,
   });
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
   const config = {
     url: "zippy-booking/v1" + endpoint,
     params: params,
     method: method,
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer yzDWppovX8EN3URj2i35hTo6Rm1hZW91SXVybUhaR0hnMjNhSnhLQT09`
-  },
-
+    headers: headers,
   };
   try {
     let res = null;
@@ -77,8 +79,12 @@ export const fetchCredentials = async () => {
   }
 };
 
-// Fetch woo 
-export const makeLocalRequest = async (endpoint, params = {}, method = "GET") => {
+// Fetch woo
+export const makeLocalRequest = async (
+  endpoint,
+  params = {},
+  method = "GET"
+) => {
   const baseURL = "/wp-json";
   const api = axios.create({
     baseURL: baseURL,

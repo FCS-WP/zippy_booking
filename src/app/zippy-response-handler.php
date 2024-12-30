@@ -15,7 +15,7 @@ use WP_REST_Response;
 class Zippy_Response_Handler
 {
   // Handle success responses
-  public static function success($data, $message = 'Operation successful', $status_code = 200)
+  public static function success($data, $message = ZIPPY_BOOKING_SUCCESS, $status_code = 200)
   {
     return new WP_REST_Response(array(
       'status' => 'success',
@@ -25,7 +25,7 @@ class Zippy_Response_Handler
   }
 
   // Handle error responses
-  public static function error($message = 'An error occurred', $status_code = 400)
+  public static function error($message = ZIPPY_BOOKING_ERROR, $status_code = 400)
   {
     return new WP_REST_Response(array(
       'status' => 'error',

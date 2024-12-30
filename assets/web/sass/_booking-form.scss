@@ -193,7 +193,7 @@
         .btn-container {
             display: flex;
             justify-content: space-between;
-
+            align-items: center;
             .prev-step-btn {
                 cursor: pointer;
                 padding: 15px 40px;
@@ -251,6 +251,9 @@
 
         .booking-container {
             .booking-step-1 {
+                * {
+                    transition: all 0.3s linear;
+                }
                 .list-product {
                     .product-item {
                         grid-column: span 6;

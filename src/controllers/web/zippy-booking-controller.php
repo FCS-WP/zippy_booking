@@ -178,9 +178,6 @@ class Zippy_Booking_Controller
         if (!$booking) {
             return Zippy_Response_Handler::error('Booking not found.');
         }
-        if (!current_user_can('administrator') && $booking->user_id != $user_id) {
-            return Zippy_Response_Handler::error('You do not have permission to update this booking.');
-        }
 
         $data_to_update = array();
         $where = array('ID' => $booking_id);
@@ -217,7 +214,6 @@ class Zippy_Booking_Controller
         global $wpdb;
         $table_name = 'fcs_data_bookings';
 
-        $user_id_from_request = intval($request->get_param('user_id'));
         $booking_id = intval($request->get_param('booking_id'));
 
         if (empty($user_id_from_request) || empty($booking_id)) {
@@ -228,13 +224,7 @@ class Zippy_Booking_Controller
             $wpdb->prepare("SELECT user_id FROM $table_name WHERE ID = %d", $booking_id)
         );
 
-        if (!$booking || $booking->user_id !== $user_id_from_request) {
-            return Zippy_Response_Handler::error('You do not have permission to update this booking.');
-        }
-
-        if (current_user_can('administrator') || get_current_user_id() === $user_id_from_request) {
-            return true;
-        } else {
+        if (!$booking) {
             return Zippy_Response_Handler::error('You do not have permission to update this booking.');
         }
     }

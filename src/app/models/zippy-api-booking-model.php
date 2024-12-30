@@ -101,12 +101,6 @@ class Zippy_Api_Booking_Model
           return is_numeric($param) && intval($param) > 0;
         },
       ),
-      'user_id' => array(
-        'required' => true,
-        'validate_callback' => function ($param, $request, $key) {
-          return is_numeric($param) && intval($param) > 0;
-        },
-      ),
       'booking_start_date' => array(
         'required' => false,
         'sanitize_callback' => 'sanitize_text_field',
@@ -248,4 +242,25 @@ class Zippy_Api_Booking_Model
           ),
       );
   }
+  public static function get_delete_product_args() {
+    return array(
+        'items_ids' => array(
+            'required' => true,
+            'validate_callback' => function ($param, $request, $key) {
+                return is_array($param) && !empty($param) && !in_array(false, array_map('is_numeric', $param));
+            },
+        ),
+    );
+}
+
+public static function get_delete_category_args() {
+    return array(
+        'items_ids' => array(
+            'required' => true,
+            'validate_callback' => function ($param, $request, $key) {
+                return is_array($param);
+            },
+        ),
+    );
+}
 }

@@ -69,6 +69,16 @@ if (!defined('ZIPPY_BOOKING_CONFIG_TABLE_NAME')) {
   define('ZIPPY_BOOKING_CONFIG_TABLE_NAME', 'fcs_data_booking_configs');
 }
 
+/* Booking Product Mapping table name */
+if (!defined('ZIPPY_BOOKING_PRODUCT_MAPPING_TABLE_NAME')) {
+  define('ZIPPY_BOOKING_PRODUCT_MAPPING_TABLE_NAME', 'fcs_data_product_booking_mapping');
+}
+
+/* Booking Product Mapping table name */
+if (!defined('ZIPPY_BOOKING_LOG_TABLE_NAME')) {
+  define('ZIPPY_BOOKING_LOG_TABLE_NAME', 'fcs_data_zippy_booking_log');
+}
+
 /* Booking status */
 if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_PENDING')) {
   define('ZIPPY_BOOKING_BOOKING_STATUS_PENDING', 'pending');
@@ -100,6 +110,27 @@ if (!defined('ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE')) {
 }
 
 
+// API Response Message
+if (!defined('ZIPPY_BOOKING_SUCCESS')) {
+  define('ZIPPY_BOOKING_SUCCESS', 'Operation Successful!');
+}
+if (!defined('ZIPPY_BOOKING_NOT_FOUND')) {
+  define('ZIPPY_BOOKING_NOT_FOUND', 'Nothing Found!');
+}
+if (!defined('ZIPPY_BOOKING_ERROR')) {
+  define('ZIPPY_BOOKING_ERROR', 'An Error Occurred!');
+}
+
+
+if (!defined('ZIPPY_BOOKING_API_TOKEN_NAME')) {
+  define('ZIPPY_BOOKING_API_TOKEN_NAME', 'zippy_booking_api_token');
+}
+
+if (!defined('ZIPPY_BOOKING_API_TOKEN')) {
+  define('ZIPPY_BOOKING_API_TOKEN', 'FEhI30q7ySHtMfzvSDo6RkxZUDVaQ1BBU3lBcGhYS3BrQStIUT09');
+}
+
+
 /* ------------------------------------------
 // i18n
 ---------------------------- --------------------------------------------- */
@@ -117,13 +148,13 @@ if (!defined('ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE')) {
 require ZIPPY_BOOKING_DIR_PATH . '/includes/autoload.php';
 // require ZIPPY_BOOKING_DIR_PATH . 'vendor/plugin-update-checker/plugin-update-checker.php';
 
-// require ZIPPY_BOOKING_DIR_PATH . '/vendor/autoload.php';
+// require ZIPPY_BOOKING_DIR_PATH . 'vendor/autoload.php';
 
 // use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 use  Zippy_Booking\Src\Admin\Zippy_Admin_Settings;
 
-use Zippy_Booking\Src\Routers\Bookings\Zippy_Bookings_Router;
+use Zippy_Booking\Src\Routers\Bookings\Zippy_Booking_Router;
 
 use Zippy_Booking\Src\Middleware\Admin\Zippy_Booking_Permission;
 use Zippy_Booking\Src\Web\Zippy_Booking_Web;
@@ -163,7 +194,7 @@ use Zippy_Booking\Src\Web\Zippy_Booking_Web;
 
 Zippy_Admin_Settings::get_instance();
 
-Zippy_Bookings_Router::get_instance();
+Zippy_Booking_Router::get_instance();
 
 Zippy_Booking_Web::get_instance();
 
