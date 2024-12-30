@@ -139,8 +139,8 @@ class Zippy_Admin_Booking_Seeding_Controller
                 }
             }
             $categories = get_terms([
-                'taxonomy'   => 'product_cat', // Taxonomy của danh mục sản phẩm WooCommerce
-                'hide_empty' => false,         // Bao gồm cả danh mục không có sản phẩm
+                'taxonomy'   => 'product_cat',
+                'hide_empty' => false,
             ]);
 
 

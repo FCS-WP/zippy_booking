@@ -23,17 +23,17 @@ class Zippy_Admin_Booking_Booking_Controller
         
         // Rules
         $required_fields = [
-            "product_id"                => ["data_type" => "number"],
-            "email"                     => ["data_type" => "email"],
-            "user_id"                   => ["data_type" => "number"],
-            "order_id"                   => ["data_type" => "number"],
-            "booking_status"            => ["data_type" => "string"],
-            "booking_start_date"        => ["data_type" => "date"],
-            "booking_start_time"        => ["data_type" => "time"],
-            "booking_end_date"          => ["data_type" => "date"],
-            "booking_end_time"          => ["data_type" => "time"],
-            "limit"                     => ["data_type" => "number"],
-            "offset"                    => ["data_type" => "number"],
+            "product_id" => ["data_type" => "number"],
+            "email" => ["data_type" => "email"],
+            "user_id" => ["data_type" => "number"],
+            "order_id" => ["data_type" => "number"],
+            "booking_status" => ["data_type" => "string"],
+            "booking_start_date" => ["data_type" => "date"],
+            "booking_start_time" => ["data_type" => "time"],
+            "booking_end_date" => ["data_type" => "date"],
+            "booking_end_time" => ["data_type" => "time"],
+            "limit" => ["data_type" => "number"],
+            "offset" => ["data_type" => "number"],
         ];
         
         // Validate Request Fields
@@ -54,8 +54,8 @@ class Zippy_Admin_Booking_Booking_Controller
             "booking_status" => sanitize_text_field($request->get_param('booking_status')),
         ];
 
-        $limit = sanitize_text_field($request->get_param('limit'));
-        $offset = sanitize_text_field($request->get_param('offset'));
+        $limit = intval($request->get_param('limit'));
+        $offset = intval($request->get_param('offset'));
 
         // Count total
         $total_query = "SELECT ID FROM $table_name WHERE 1=1";
@@ -94,15 +94,14 @@ class Zippy_Admin_Booking_Booking_Controller
             $query .= $wpdb->prepare(" AND DATE(booking_start_time) >= %s ", $booking_start_time);
         }
 
-        if(!empty($limit)){
+        // Add limit and offset
+        if (!empty($limit)) {
             $query .= $wpdb->prepare(" LIMIT %d ", $limit);
-        }
-
-        if(!empty($offset)){
-            if(empty($limit)){
-                return Zippy_Response_Handler::error('limit is required');
+            if (!empty($offset)) {
+                $query .= $wpdb->prepare(" OFFSET %d ", $offset);
             }
-            $query .= $wpdb->prepare(" OFFSET %d ", $offset);
+        } elseif (!empty($offset)) {
+            return Zippy_Response_Handler::error('limit is required');
         }
 
         $results = $wpdb->get_results($query);
@@ -153,8 +152,6 @@ class Zippy_Admin_Booking_Booking_Controller
         $total = $wpdb->get_results($total_query);
         $total_count = count($total);
 
-
-        // Initialize counters
         $pending_count = 0;
         $on_hold_count = 0;
         $completed_count = 0;

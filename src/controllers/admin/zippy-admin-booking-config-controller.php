@@ -60,13 +60,13 @@ class Zippy_Admin_Booking_Config_Controller{
         $result = $wpdb->get_results("SELECT * from $table_name");
         if(empty($result)){
             $data = [
-                'booking_type'  => $booking_type,
-                'store_email'  => $store_email,
-                'allow_overlap'  => $allow_overlap,
-                'weekdays'      => serialize($weekdays),
-                'open_at'       => $open_at,
-                'close_at'      => $close_at,
-                'duration'      => $duration,
+                'booking_type' => $booking_type,
+                'store_email' => $store_email,
+                'allow_overlap' => $allow_overlap,
+                'weekdays' => serialize($weekdays),
+                'open_at' => $open_at,
+                'close_at' => $close_at,
+                'duration' => $duration,
             ];
             $wpdb->insert($table_name, $data);
             return Zippy_Response_Handler::success($data);
@@ -120,13 +120,13 @@ class Zippy_Admin_Booking_Config_Controller{
         $result = $wpdb->get_results("SELECT * from $table_name WHERE id=$booking_id");
         if(!empty($result)){
             $data = [
-                'booking_type'  => $booking_type,
-                'store_email'  => $store_email,
-                'allow_overlap'  => $allow_overlap,
-                'weekdays'      => serialize($weekdays),
-                'open_at'       => $open_at,
-                'close_at'      => $close_at,
-                'duration'      => $duration,
+                'booking_type' => $booking_type,
+                'store_email' => $store_email,
+                'allow_overlap' => $allow_overlap,
+                'weekdays' => serialize($weekdays),
+                'open_at' => $open_at,
+                'close_at' => $close_at,
+                'duration' => $duration,
             ];
             $wpdb->update($table_name, $data, ["id" => $booking_id]);
             return Zippy_Response_Handler::success($data);
