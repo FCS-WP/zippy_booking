@@ -68,7 +68,7 @@ const Index = () => {
               : booking
           )
         );
-        toast.success("Booking has been updated to Completed");
+        toast.success(`Booking has been updated to ${newStatus}`);
       }
     } catch (error) {
       console.error("Error updating booking status:", error);
