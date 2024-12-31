@@ -6,6 +6,7 @@ import { formatDate } from "../../utils/dateHelper";
 import TablePaginationCustom from "../../Components/TablePagination";
 import StatusSelect from "../../Components/StatusSelect";
 import CircularProgress from "@mui/material/CircularProgress";
+import { toast, ToastContainer } from "react-toastify";
 import Box from "@mui/material/Box";
 
 const Index = () => {
@@ -15,8 +16,8 @@ const Index = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const [loadingState, setLoadingState] = useState({
-    global: true, 
-    rows: {}, 
+    global: true,
+    rows: {},
   });
 
   const fetchData = useCallback(async (page, rowsPerPage) => {
@@ -67,9 +68,11 @@ const Index = () => {
               : booking
           )
         );
+        toast.success("Booking has been updated to Completed");
       }
     } catch (error) {
       console.error("Error updating booking status:", error);
+      toast.error("This booking cannot be updated");
     } finally {
       setLoadingState((prev) => ({
         ...prev,
@@ -83,7 +86,7 @@ const Index = () => {
   };
 
   useEffect(() => {
-    fetchData(page, rowsPerPage); 
+    fetchData(page, rowsPerPage);
   }, [fetchData, page, rowsPerPage]);
 
   const handleChangePage = (event, newPage) => {
@@ -160,6 +163,7 @@ const Index = () => {
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
       />
+      <ToastContainer />
     </div>
   );
 };
