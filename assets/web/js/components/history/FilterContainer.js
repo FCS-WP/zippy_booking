@@ -51,7 +51,6 @@ const FilterContainer = ({ handleFilterDate, handleFilterStatus }) => {
             fullWidth
             sx={{ height: "40px" }}
             aria-label="Status filter"
-            isClearable
           >
             <MenuItem value="">
               <em>Select Status</em>
