@@ -10,18 +10,13 @@ function initializeApp() {
   if (zippyBookings) {
     const root = ReactDOM.createRoot(zippyBookings);
     root.render(
-      <React.StrictMode>
         <Index />
-      </React.StrictMode>
     );
   }
-
   if (zippyDashboard) {
     const root = ReactDOM.createRoot(zippyDashboard);
     root.render(
-      <React.StrictMode>
         <Dashboard />
-      </React.StrictMode>
     );
   }
 }
