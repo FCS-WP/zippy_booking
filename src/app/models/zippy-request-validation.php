@@ -95,4 +95,13 @@ class Zippy_Request_Validation
             }
         }
     }
+
+
+    public static function get_weekdays(){
+        return ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+    }
+    public static function validate_time($time){
+        $datetime = DateTime::createFromFormat('H:i', $time);
+        return $datetime && $datetime->format('H:i') == $time;
+    }
 }
