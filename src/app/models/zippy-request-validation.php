@@ -14,7 +14,8 @@ use DateTime;
 
 class Zippy_Request_Validation
 {
-    public static function validate_request($required_fields, $request){
+    public static function validate_request($required_fields, $request)
+    {
         /* Validate main required fields */
         foreach ($required_fields as $field => $rules) {
             if (isset($rules['required']) &&  empty($request[$field])) {
@@ -49,10 +50,10 @@ class Zippy_Request_Validation
 
             // date
             if ($rules["data_type"] == "date" && !empty($request[$field])) {
-            $datetime = DateTime::createFromFormat('Y-m-d', $request[$field]);
-            if (!$datetime || $datetime->format('Y-m-d') !== $request[$field]) {
-                return "$field must be a valid date in the format Y-m-d.";
-            }
+                $datetime = DateTime::createFromFormat('Y-m-d', $request[$field]);
+                if (!$datetime || $datetime->format('Y-m-d') !== $request[$field]) {
+                    return "$field must be a valid date in the format Y-m-d.";
+                }
             }
 
 
@@ -89,7 +90,7 @@ class Zippy_Request_Validation
 
             // Boolean
             if ($rules["data_type"] == "boolean" && !empty($request[$field])) {
-                if (!in_array($request[$field], [0,1])) {
+                if (!in_array($request[$field], [0, 1])) {
                     return "$field must be 0 or 1";
                 }
             }
@@ -97,10 +98,12 @@ class Zippy_Request_Validation
     }
 
 
-    public static function get_weekdays(){
-        return ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+    public static function get_weekdays()
+    {
+        return [0, 1, 2, 3, 4, 5, 6];
     }
-    public static function validate_time($time){
+    public static function validate_time($time)
+    {
         $datetime = DateTime::createFromFormat('H:i', $time);
         return $datetime && $datetime->format('H:i') == $time;
     }

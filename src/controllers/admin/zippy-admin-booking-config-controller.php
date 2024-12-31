@@ -18,7 +18,8 @@ use Zippy_booking\Src\App\Models\Zippy_Log_Action;
 defined('ABSPATH') or die();
 
 
-class Zippy_Admin_Booking_Config_Controller{
+class Zippy_Admin_Booking_Config_Controller
+{
 
 
     /**
@@ -27,8 +28,9 @@ class Zippy_Admin_Booking_Config_Controller{
      * CREATED CONFIGS
      * 
      */
-    public static function zippy_booking_create_configs(WP_REST_Request $request){
-        
+    public static function zippy_booking_create_configs(WP_REST_Request $request)
+    {
+
         $booking_type = $request["booking_type"];
         $store_email = $request["store_email"];
         $allow_overlap = $request["allow_overlap"];
@@ -36,7 +38,7 @@ class Zippy_Admin_Booking_Config_Controller{
         $store_working_time = $request["store_working_time"];
 
         // Rules
-         $required_fields = [
+        $required_fields = [
             "booking_type" => ["required" => true, "data_type" => "string", "field_type" => "range", "allowed_values" => [ZIPPY_BOOKING_BOOKING_TYPE_SINGLE, ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE]],
             "store_email" => ["required" => true, "data_type" => "email"],
             "allow_overlap" => ["required" => true, "data_type" => "boolean"],
@@ -46,10 +48,10 @@ class Zippy_Admin_Booking_Config_Controller{
 
         // Validate Fields
         $validate = Zippy_Request_Validation::validate_request($required_fields, $request);
-        if(!empty($validate)){
+        if (!empty($validate)) {
             return Zippy_Response_Handler::error($validate);
         }
-        
+
 
         // Validate store_working_time
         $required_weekdays = Zippy_Request_Validation::get_weekdays();
@@ -119,7 +121,6 @@ class Zippy_Admin_Booking_Config_Controller{
 
             Zippy_Log_Action::log('create_booking_configs', json_encode($data), 'Success', 'Success');
             return Zippy_Response_Handler::success($data);
-
         } catch (\Throwable $th) {
             $message = $th->getMessage();
             Zippy_Log_Action::log('create_booking_configs', json_encode($data), 'failure', $message);
@@ -136,7 +137,8 @@ class Zippy_Admin_Booking_Config_Controller{
      * UPDATE CONFIGS
      * 
      */
-    public static function zippy_booking_update_configs(WP_REST_Request $request){
+    public static function zippy_booking_update_configs(WP_REST_Request $request)
+    {
 
 
         $booking_id = $request["id"];
@@ -154,12 +156,12 @@ class Zippy_Admin_Booking_Config_Controller{
             "allow_overlap" => ["data_type" => "boolean"],
             "store_working_time" => ["required" => true, "data_type" => "array"],
         ];
-        
+
 
         // Validate request fields
         $validate = Zippy_Request_Validation::validate_request($required_fields, $request);
 
-        if(!empty($validate)){
+        if (!empty($validate)) {
             return Zippy_Response_Handler::error($validate);
         }
 
@@ -206,7 +208,7 @@ class Zippy_Admin_Booking_Config_Controller{
             /* Update */
             global $wpdb;
             $table_name = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
-            
+
             $result = $wpdb->get_results("SELECT * from $table_name WHERE id=$booking_id");
             if (empty($result)) {
                 return Zippy_Response_Handler::error(ZIPPY_BOOKING_NOT_FOUND);
@@ -231,7 +233,7 @@ class Zippy_Admin_Booking_Config_Controller{
 
             return Zippy_Response_Handler::success($data);
         } catch (\Throwable $th) {
-            $message = $th->getMessage(); 
+            $message = $th->getMessage();
             Zippy_Log_Action::log('update_booking_configs', json_encode($data), 'failure', $message);
             return Zippy_Response_Handler::error($message);
         }
@@ -245,8 +247,9 @@ class Zippy_Admin_Booking_Config_Controller{
      * 
      * GET CONFIGS
      * 
-     * */ 
-    public static function zippy_booking_get_configs(WP_REST_Request $request){
+     * */
+    public static function zippy_booking_get_configs(WP_REST_Request $request)
+    {
         try {
             global $wpdb;
             $table_name = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
