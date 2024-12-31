@@ -71,9 +71,9 @@ class Zippy_Booking_Router
             'args' => Zippy_Api_Booking_Model::get_support_booking_products_args(),
             'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
         ));
-        register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/products', array(
+        register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking', array(
             'methods' => 'GET',
-            'callback' => [Zippy_Booking_Support_Controller::class, 'get_all_support_booking_products'],
+            'callback' => [Zippy_Booking_Support_Controller::class, 'get_all_support_booking_items'],
             'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
 
         ));

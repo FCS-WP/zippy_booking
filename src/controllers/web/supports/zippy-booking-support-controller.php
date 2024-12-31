@@ -12,6 +12,8 @@ use WP_REST_Request;
 use WP_Query;
 
 use Zippy_Booking\Src\App\Zippy_Response_Handler;
+use Zippy_Booking\Src\App\Models\Zippy_Request_Validation;
+
 
 defined('ABSPATH') or die();
 
@@ -173,35 +175,172 @@ class Zippy_Booking_Support_Controller
         );
     }
 
-    public static function get_all_support_booking_products(WP_REST_Request $request)
+    public static function get_all_support_booking_items(WP_REST_Request $request)
     {
         global $wpdb;
 
         $table_name = $wpdb->prefix . 'product_booking_mapping';
 
-        $items = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT items_id, mapping_type FROM {$table_name} WHERE mapping_type = %s",
-                'product'
-            ),
-            ARRAY_A
+        try {
+            // Rules
+            $required_fields = [
+                "category" => ["required" => false, "data_type" => "number"]
+            ];
+
+            // Validate Request Fields
+            $validate = Zippy_Request_Validation::validate_request($required_fields, $request);
+
+            if (!empty($validate)) {
+                return Zippy_Response_Handler::error($validate);
+            }
+
+            $category_param = $request->get_param('category');
+
+            if (!empty($category_param)) {
+                $data = self::get_support_product_by_category($category_param);
+                return Zippy_Response_Handler::success($data, 'Items retrieved successfully.');
+            }
+
+            $items = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT items_id, mapping_type FROM {$table_name} ORDER BY CASE WHEN mapping_type = 'category' THEN 1 ELSE 2 END",
+                ),
+                ARRAY_A
+            );
+
+
+            if (empty($items)) {
+                return Zippy_Response_Handler::error('No items found in the database.');
+            }
+
+            $items_suport_booking = [];
+            foreach ($items as $item) {
+                if ($item['mapping_type'] == 'product') {
+                    $product = wc_get_product($item['items_id']);
+
+                    if ($product) {
+                        $item['item_name'] = $product->get_name();
+                        $item['item_price'] = $product->get_price();
+                    }
+                } else {
+
+                    $category = get_the_category_by_ID($item['items_id']);
+
+                    if ($category) {
+                        $item['item_name'] = $category;
+                    }
+                }
+
+                $items_suport_booking[] = $item;
+            }
+
+            if (empty($items_suport_booking)) return Zippy_Response_Handler::success(array(), 'Products Support Not Found.');
+
+
+            return Zippy_Response_Handler::success($items_suport_booking, 'Items retrieved successfully.');
+        } catch (Exception $e) {
+            return Zippy_Response_Handler::error($e->getMessage());
+        }
+    }
+
+    public static function get_support_product_by_category($category)
+    {
+        $categories_data = [];
+
+        $term = get_term($category, 'product_cat');
+        $category_name = $term ? $term->name : 'Unknown Category';
+
+        $subcategories = get_terms(array(
+            'taxonomy' => 'product_cat',
+            'parent' => $category,
+            'hide_empty' => false,
+        ));
+
+        $subcategories_data = [];
+        foreach ($subcategories as $subcategory) {
+            $product_query = new WP_Query(array(
+                'post_type' => 'product',
+                'posts_per_page' => -1,
+                'post_status' => 'publish',
+                'tax_query' => array(
+                    array(
+                        'taxonomy' => 'product_cat',
+                        'field' => 'id',
+                        'terms' => $subcategory->term_id,
+                    ),
+                ),
+            ));
+
+            $subcategory_products = [];
+            if ($product_query->have_posts()) {
+                while ($product_query->have_posts()) {
+                    $product_query->the_post();
+                    $product_id = get_the_ID();
+                    $product_name = get_the_title();
+                    $product_price = get_post_meta($product_id, '_price', true);
+
+                    $subcategory_products[] = array(
+                        'product_id' => $product_id,
+                        'product_name' => $product_name,
+                        'product_price' => $product_price,
+                    );
+                }
+                wp_reset_postdata();
+            }
+
+            $subcategories_data[] = array(
+                'subcategory_id' => $subcategory->term_id,
+                'subcategory_name' => $subcategory->name,
+                'subcategory_products' => $subcategory_products,
+            );
+        }
+
+        $category_data = array(
+            'items_id' => $category,
+            'mapping_type' => 'category',
+            'category_name' => $category_name,
+            'subcategories' => $subcategories_data,
         );
 
-        if (empty($items)) {
-            return Zippy_Response_Handler::error('No items found in the database.');
-        }
+        if (empty($subcategories_data)) {
+            $product_query = new WP_Query(array(
+                'post_type' => 'product',
+                'posts_per_page' => -1,
+                'post_status' => 'publish',
+                'tax_query' => array(
+                    array(
+                        'taxonomy' => 'product_cat',
+                        'field' => 'id',
+                        'terms' => $category,
+                    ),
+                ),
+            ));
 
-        $items_with_product_info = [];
-        foreach ($items as $item) {
-            $product = wc_get_product($item['items_id']);
-            if ($product) {
-                $item['product_name'] = $product->get_name();
-                $item['product_price'] = $product->get_price();
+            $products_in_category = [];
+            if ($product_query->have_posts()) {
+                while ($product_query->have_posts()) {
+                    $product_query->the_post();
+                    $product_id = get_the_ID();
+                    $product_name = get_the_title();
+                    $product_price = get_post_meta($product_id, '_price', true);
+
+                    $products_in_category[] = array(
+
+                        'items_id' => $product_id,
+                        'mapping_type' => 'product',
+                        'item_name' => $product_name,
+                        'item_price' => $product_price,
+                    );
+                }
+                wp_reset_postdata();
             }
-            $items_with_product_info[] = $item;
+
+            $category_data = $products_in_category;
         }
 
-        return Zippy_Response_Handler::success($items_with_product_info, 'Items retrieved successfully.');
+        $categories_data = $category_data;
+
+        return $categories_data;
     }
 
     public static function handle_support_booking_category(WP_REST_Request $request)

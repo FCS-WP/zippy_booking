@@ -18,7 +18,7 @@ class Zippy_Request_Validation
     {
         /* Validate main required fields */
         foreach ($required_fields as $field => $rules) {
-            if (isset($rules['required']) &&  empty($request[$field])) {
+            if ((isset($rules['required']) && $rules['required'] == true) &&  empty($request[$field])) {
                 return "$field is required";
             }
 
