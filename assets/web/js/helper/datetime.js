@@ -14,8 +14,8 @@ export const generateTimeSlots = (startTime, endTime, gapTime) => {
     if (slotEnd > end) break;
 
     timeSlots.push({
-      start: slotStart.toTimeString().slice(0, 5),
-      end: slotEnd.toTimeString().slice(0, 5),
+      start: format(slotStart, 'HH:mm'),
+      end:  format(slotEnd, 'HH:mm'),
     });
 
     current.setMinutes(current.getMinutes() + parseInt(gapTime));
@@ -24,10 +24,13 @@ export const generateTimeSlots = (startTime, endTime, gapTime) => {
 };
 
 export const getTimeFromBooking = (booking) => {
-  const start_date = new Date(booking.booking_start_date);
-  const end_date = new Date(booking.booking_end_date);
+  const startDateString = booking.booking_start_date + 'T' + booking.booking_start_time;
+  const endDateString = booking.booking_end_date + 'T' + booking.booking_end_time;
 
-  return { start: format(start_date, "HH:mm"), end: format(end_date, "HH:mm") };
+  const startDate = new Date(startDateString);
+  const endDate = new Date(endDateString);
+
+  return { start: format(startDate, 'HH:mm'), end: format(endDate, 'HH:mm') };
 };
 
 export const filterTimeSlots = (
@@ -35,11 +38,12 @@ export const filterTimeSlots = (
   date = new Date(),
   bookingList = []
 ) => {
+
   const targetDate = format(date, "yyyy-MM-dd");
 
   const getSameBookingDate = bookingList.filter((booking) => {
-    const datePart = booking.booking_start_date.split(" ")[0];
-    return datePart === targetDate;
+    const datePart = new Date(booking.booking_start_date);
+    return format(datePart, "yyyy-MM-dd") === targetDate;
   });
 
   if (getSameBookingDate.length == 0) {
@@ -47,7 +51,7 @@ export const filterTimeSlots = (
   }
 
   const excludeSlots = [];
-  getSameBookingDate.map((booking, index) => {
+  getSameBookingDate.map((booking) => {
     const slot = getTimeFromBooking(booking);
     excludeSlots.push(slot);
   });
@@ -67,7 +71,8 @@ export const isWorkingDate = (date, checkArr = []) => {
 };
 
 export const getBookingTime = (time) => {
-  const date = new Date(time);
+  const current = new Date(`1970-01-01T${time}`);
+  const date = new Date(current);
   return format(date, "HH:mm aa");
 };
 
@@ -80,9 +85,11 @@ export const isInFilterDates = (bookingStart, start, end) => {
   if (!start) {
     return false;
   }
-  const filterDate = new Date(bookingStart);
+  let filterDate = new Date(bookingStart);
+   
   let startDate = new Date(start);
   let endDate = new Date(end);
+  filterDate.setHours(0, 0, 0);
   startDate.setHours(0, 0, 0);
   endDate.setHours(0, 0, 0);
 

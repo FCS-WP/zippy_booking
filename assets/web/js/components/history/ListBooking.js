@@ -15,6 +15,7 @@ import {
   Container,
   Pagination,
   Stack,
+  Grid2,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { FaEye, FaTimes } from "react-icons/fa";
@@ -40,6 +41,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
 }));
 
 const ListBooking = () => {
+
   const adminData = window.admin_data ? window.admin_data : null;
   const [bookings, setBookings] = useState([]);
   const [products, setProducts] = useState([]);
@@ -60,6 +62,10 @@ const ListBooking = () => {
     setIsLoading(true);
 
     const spCategories = await webApi.getSupportCategories();
+    if (!spCategories) {
+        toast.error("No data: Categories.");
+        return 0;
+    }
     const response = spCategories.data;
 
     if (response.data.categories.length == 0) {
@@ -103,7 +109,8 @@ const ListBooking = () => {
       email: adminData.user_email,
     });
 
-    if (dataBookings.data.status != "success") {
+    if (dataBookings.data.status != "success" || dataBookings.data.data.length == 0) {
+     toast.error("No Data: Booking");
       setIsLoading(false);
       return false;
     }
@@ -266,8 +273,8 @@ const ListBooking = () => {
                       Date: {getBookingDate(booking.booking_start_date)}
                     </Typography>
                     <Typography color="textSecondary" gutterBottom>
-                      From: {getBookingTime(booking.booking_start_date)} to:{" "}
-                      {getBookingTime(booking.booking_end_date)}
+                      From: {getBookingTime(booking.booking_start_time)} to:{" "}
+                      {getBookingTime(booking.booking_end_time)}
                     </Typography>
                     <Box
                       sx={{
@@ -351,8 +358,8 @@ const ListBooking = () => {
                       <Typography>Time:</Typography>
                       <Typography variant="h6">
                         From{" "}
-                        {getBookingTime(selectedBooking.booking_start_date)} to{" "}
-                        {getBookingTime(selectedBooking.booking_end_date)}
+                        {getBookingTime(selectedBooking.booking_start_time)} to{" "}
+                        {getBookingTime(selectedBooking.booking_end_time)}
                       </Typography>
                     </Grid>
                   </Grid>

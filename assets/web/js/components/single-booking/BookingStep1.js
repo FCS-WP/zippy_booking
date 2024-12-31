@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { webApi } from "../../api";
 import { toast } from "react-toastify";
 import CustomLoader from "../CustomLoader";
+import Message from "./Message";
 
 const BookingStep1 = ({ handleNextStep }) => {
   const [isloading, setIsloading] = useState(false);
@@ -9,12 +10,18 @@ const BookingStep1 = ({ handleNextStep }) => {
   const [productSelected, setProductSelected] = useState(null);
   const [activeCategory, setActiveCategory] = useState(0);
   const [activeProduct, setActiveProduct] = useState(-1);
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState(null);
   const [products, setProducts] = useState([]);
 
   const getCategories = async () => {
     setIsloading(true);
     const spCategories = await webApi.getSupportCategories();
+    if (!spCategories) {
+      toast.error("No data: Categories.");
+      setIsloading(false);
+      return 0;
+    }
+
     const response = spCategories.data;
     if (response.status == "success") {
       setCategories(response.data.categories);
@@ -83,85 +90,95 @@ const BookingStep1 = ({ handleNextStep }) => {
           <CustomLoader />
         ) : (
           <>
-            <div>
-              <h4>Field</h4>
-              <div className="list-category">
-                {categories &&
-                  categories.map((category, index) => {
-                    if (category.subcategories.length > 0) {
-                      return category.subcategories.map(
-                        (subCategory, subIndex) => (
+          {categories ? (
+            <> 
+              <div>
+                <h4>Field</h4>
+                <div className="list-category">
+                  {categories &&
+                    categories.map((category, index) => {
+                      if (category.subcategories.length > 0) {
+                        return category.subcategories.map(
+                          (subCategory, subIndex) => (
+                            <div
+                              key={x1000(index) + subIndex}
+                              className={`category-item ${
+                                activeCategory == x1000(index) + subIndex
+                                  ? "active"
+                                  : ""
+                              } `}
+                              role="button"
+                              onClick={() =>
+                                handleSelectCategory(
+                                  subCategory,
+                                  x1000(index) + subIndex
+                                )
+                              }
+                            >
+                              {subCategory.subcategory_name}
+                            </div>
+                          )
+                        );
+                      } else {
+                        return (
                           <div
-                            key={x1000(index) + subIndex}
+                            key={x1000(index)}
                             className={`category-item ${
-                              activeCategory == x1000(index) + subIndex
-                                ? "active"
-                                : ""
+                              activeCategory == x1000(index) ? "active" : ""
                             } `}
                             role="button"
                             onClick={() =>
-                              handleSelectCategory(
-                                subCategory,
-                                x1000(index) + subIndex
-                              )
+                              handleSelectCategory(category, x1000(index))
                             }
                           >
-                            {subCategory.subcategory_name}
+                            {category.category_name}
                           </div>
-                        )
-                      );
-                    } else {
-                      return (
-                        <div
-                          key={x1000(index)}
-                          className={`category-item ${
-                            activeCategory == x1000(index) ? "active" : ""
-                          } `}
-                          role="button"
-                          onClick={() =>
-                            handleSelectCategory(category, x1000(index))
-                          }
-                        >
-                          {category.category_name}
-                        </div>
-                      );
-                    }
-                  })}
+                        );
+                      }
+                    })}
+                </div>
               </div>
-            </div>
-            <div>
-              <h4>Field Selection</h4>
-              <div className="list-product">
-                {products.length != 0 &&
-                  products.map((product, index) => (
-                    <div
-                      key={index}
-                      role="button"
-                      onClick={() => handleSelectProduct(product, index)}
-                      className={`product-item ${
-                        activeProduct == index ? "active" : ""
-                      }`}
-                    >
-                      <h5 className="product-title">{product.product_name}</h5>
-                      <span className="product-price">
-                        price: ${product.product_price}
-                      </span>
-                    </div>
-                  ))}
+              <div>
+                <h4>Field Selection</h4>
+                <div className="list-product">
+                  {products.length != 0 &&
+                    products.map((product, index) => (
+                      <div
+                        key={index}
+                        role="button"
+                        onClick={() => handleSelectProduct(product, index)}
+                        className={`product-item ${
+                          activeProduct == index ? "active" : ""
+                        }`}
+                      >
+                        <h5 className="product-title">{product.product_name}</h5>
+                        <span className="product-price">
+                          price: ${product.product_price}
+                        </span>
+                      </div>
+                    ))}
+
+                  {products.length == 0 && (
+                    <Message message={"No Products Found"} />
+                  )} 
+                </div>
               </div>
-            </div>
-            <div>
-              <div className="text-end">
-                <span
-                  role="button"
-                  onClick={() => handleSubmitStep1()}
-                  className="next-step-btn"
-                  id="next-step-btn"
-                >
-                  Continue
-                </span>
+              <div>
+                <div className="text-end">
+                  <span
+                    role="button"
+                    onClick={() => handleSubmitStep1()}
+                    className="next-step-btn"
+                    id="next-step-btn"
+                  >
+                    Continue
+                  </span>
+                </div>
               </div>
-            </div>
+            </>
+          ): (
+            <Message message={"No categories found!"} />
+          )}
           </>
         )}
       </div>
