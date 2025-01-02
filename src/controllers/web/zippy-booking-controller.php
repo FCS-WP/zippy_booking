@@ -108,7 +108,7 @@ class Zippy_Booking_Controller
                 'booking_end_time' => $booking_end_time,
                 'booking_status' => 'pending',
                 'order_id' => $order_id,
-                'orrder_name'=> $custom_order_name,
+                'order_name'=> $custom_order_name,
             ),
             'Booking and order created successfully.'
         );
