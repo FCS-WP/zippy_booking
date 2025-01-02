@@ -50,13 +50,14 @@ const ChipContainer = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1),
 }));
 
-const SearchBox = () => {
+const SearchBox = ({ updateListMapping }) => {
   const [categorySearch, setCategorySearch] = useState("");
   const [productSearch, setProductSearch] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [filteredCategories, setFilteredCategories] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSearch = async (keyword, type) => {
     try {
@@ -108,14 +109,16 @@ const SearchBox = () => {
   }, [categorySearch]);
 
   const handleCategoryClick = (category) => {
-    if (!selectedCategories.includes(category)) {
+    const isInSelectedArr = selectedCategories.find((item)=>item.id === category.id);
+    if (!isInSelectedArr) {
       setSelectedCategories([...selectedCategories, category]);
     }
     setCategorySearch("");
   };
 
   const handleProductClick = (product) => {
-    if (!selectedProducts.includes(product)) {
+    const isInSelectedArr = selectedProducts.find((item)=>item.id === product.id);
+    if (!isInSelectedArr) {
       setSelectedProducts([...selectedProducts, product]);
     }
     setProductSearch("");
@@ -148,8 +151,10 @@ const SearchBox = () => {
   };
 
   const handleAddCategories = async () => {
+    setIsLoading(true);
     if (selectedCategories.length <= 0) {
       toast.error("Select category first!");
+      setIsLoading(false);
       return false;
     }
 
@@ -168,23 +173,32 @@ const SearchBox = () => {
       const { data } = await Api.addSupportCategories(params);
       if (!data) {
         toast.error("Can not add categories!");
+        setIsLoading(false);
         return false;
       }
       if (data.status != "success") {
         toast.error(data.message);
+        setIsLoading(false);
         return false;
       }
       toast.success("Add categories successfully!");
       setSelectedCategories([]);
+      updateListMapping();
     } catch (error) {
       console.log(error);
       toast.error("Can not add categories!");
     }
+    setTimeout(()=>{
+      setIsLoading(false);
+    }, 500)
   };
 
   const handleAddProducts = async () => {
+    setIsLoading(true);
+
     if (selectedProducts.length <= 0) {
       toast.error("Select product first!");
+      setIsLoading(false);
       return false;
     }
 
@@ -203,21 +217,27 @@ const SearchBox = () => {
       const { data } = await Api.addSupportProducts(params);
 
       if (!data) {
+        setIsLoading(false);
         toast.error("Can not add categories!");
         return false;
       }
 
       if (data.status != "success") {
+        setIsLoading(false);
         toast.error(data.message);
         return false;
       }
 
       toast.success("Add products successfully!");
       setSelectedProducts([]);
+      updateListMapping();
     } catch (error) {
       console.log(error);
       toast.error("Can not add products!");
     }
+    setTimeout(()=>{
+      setIsLoading(false);
+    }, 500)
   };
 
   return (
@@ -293,6 +313,7 @@ const SearchBox = () => {
                     sx={{ fontSize: "12px" }}
                     onClick={handleAddCategories}
                     variant="contained"
+                    disabled={isLoading}
                     startIcon={<FiPlus />}
                   >
                     Add Categories
@@ -368,6 +389,7 @@ const SearchBox = () => {
                 >
                   <Button
                     className="btn-hover-float"
+                    disabled={isLoading}
                     sx={{ fontSize: "12px" }}
                     onClick={handleAddProducts}
                     variant="contained"

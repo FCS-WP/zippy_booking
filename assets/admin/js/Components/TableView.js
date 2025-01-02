@@ -9,9 +9,11 @@ import {
   Checkbox,
   Paper,
   FormControlLabel,
+  Button,
+  Box,
 } from "@mui/material";
 
-const TableView = ({ cols, rows, columnWidths = {} }) => {
+const TableView = ({ cols, rows, columnWidths = {}, onDeleteRows = () => {} }) => {
   const [selectedRows, setSelectedRows] = useState({});
 
   useEffect(() => {
@@ -33,7 +35,7 @@ const TableView = ({ cols, rows, columnWidths = {} }) => {
     const newSelection = rows.reduce((acc, _, index) => {
       acc[index] = event.target.checked;
       return acc;
-    }, {});
+    }, []);
     setSelectedRows(newSelection);
   };
 
@@ -45,6 +47,11 @@ const TableView = ({ cols, rows, columnWidths = {} }) => {
 
   return (
     <TableContainer component={Paper}>
+      <Box textAlign={"end"} mb={2}>
+        <Button disabled={(!isMasterChecked && !isMasterIndeterminate) ? true: false } variant="outlined" sx={{ fontSize: '12px' }} onClick={()=>onDeleteRows(selectedRows)}>
+          Delete Selected Rows
+        </Button>
+      </Box>
       <Table>
         <TableHead sx={{ backgroundColor: "#f1f1f1" }}>
           <TableRow>

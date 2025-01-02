@@ -15,4 +15,10 @@ export const Api = {
   async addSupportProducts(params) {
     return await makeRequest("/support-booking/products", params, "POST");
   },
+  async getMappingData(params) {
+    return await makeRequest("/support-booking", params);
+  },
+  async deleteMappingItems(params) {
+    return await makeRequest("/support-booking/products", params, "DELETE");
+  },
 };

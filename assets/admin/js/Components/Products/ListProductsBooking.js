@@ -1,22 +1,40 @@
-import React, { useState } from 'react'
-import TableView from '../TableView';
-import TablePaginationCustom from '../TablePagination';
+import React, { useCallback, useEffect, useState } from "react";
+import TableView from "../TableView";
+import TablePaginationCustom from "../TablePagination";
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Button } from "@mui/material";
+import { Api } from "../../api";
+import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
-const ListProductsBooking = () => {
+const ListProductsBooking = ({ mappingData, updateListMapping }) => {
   const [data, setData] = useState([]);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const [loadingState, setLoadingState] = useState({
-    global: true, 
-    rows: {}, 
+    global: true,
+    rows: {},
   });
+
+  const fetchData = () => {
+    setLoadingState((prev) => ({ ...prev, global: true }));
+    const formattedData = mappingData.map((item) => {
+      return {
+        ID: item.items_id,
+        Name: item.item_name,
+        Type: item.mapping_type,
+      };
+    });
+
+    setData(formattedData);
+    setLoadingState((prev) => ({ ...prev, global: false }));
+  }
 
   const columns = [
     "ID",
     "Name",
     "Type",
-    "Status",
     "Actions",
   ];
 
@@ -24,8 +42,7 @@ const ListProductsBooking = () => {
     ID: "auto",
     Name: "auto",
     Type: "auto",
-    Status: "auto",
-    Actions: "auto"
+    Actions: "10%"
   };
 
   const paginatedData = data.slice(
@@ -41,7 +58,61 @@ const ListProductsBooking = () => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
-  
+
+  const handleDeleteMappingItem = async (data) => {
+    const confirm = await deleteConfirm();
+    if (!confirm) {
+      return false;
+    } 
+    // data : {ID: '71', Name: "...", Type: "product || category"}
+    // deleteMappingItems([data.ID])
+
+    updateListMapping();
+  }
+
+  const handleDeleteMappingItems = async (rows) => {
+    const confirm = await deleteConfirm();
+    if (!confirm) {
+      return false;
+    } 
+    const deletedMappingIds = [];
+    paginatedData.map((item, index)=>{
+      rows[index] ? deletedMappingIds.push(item.ID) : null;
+    })
+    // deleteMappingItems(deletedMappingIds)
+    updateListMapping();
+  }
+
+  const deleteConfirm = async () => {
+    const confirm = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!"
+    });
+    return confirm.isConfirmed ;
+  }
+
+  const deleteMappingItems = async (ids) => {
+    try {
+      const params = {
+        items_ids: ids,
+      }
+      const { data } = await Api.deleteMappingItems(params);
+    } catch (error) {
+      console.log(error);
+      toast.error("Delete failed!");
+    } 
+
+  }
+
+  useEffect(() => {
+    fetchData(page, rowsPerPage);
+  }, [page, rowsPerPage, mappingData]);
+
   return (
     <div>
       <TableView
@@ -49,16 +120,18 @@ const ListProductsBooking = () => {
         columnWidths={columnWidths}
         rows={paginatedData.map((row) => ({
           ...row,
-          Status: (
-            <StatusSelect
-              currentStatus={row.Status}
-              isLoading={!!loadingState.rows[row.ID]}
-              onStatusChange={(newStatus) => {
-                handleStatusChange(row.ID, newStatus);
-              }}
-            />
+          Actions: (
+            <Button 
+              variant="outlined"
+              startIcon={<DeleteIcon />}
+              onClick={(e)=>handleDeleteMappingItem(row)}
+            >
+
+              Delete
+            </Button>
           ),
         }))}
+        onDeleteRows={handleDeleteMappingItems}
       />
       <TablePaginationCustom
         count={data.length}
@@ -68,7 +141,7 @@ const ListProductsBooking = () => {
         onRowsPerPageChange={handleChangeRowsPerPage}
       />
     </div>
-  )
-}
+  );
+};
 
-export default ListProductsBooking
+export default ListProductsBooking;
