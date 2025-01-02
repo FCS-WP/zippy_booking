@@ -1,0 +1,66 @@
+.row-booking{
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    
+    .col_booking_time{
+        width: 49%;
+        .react-datepicker-wrapper{
+            width: 100%;
+        }
+        
+    }
+
+    .col_booking_time{
+        
+        .pre_booking_items{
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            padding: 5px;
+            margin-bottom: 10px;
+            .pre_booking_items__time{
+                font-size: 12px;
+                text-align: center;
+                font-weight: bold;
+                height: 15px;
+            }
+            .pre_booking_items__name{
+                font-size: 14px;
+                text-align: center;
+            }
+        }
+    }
+}
+
+.flex-space-between{
+    display: flex;
+    justify-content: space-between;
+    
+    button{
+        border-radius: 8px;
+        font-weight: bolder;
+        padding: 5px 20px;
+    }
+    
+    button:last-child{
+        background: var(--theme-primary-color);
+        color: #fff;
+        border-color:  var(--theme-primary-color);
+    }
+}
+
+.col_booking_5{
+    h6{
+        margin-bottom: 15px !important;
+    }
+    #BookingInfoUser{
+        input{
+            width: 100%;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+    }
+}
