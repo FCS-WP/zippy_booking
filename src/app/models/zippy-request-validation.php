@@ -98,7 +98,7 @@ class Zippy_Request_Validation
 
 
     public static function get_weekdays(){
-        return ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+        return [0, 1, 2, 3, 4, 5, 6];
     }
     public static function validate_time($time){
         $datetime = DateTime::createFromFormat('H:i', $time);
