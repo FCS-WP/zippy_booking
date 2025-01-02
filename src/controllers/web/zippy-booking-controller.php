@@ -21,25 +21,27 @@ class Zippy_Booking_Controller
     {
         global $wpdb;
         $table_name = 'fcs_data_bookings';
-
+    
         $product_id = intval($request->get_param('product_id'));
         $user_id = intval($request->get_param('user_id'));
         $email = sanitize_email($request->get_param('email'));
         $booking_start_date = sanitize_text_field($request->get_param('booking_start_date'));
         $booking_end_date = sanitize_text_field($request->get_param('booking_end_date'));
-
-        if (empty($product_id) || empty($email) || empty($booking_start_date) || empty($booking_end_date)) {
+        $booking_start_time = sanitize_text_field($request->get_param('booking_start_time'));
+        $booking_end_time = sanitize_text_field($request->get_param('booking_end_time'));
+    
+        if (empty($product_id) || empty($email) || empty($booking_start_date) || empty($booking_end_date) || empty($booking_start_time) || empty($booking_end_time)) {
             return Zippy_Response_Handler::error('Missing request parameter.');
         }
-
+    
         $product = wc_get_product($product_id);
         if (!$product) {
             return Zippy_Response_Handler::error('Product does not exist.');
         }
-
+    
         if (empty($user_id)) {
             $user = get_user_by('email', $email);
-
+    
             if (!$user) {
                 $user_data = array(
                     'user_login' => $email,
@@ -47,9 +49,9 @@ class Zippy_Booking_Controller
                     'user_pass' => wp_generate_password(),
                     'role' => 'customer',
                 );
-
+    
                 $user_id = wp_insert_user($user_data);
-
+    
                 if (is_wp_error($user_id)) {
                     return Zippy_Response_Handler::error('User creation failed.');
                 }
@@ -57,22 +59,43 @@ class Zippy_Booking_Controller
                 $user_id = $user->ID;
             }
         }
-
-        $wpdb->insert($table_name, array(
+    
+        $order = wc_create_order();
+    
+        $order->add_product($product, 1);
+    
+        $order->set_customer_id($user_id);
+    
+        $order->calculate_totals();
+        $order->save();
+        $order_id = $order->get_id();
+    
+        $inserted = $wpdb->insert($table_name, array(
             'user_id' => $user_id,
             'email' => $email,
             'product_id' => $product_id,
             'booking_start_date' => $booking_start_date,
             'booking_end_date' => $booking_end_date,
+            'booking_start_time' => $booking_start_time,
+            'booking_end_time' => $booking_end_time,
             'booking_status' => 'pending',
+            'order_id' => $order_id,
         ));
-
+    
         $booking_id = $wpdb->insert_id;
 
-        if (!$booking_id) {
-            return Zippy_Response_Handler::error('Failed to retrieve booking ID.');
+        if (false === $inserted || empty($booking_id)) {
+            return Zippy_Response_Handler::error('Failed to insert booking. Error: ' . $wpdb->last_error);
         }
-
+        
+        $custom_order_name = 'Booking #' . $booking_id;
+        $order->add_order_note($custom_order_name); 
+        $order->update_meta_data('custom_order_name', $custom_order_name);
+        $order->update_meta_data('booking_id', $booking_id);
+        $order->update_meta_data('booking_start_time', $booking_start_time);
+        $order->update_meta_data('booking_end_time', $booking_end_time);
+        $order->save();
+    
         return Zippy_Response_Handler::success(
             array(
                 'booking_id' => $booking_id,
@@ -81,45 +104,56 @@ class Zippy_Booking_Controller
                 'product_id' => $product_id,
                 'booking_start_date' => $booking_start_date,
                 'booking_end_date' => $booking_end_date,
-                'booking_status' => 'pending'
+                'booking_start_time' => $booking_start_time,
+                'booking_end_time' => $booking_end_time,
+                'booking_status' => 'pending',
+                'order_id' => $order_id,
+                'order_name'=> $custom_order_name,
             ),
-            'Booking created successfully.'
+            'Booking and order created successfully.'
         );
     }
-
+    
+    
     public static function get_booking_with_product(WP_REST_Request $request)
     {
         global $wpdb;
         $table_name = 'fcs_data_bookings';
-
+    
         $booking_id = $request->get_param('booking_id');
         $email = $request->get_param('email');
         $product_id = $request->get_param('product_id');
-
-        $query = "SELECT * FROM $table_name WHERE 1=1";
-
+    
+        $query = "
+            SELECT b.*, o.ID AS order_id
+            FROM $table_name b
+            LEFT JOIN {$wpdb->prefix}posts o ON o.post_type = 'shop_order' 
+            LEFT JOIN {$wpdb->prefix}postmeta pm ON o.ID = pm.post_id AND pm.meta_key = 'booking_id' 
+            WHERE 1=1
+        ";
+    
         if ($booking_id) {
-            $query .= $wpdb->prepare(" AND ID = %d", $booking_id);
+            $query .= $wpdb->prepare(" AND b.ID = %d", $booking_id);
         }
         if ($email) {
-            $query .= $wpdb->prepare(" AND email = %s", $email);
+            $query .= $wpdb->prepare(" AND b.email = %s", $email);
         }
         if ($product_id) {
-            $query .= $wpdb->prepare(" AND product_id = %d", $product_id);
+            $query .= $wpdb->prepare(" AND b.product_id = %d", $product_id);
         }
-
+    
         $results = $wpdb->get_results($query);
-        var_dump($results);
-
+    
         if (empty($results)) {
             return Zippy_Response_Handler::error('Booking not found.');
         }
-
+    
         return Zippy_Response_Handler::success(
             !empty($results) ? $results[0] : array(),
             'Bookings retrieved successfully.'
         );
     }
+    
     public static function delete_booking(WP_REST_Request $request)
     {
         global $wpdb;
@@ -231,33 +265,34 @@ class Zippy_Booking_Controller
     public static function handle_support_booking_product(WP_REST_Request $request)
     {
         global $wpdb;
-
+    
+       
         $items_id = $request->get_param('items_id');
         $mapping_type = $request->get_param('mapping_type');
-
+    
         if (empty($items_id)) {
             return Zippy_Response_Handler::error('Items ID is required.');
         }
-
+    
         $table_name = $wpdb->prefix . 'product_booking_mapping';
-
+    
         $exists = $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM {$table_name} WHERE items_id = %d",
             $items_id
         ));
-
+    
         if ($exists > 0) {
             return Zippy_Response_Handler::error('Items ID already exists.');
         }
-
-        $product = wc_get_product($items_id); // Get the WooCommerce product by ID
+    
+        $product = wc_get_product($items_id); 
         if (!$product) {
             return Zippy_Response_Handler::error('Product not found.');
         }
-
-        $product_name = $product->get_name(); // Get product name
-        $product_price = $product->get_price(); // Get product price
-
+    
+        $product_name = $product->get_name(); 
+        $product_price = $product->get_price();
+    
         $result = $wpdb->insert(
             $table_name,
             array(
@@ -269,20 +304,36 @@ class Zippy_Booking_Controller
                 '%s',
             )
         );
-
+    
         if ($result === false) {
             return Zippy_Response_Handler::error('Error inserting data into the database.');
         }
-
+    
+        $meta_key = 'product_booking_mapping';
+        $meta_value = array(
+            'items_id' => $items_id,
+            'mapping_type' => $mapping_type,
+            'product_name' => $product_name,
+            'product_price' => $product_price
+        );
+    
+        $update_meta = update_post_meta($items_id, $meta_key, $meta_value);
+    
+        if (!$update_meta) {
+            return Zippy_Response_Handler::error('Failed to add meta to the product.');
+        }
+    
         $added_item = array(
             'items_id' => $items_id,
             'mapping_type' => $mapping_type,
             'product_name' => $product_name,
             'product_price' => $product_price,
+            'meta_key' => $meta_key,
         );
-
+    
         return Zippy_Response_Handler::success($added_item, 'Product booking mapping created successfully.');
     }
+    
 
     public static function handle_support_booking_products(WP_REST_Request $request)
     {
@@ -886,34 +937,34 @@ class Zippy_Booking_Controller
     public static function delete_support_booking_category(WP_REST_Request $request)
     {
         global $wpdb;
-    
-        $category_ids = $request->get_param('items_ids'); 
-    
+
+        $category_ids = $request->get_param('items_ids');
+
         if (empty($category_ids) || !is_array($category_ids)) {
             return Zippy_Response_Handler::error('Category IDs are required and should be an array.');
         }
-    
+
         $table_name = $wpdb->prefix . 'product_booking_mapping';
         $deleted_categories = [];
         $not_found_categories = [];
-    
+
         foreach ($category_ids as $category_id) {
             if (!is_numeric($category_id)) {
                 continue;
             }
-    
+
             $exists = $wpdb->get_var($wpdb->prepare(
                 "SELECT COUNT(*) FROM {$table_name} WHERE items_id = %d AND mapping_type = 'category'",
                 $category_id
             ));
-    
+
             if ($exists > 0) {
                 $result = $wpdb->delete(
                     $table_name,
                     array('items_id' => $category_id, 'mapping_type' => 'category'),
                     array('%d', '%s')
                 );
-    
+
                 if ($result !== false) {
                     $category = get_term_by('id', $category_id, 'product_cat');
                     if ($category) {
@@ -927,15 +978,14 @@ class Zippy_Booking_Controller
                 $not_found_categories[] = $category_id;
             }
         }
-    
+
         if (empty($deleted_categories)) {
             return Zippy_Response_Handler::error('No valid categories were deleted.', ['not_found_categories' => $not_found_categories]);
         }
-    
+
         return Zippy_Response_Handler::success(
             ['deleted_categories' => $deleted_categories, 'not_found_categories' => $not_found_categories],
             'Categories deleted successfully.'
         );
     }
-    
 }

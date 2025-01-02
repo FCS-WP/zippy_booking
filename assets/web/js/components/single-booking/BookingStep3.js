@@ -1,7 +1,8 @@
-import { Container } from "@mui/material";
-import React, { useEffect } from "react";
+import { format } from "date-fns";
+import React, { useEffect, useRef } from "react";
 
 const BookingStep3 = ({ selectedProduct, bookingData, handleNextStep }) => {
+  const pageFocusRef = useRef(null);
   const backToHome = () => {
     window.location.href = window.location.origin;
   };
@@ -10,10 +11,30 @@ const BookingStep3 = ({ selectedProduct, bookingData, handleNextStep }) => {
     handleNextStep(3, null);
   };
 
-  useEffect(() => {}, []);
+  const showBookingTimes = (bookingData) => {
+    if (bookingData) {
+      const startDateString = bookingData.booking_start_date + 'T' + bookingData.booking_start_time;
+      const endDateString = bookingData.booking_end_date + 'T' + bookingData.booking_end_time;
+  
+      const startDate = new Date(startDateString);
+      const endDate = new Date(endDateString);
+      const result = "From " + format(startDate, 'HH:mm aaa') + " " + "to " +  format(endDate, 'HH:mm aaa');
+      return result;
+    }
+    return
+  }
+
+  useEffect(() => {
+    if (pageFocusRef.current) {
+      pageFocusRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, []);
 
   return (
-    <div className="booking-step-3">
+    <div className="booking-step-3" ref={pageFocusRef}>
       {bookingData && selectedProduct && (
         <div>
           <h3>Booking Details</h3>
@@ -39,14 +60,14 @@ const BookingStep3 = ({ selectedProduct, bookingData, handleNextStep }) => {
               </li>
               <li>
                 <div className="summary-item">
-                  <span>Booking Start Date:</span>
+                  <span>Booking Date:</span>
                   <h4>{bookingData.booking_start_date}</h4>
                 </div>
               </li>
               <li>
                 <div className="summary-item">
-                  <span>Booking End Date:</span>
-                  <h4>{bookingData.booking_end_date}</h4>
+                  <span>Booking Time:</span>
+                  <h4>{showBookingTimes(bookingData)}</h4>
                 </div>
               </li>
               <li>

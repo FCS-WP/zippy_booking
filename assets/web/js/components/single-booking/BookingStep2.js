@@ -12,6 +12,7 @@ import { getBookingsByDate } from "../../helper/booking";
 import { toast } from "react-toastify";
 import { alertInputEmail } from "../../helper/showAlert";
 import CustomLoader from "../CustomLoader";
+import Message from "./Message";
 
 const BookingStep2 = ({
   handleNextStep,
@@ -47,11 +48,11 @@ const BookingStep2 = ({
       createdBookings
     );
     setFilteredTimeSlots(newTimeSlots);
-    setIsloading(false)
+    setIsloading(false);
   };
 
   useEffect(() => {
-    if (configs) {
+    if (configs && configs.length > 0) {
       const singleConfig = configs.filter(
         (config, index) => config.booking_type == "single"
       );
@@ -99,8 +100,10 @@ const BookingStep2 = ({
     const data = {
       product_id: selectedProduct.product_id,
       email: adminData.user_email ?? userEmail,
-      booking_start_date: format(bookingStartDate, "yyyy-MM-dd HH:mm"),
-      booking_end_date: format(bookingEndDate, "yyyy-MM-dd HH:mm"),
+      booking_start_date: format(bookingStartDate, "yyyy-MM-dd"),
+      booking_end_date: format(bookingEndDate, "yyyy-MM-dd"),
+      booking_start_time: format(bookingStartDate, "HH:mm"),
+      booking_end_time: format(bookingEndDate, "HH:mm"),
     };
     const createBooking = await webApi.createBooking(data);
     if (!createBooking || createBooking.data?.status != "success") {
@@ -141,20 +144,26 @@ const BookingStep2 = ({
                 />
               </div>
             </div>
-            <div className="time-slots">
-              {isloading ? (
-                <CustomLoader />
-              ) : (
-                <>
-                  {filteredTimeSlots && (
-                    <TimeSlots
-                      slots={filteredTimeSlots}
-                      onSelectTime={(time) => setSelectedTimes(time)}
-                    />
-                  )}
-                </>
-              )}
-            </div>
+            {configs.length > 0 ? (
+              <div className="time-slots">
+                {isloading ? (
+                  <CustomLoader />
+                ) : (
+                  <>
+                    {filteredTimeSlots && (
+                      <TimeSlots
+                        slots={filteredTimeSlots}
+                        onSelectTime={(time) => setSelectedTimes(time)}
+                      />
+                    )}
+                  </>
+                )}
+              </div>
+            ): (
+              <div className="time-slots">
+                <Message message={"Booking configs not found!"} />
+              </div>
+            )}
           </div>
           <div className="btn-container">
             <span
@@ -167,14 +176,14 @@ const BookingStep2 = ({
             {isSubmitLoading ? (
               <CustomLoader />
             ) : (
-                <span
-                  role="button"
-                  onClick={() => handleSubmitStep2()}
-                  className="next-step-btn"
-                  id="next-step-btn"
-                >
-                  Continue
-                </span>
+              <span
+                role="button"
+                onClick={() => handleSubmitStep2()}
+                className="next-step-btn"
+                id="next-step-btn"
+              >
+                Continue
+              </span>
             )}
           </div>
         </div>
