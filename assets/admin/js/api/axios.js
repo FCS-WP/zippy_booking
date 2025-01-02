@@ -1,4 +1,3 @@
-import { ErrorOutline } from "@mui/icons-material";
 import axios from "axios";
 
 
@@ -7,7 +6,6 @@ export const makeRequest = async (
   params = {},
   method = "",
   token = "FEhI30q7ySHtMfzvSDo6RkxZUDVaQ1BBU3lBcGhYS3BrQStIUT09"
-  
 ) => {
   const baseURL = "/wp-json";
   const api = axios.create({

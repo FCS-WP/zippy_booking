@@ -124,11 +124,11 @@ const BookingStep2 = ({
           <div className="product-info">
             <div>
               <h4>Field</h4>
-              <span> {selectedProduct.product_name}</span>
+              <span> {selectedProduct.item_name}</span>
             </div>
             <div>
               <h4>Price</h4>
-              <span> ${selectedProduct.product_price}</span>
+              <span> ${selectedProduct.item_price}</span>
             </div>
           </div>
           <div className="booking-section">

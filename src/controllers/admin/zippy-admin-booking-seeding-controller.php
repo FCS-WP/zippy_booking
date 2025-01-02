@@ -160,20 +160,5 @@ class Zippy_Admin_Booking_Seeding_Controller
 
             $seeder->refill();
         }
-
-
-        if ($type == "configs") {
-            $seeder->table(ZIPPY_BOOKING_CONFIG_TABLE_NAME)->columns([
-                'booking_type' => $faker->randomElement([ZIPPY_BOOKING_BOOKING_TYPE_SINGLE, ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE]),
-                'duration' => $faker->randomElement([5,10,20,30,60]),
-                'store_email' => $faker->email(),
-                'allow_overlap' => $faker->randomElement([0,1]),
-                'weekdays' => serialize([0,1,2,3,4,5,6]),
-                'open_at' => "8:00",
-                'close_at' => "20:00",
-            ])->rowQuantity(1);
-            $seeder->refill();
-        }
-        
     }
 }

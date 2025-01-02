@@ -5,9 +5,8 @@ import { Bookings } from "../../api/bookings";
 import { formatDate } from "../../utils/dateHelper";
 import TablePaginationCustom from "../../Components/TablePagination";
 import StatusSelect from "../../Components/StatusSelect";
-import CircularProgress from "@mui/material/CircularProgress";
 import { toast, ToastContainer } from "react-toastify";
-import Box from "@mui/material/Box";
+import Loading from "../../Components/Loading";
 
 const Index = () => {
   const pageTitle = "Bookings";
@@ -123,18 +122,7 @@ const Index = () => {
   );
 
   if (loadingState.global) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
+    return <Loading />;
   }
 
   return (

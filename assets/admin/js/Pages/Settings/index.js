@@ -19,6 +19,7 @@ import {
   Switch,
   Select,
   MenuItem,
+  CircularProgress,
 } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
@@ -38,30 +39,53 @@ const Settings = () => {
   const [schedule, setSchedule] = useState(
     daysOfWeek.map((day) => ({ day, slots: [] }))
   );
-  const [duration, setDuration] = useState(5); // in minutes
+  const [duration, setDuration] = useState(5);
   const [storeEmail, setStoreEmail] = useState("");
   const [allowOverlap, setAllowOverlap] = useState(false);
   const [openAt, setOpenAt] = useState("");
   const [closeAt, setCloseAt] = useState("");
   const [bookingType, setBookingType] = useState("single");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchSettings = async () => {
+      setLoading(true);
       try {
         const response = await Api.getSettings();
-        const data = response.data;
-        const fetchedSchedule =
-          data.schedule || daysOfWeek.map((day) => ({ day, slots: [] }));
+        const data = response.data.data;
+
+        const fetchedSchedule = daysOfWeek.map((day, index) => {
+          const daySchedule = data.store_working_time.find(
+            (time) => parseInt(time.weekday) === index
+          );
+
+          if (daySchedule && daySchedule.is_open === "1") {
+            return {
+              day,
+              slots: [
+                {
+                  from: daySchedule.open_at || "",
+                  to: daySchedule.close_at || "",
+                },
+              ],
+            };
+          } else {
+            return { day, slots: [] };
+          }
+        });
+
         setSchedule(fetchedSchedule);
         setDuration(data.duration || 5);
-        setStoreEmail(data.storeEmail || "");
-        setAllowOverlap(data.allowOverlap || false);
+        setStoreEmail(data.store_email || "");
+        setAllowOverlap(data.allow_overlap === "1");
         setOpenAt(data.openAt || "");
         setCloseAt(data.closeAt || "");
-        setBookingType(data.bookingType || "single");
+        setBookingType(data.booking_type || "single");
       } catch (error) {
         console.error("Error fetching settings:", error);
         setSchedule(daysOfWeek.map((day) => ({ day, slots: [] })));
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -71,8 +95,8 @@ const Settings = () => {
   const handleAddTimeSlot = (day) => {
     setSchedule((prev) =>
       prev.map((item) =>
-        item.day === day
-          ? { ...item, slots: [...item.slots, { from: "", to: "" }] }
+        item.day === day && item.slots.length === 0
+          ? { ...item, slots: [{ from: "", to: "" }] }
           : item
       )
     );
@@ -80,14 +104,7 @@ const Settings = () => {
 
   const handleRemoveTimeSlot = (day, slotIndex) => {
     setSchedule((prev) =>
-      prev.map((item) =>
-        item.day === day
-          ? {
-              ...item,
-              slots: item.slots.filter((_, index) => index !== slotIndex),
-            }
-          : item
-      )
+      prev.map((item) => (item.day === day ? { ...item, slots: [] } : item))
     );
   };
 
@@ -107,18 +124,18 @@ const Settings = () => {
   };
 
   const handleSaveChanges = async () => {
+    setLoading(true);
     const storeWorkingTime = schedule.map((item) => {
       const isOpen = item.slots.length > 0;
       const openSlot = item.slots[0] || {};
-      const closeSlot = item.slots[item.slots.length - 1] || {};
 
       const weekdayIndex = daysOfWeek.indexOf(item.day);
 
       return {
-        is_open: isOpen ? 1 : 0,
-        weekday: weekdayIndex,
-        open_at: isOpen ? openSlot.from || "" : null,
-        close_at: isOpen ? closeSlot.to || "" : null,
+        is_open: isOpen ? "1" : "0",
+        weekday: weekdayIndex.toString(),
+        open_at: isOpen ? openSlot.from || "" : "",
+        close_at: isOpen ? openSlot.to || "" : "",
       };
     });
 
@@ -126,33 +143,45 @@ const Settings = () => {
       booking_type: bookingType,
       duration: bookingType === "single" ? duration : null,
       store_email: storeEmail,
-      allow_overlap: allowOverlap ? 1 : 0,
+      allow_overlap: allowOverlap ? "1" : "0",
       store_working_time: storeWorkingTime,
     };
 
     try {
       const response = await Api.updateSettings(params);
-      console.log(response);
-      
 
       const updatedResponse = await Api.getSettings();
       const updatedData = updatedResponse.data;
 
-      const updatedSchedule =
-        updatedData.schedule && updatedData.schedule.length > 0
-          ? updatedData.schedule
-          : daysOfWeek.map((day) => ({ day, slots: [] }));
-      console.log(updatedSchedule.openAt);
-      
+      const updatedSchedule = daysOfWeek.map((day, index) => {
+        const daySchedule = updatedData.store_working_time.find(
+          (time) => parseInt(time.weekday) === index
+        );
+
+        if (daySchedule && daySchedule.is_open === "1") {
+          return {
+            day,
+            slots: [
+              {
+                from: daySchedule.open_at || "",
+                to: daySchedule.close_at || "",
+              },
+            ],
+          };
+        } else {
+          return { day, slots: [] };
+        }
+      });
+
       setSchedule(updatedSchedule);
       setDuration(updatedData.duration || "5");
-      setStoreEmail(updatedData.storeEmail || "");
-      setAllowOverlap(updatedData.allowOverlap || false);
-      setOpenAt(updatedData.openAt || "");
-      setCloseAt(updatedData.closeAt || "");
-      setBookingType(updatedData.bookingType || "single");
+      setStoreEmail(updatedData.store_email || "");
+      setAllowOverlap(updatedData.allow_overlap === "1");
+      setBookingType(updatedData.booking_type || "single");
     } catch (error) {
       console.error("Error updating settings:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -210,7 +239,7 @@ const Settings = () => {
                 sx={{
                   border: "1px solid #ccc",
                   borderRadius: "4px",
-                  padding: "8px",
+                  padding: "5px",
                 }}
               >
                 {durationOptions.map((option) => (
@@ -236,98 +265,105 @@ const Settings = () => {
               variant="contained"
               color="primary"
               onClick={handleSaveChanges}
+              disabled={loading}
+              style={{
+                borderRadius: "8px",
+                padding: "13px 20px",
+                textTransform: "none",
+              }}
             >
-              Save Changes
+              {loading ? "Saving..." : "Save Changes"}
             </Button>
           </Box>
         </Grid>
         <Grid item xs={12} md={8}>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Day</TableCell>
-                  <TableCell>From</TableCell>
-                  <TableCell>To</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {schedule.map((item, dayIndex) => (
-                  <React.Fragment key={dayIndex}>
-                    {item.slots.length === 0 && (
-                      <TableRow>
-                        <TableCell>{item.day}</TableCell>
-                        <TableCell colSpan={2}></TableCell>
-                        <TableCell>
-                          <IconButton
-                            onClick={() => handleAddTimeSlot(item.day)}
-                          >
-                            <AddCircleOutlineIcon color="primary" />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                    {item.slots.map((slot, slotIndex) => (
-                      <TableRow key={slotIndex}>
-                        {slotIndex === 0 && (
-                          <TableCell rowSpan={item.slots.length || 1}>
-                            {item.day}
-                          </TableCell>
-                        )}
-                        <TableCell>
-                          <TextField
-                            type="time"
-                            size="small"
-                            value={slot.from}
-                            onChange={(e) =>
-                              handleTimeChange(
-                                item.day,
-                                slotIndex,
-                                "from",
-                                e.target.value
-                              )
-                            }
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <TextField
-                            type="time"
-                            size="small"
-                            value={slot.to}
-                            onChange={(e) =>
-                              handleTimeChange(
-                                item.day,
-                                slotIndex,
-                                "to",
-                                e.target.value
-                              )
-                            }
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <IconButton
-                            onClick={() =>
-                              handleRemoveTimeSlot(item.day, slotIndex)
-                            }
-                          >
-                            <RemoveCircleOutlineIcon color="error" />
-                          </IconButton>
-                          {slotIndex === item.slots.length - 1 && (
+          {loading ? (
+            <Box
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              height="100%"
+            >
+              <CircularProgress />
+            </Box>
+          ) : (
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Day</TableCell>
+                    <TableCell>From</TableCell>
+                    <TableCell>To</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {schedule.map((item, dayIndex) => (
+                    <React.Fragment key={dayIndex}>
+                      {item.slots.length === 0 && (
+                        <TableRow>
+                          <TableCell>{item.day}</TableCell>
+                          <TableCell colSpan={2}></TableCell>
+                          <TableCell>
                             <IconButton
                               onClick={() => handleAddTimeSlot(item.day)}
+                              disabled={item.slots.length > 0}
                             >
                               <AddCircleOutlineIcon color="primary" />
                             </IconButton>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </React.Fragment>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                      {item.slots.map((slot, slotIndex) => (
+                        <TableRow key={slotIndex}>
+                          <TableCell>{item.day}</TableCell>
+                          <TableCell>
+                            <TextField
+                              type="time"
+                              size="small"
+                              value={slot.from}
+                              onChange={(e) =>
+                                handleTimeChange(
+                                  item.day,
+                                  slotIndex,
+                                  "from",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <TextField
+                              type="time"
+                              size="small"
+                              value={slot.to}
+                              onChange={(e) =>
+                                handleTimeChange(
+                                  item.day,
+                                  slotIndex,
+                                  "to",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <IconButton
+                              onClick={() =>
+                                handleRemoveTimeSlot(item.day, slotIndex)
+                              }
+                            >
+                              <RemoveCircleOutlineIcon color="error" />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </React.Fragment>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
         </Grid>
       </Grid>
     </Box>

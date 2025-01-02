@@ -4,7 +4,7 @@ export const makeRequest = async (
   endpoint,
   params = {},
   method = "GET",
-  token = "NlLzbAaslg8FtjEArjkX0jo6OS9seUc3TGRKUmhJVytacjRHM1h2dz09"
+  token = "FEhI30q7ySHtMfzvSDo6RkxZUDVaQ1BBU3lBcGhYS3BrQStIUT09"
 ) => {
   const baseURL = "/wp-json";
   const api = axios.create({

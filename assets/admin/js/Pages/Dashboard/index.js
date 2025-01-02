@@ -3,7 +3,7 @@ import DatePicker from "react-datepicker";
 import { Box, Grid, Card, CardContent, Typography } from "@mui/material";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import { Bookings } from "../../api/bookings";
-
+import Loading from "../../Components/Loading";
 const getDateRange = (baseDate, startOffset, endOffset) => {
   const start = new Date(baseDate);
   start.setDate(start.getDate() + startOffset);
@@ -25,12 +25,14 @@ const Dashboard = () => {
   });
   const [bookings, setBookings] = useState([]);
   const [filteredBookings, setFilteredBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchBookings();
   }, []);
 
   const fetchBookings = async () => {
+    setLoading(true); 
     try {
       const response = await Bookings.getBookings();
 
@@ -43,6 +45,8 @@ const Dashboard = () => {
       }
     } catch (error) {
       console.error("Error fetching bookings:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -50,14 +54,22 @@ const Dashboard = () => {
     const [start, end] = dates;
     setStartDate(start);
     setEndDate(end);
-    filterBookings(bookings, { start, end });
+
+    if (start && end) {
+      setLoading(true);
+      setTimeout(() => {
+        filterBookings(bookings, { start, end });
+        setLoading(false);
+      }, 500);
+    } else {
+      filterBookings(bookings, { start, end });
+    }
   };
 
   const filterBookings = (bookings, dateRange) => {
     const { start, end } = dateRange;
     const filtered = bookings.filter((booking) => {
       const bookingStartDate = new Date(booking.booking_start_date);
-      
       return bookingStartDate >= start && bookingStartDate <= end;
     });
     setFilteredBookings(filtered);
@@ -75,34 +87,40 @@ const Dashboard = () => {
 
   return (
     <Box p={4}>
-      <Box display="flex" justifyContent="flex-end" mb={4}>
-        <div className="date-picker">
-          <CalendarMonthIcon />
-          <DatePicker
-            selected={startDate}
-            onChange={handleDateChange}
-            startDate={startDate}
-            endDate={endDate}
-            selectsRange
-            inline={false}
-            className="form-control"
-            dateFormat="MMMM d, yyyy"
-          />
-        </div>
-      </Box>
-      <Grid container spacing={3}>
-        <DashboardCard title="Total Bookings" value={getTotalBookings()} />
-        <DashboardCard
-          title="Completed Bookings"
-          value={getCompletedBookings()}
-          highlight="success.main"
-        />
-        <DashboardCard
-          title="Pending Bookings"
-          value={getPendingBookings()}
-          highlight="warning.main"
-        />
-      </Grid>
+      {loading ? (
+        <Loading />
+      ) : (
+        <>
+          <Box display="flex" justifyContent="flex-end" mb={4}>
+            <div className="date-picker">
+              <CalendarMonthIcon />
+              <DatePicker
+                selected={startDate}
+                onChange={handleDateChange}
+                startDate={startDate}
+                endDate={endDate}
+                selectsRange
+                inline={false}
+                className="form-control"
+                dateFormat="MMMM d, yyyy"
+              />
+            </div>
+          </Box>
+          <Grid container spacing={3}>
+            <DashboardCard title="Total Bookings" value={getTotalBookings()} />
+            <DashboardCard
+              title="Completed Bookings"
+              value={getCompletedBookings()}
+              highlight="success.main"
+            />
+            <DashboardCard
+              title="Pending Bookings"
+              value={getPendingBookings()}
+              highlight="warning.main"
+            />
+          </Grid>
+        </>
+      )}
     </Box>
   );
 };
@@ -128,4 +146,4 @@ const DashboardCard = ({ title, value, highlight }) => {
   );
 };
 
-export default Dashboard; 
+export default Dashboard;
