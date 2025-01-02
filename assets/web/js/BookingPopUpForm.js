@@ -7,10 +7,11 @@ import { alertInputEmail, showAlert } from "./helper/showAlert";
 
 function BookingPopUp() {
     const [isPopupOpen, setIsPopupOpen] = useState(false);
-    const [selectedDate, setSelectedDate] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(new Date());
     const [selectedStartTime, setSelectedStartTime] = useState(null);
     const [selectedEndTime, setSelectedEndTime] = useState(null);
     const [productId, setProductId] = useState(null);
+    const [bookings, setBookings] = useState([]);
 
     const openPopup = () => {
       setIsPopupOpen(true);
@@ -64,19 +65,22 @@ function BookingPopUp() {
                 showAlert("warning", "Canceled", "You did not enter a valid email or canceled the booking.");
                 return;
             }
-        }else{
-          const params = {
-            product_id: productId,
-            user_id: admin_data.userID,
-            email: admin_data.user_email,
-            booking_start_date: formatDate(selectedDate) + " " + convertToTime(selectedStartTime),
-            booking_end_date: formatDate(selectedDate) + " " + convertToTime(selectedEndTime),
-          };
-  
-          const newBookings = await webApi.createBooking(params); 
-  
+        }
+        const params = {
+          product_id: productId,
+          user_id: admin_data.userID,
+          email: email,
+          booking_start_date: formatDate(selectedDate),
+          booking_end_date: formatDate(selectedDate),
+          booking_start_time: convertToTime(selectedStartTime),
+          booking_end_time: convertToTime(selectedEndTime)
+        };
+
+        const newBookings = await webApi.createBooking(params); 
+        if(newBookings.data.status == 'success'){
           showAlert("success", "Booking Successful", "Your booking has been created successfully!");
-          console.log("Booking created with params:", params);
+        }else{
+          showAlert("error", "Booking Failed", err.message || "An unknown error occurred.");
         }
       } catch (err) {
         showAlert("error", "Booking Failed", err.message || "An unknown error occurred.");
@@ -89,13 +93,19 @@ function BookingPopUp() {
           product_id: productId,
           booking_start_date: formatDate(selectedDate),
           booking_end_date: formatDate(selectedDate),
-      };
-        const bookings = await webApi.getBookings(params);
-        console.log("Bookings:", bookings);
+        };
+        const bookingsResponse = await webApi.getBookings(params);
+        
+        setBookings(bookingsResponse.data.data.bookings || []);
       }catch(err){
         showAlert("error", "Get Booking Failed", err.message || "An unknown error occurred.");
       }
     }
+    useEffect(() => {
+      if (productId && selectedDate) {
+          getAllBooking();
+      }
+  }, [selectedDate, productId]);
 
     return (
       <>
@@ -121,7 +131,7 @@ function BookingPopUp() {
                     onStartTimeSelect={handleStartTimeSelect}
                     onEndTimeSelect={handleEndTimeSelect}
                   />
-                  <Prebooking/>
+                  <Prebooking bookings={bookings}/>
                 </div>
               </div>
               <div className="flex-space-between">
@@ -129,7 +139,6 @@ function BookingPopUp() {
                 <button
                   onClick={() => {
                     createBooking(); 
-                    getAllBooking();
                   }}
                 >
                   Continue

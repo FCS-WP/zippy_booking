@@ -1,15 +1,31 @@
-import React, { useEffect, useState } from "react";
+import React from 'react';
 
-function Prebooking() {
-  return (
-    <>
-      <h6>Pre-order Schedule</h6>
-      <div className="row-booking">
-        No data available booking
-      </div>
-    </>
-  );
+function Prebooking({ bookings }) {
+  console.log(bookings);
+    return (
+        <div>
+            <h6>Pre-order Schedule</h6>
+
+            {bookings.length > 0 ? (
+                <div className="row-booking">
+                    {bookings.map((booking, index) => (
+                      <div className="col_booking_time" key={index}>
+                        <div className="pre_booking_items">
+                          <div className="pre_booking_items__time">
+                            <span>{booking.booking_start_time} - {booking.booking_end_time}</span>
+                          </div>
+                          <div className="pre_booking_items__name">
+                            <span>{booking.email}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+            ) : (
+                <p>No bookings available for the selected date.</p>
+            )}
+        </div>
+    );
 }
 
 export default Prebooking;
-
