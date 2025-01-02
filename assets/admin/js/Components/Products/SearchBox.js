@@ -13,9 +13,11 @@ import {
   Chip,
   ListItemButton,
   Button,
+  Tooltip,
+  IconButton,
 } from "@mui/material";
 import { styled } from "@mui/system";
-import { BsSearch } from "react-icons/bs";
+import { BsSearch, BsFillQuestionCircleFill } from "react-icons/bs";
 import { FiPlus } from "react-icons/fi";
 import { Api } from "../../api";
 import { toast } from "react-toastify";
@@ -109,7 +111,9 @@ const SearchBox = ({ updateListMapping }) => {
   }, [categorySearch]);
 
   const handleCategoryClick = (category) => {
-    const isInSelectedArr = selectedCategories.find((item)=>item.id === category.id);
+    const isInSelectedArr = selectedCategories.find(
+      (item) => item.id === category.id
+    );
     if (!isInSelectedArr) {
       setSelectedCategories([...selectedCategories, category]);
     }
@@ -117,7 +121,9 @@ const SearchBox = ({ updateListMapping }) => {
   };
 
   const handleProductClick = (product) => {
-    const isInSelectedArr = selectedProducts.find((item)=>item.id === product.id);
+    const isInSelectedArr = selectedProducts.find(
+      (item) => item.id === product.id
+    );
     if (!isInSelectedArr) {
       setSelectedProducts([...selectedProducts, product]);
     }
@@ -188,9 +194,9 @@ const SearchBox = ({ updateListMapping }) => {
       console.log(error);
       toast.error("Can not add categories!");
     }
-    setTimeout(()=>{
+    setTimeout(() => {
       setIsLoading(false);
-    }, 500)
+    }, 500);
   };
 
   const handleAddProducts = async () => {
@@ -235,10 +241,13 @@ const SearchBox = ({ updateListMapping }) => {
       console.log(error);
       toast.error("Can not add products!");
     }
-    setTimeout(()=>{
+    setTimeout(() => {
       setIsLoading(false);
-    }, 500)
+    }, 500);
   };
+
+  const tooltipAddProducts = `The products you add will be supported for booking.`;
+  const tooltipAddCategories = `When you add categories, all products within that category will also be supported for booking.`;
 
   return (
     <Container disableGutters maxWidth={"xxxl"} className="custom-mui">
@@ -291,7 +300,7 @@ const SearchBox = ({ updateListMapping }) => {
                 )}
               </SearchContainer>
               <Grid container spacing={3} alignItems={"end"}>
-                <Grid size={9}>
+                <Grid size={{ xs: 12, lg: 8 }}>
                   <ChipContainer>
                     {selectedCategories.map((category, index) => (
                       <Chip
@@ -303,10 +312,12 @@ const SearchBox = ({ updateListMapping }) => {
                   </ChipContainer>
                 </Grid>
                 <Grid
-                  size={3}
+                  display={"flex"}
                   justifyContent={"end"}
+                  size={{ xs: 12, lg: 4 }}
                   textAlign={"end"}
-                  alignItems={"end"}
+                  alignItems={"center"}
+                  gap={1}
                 >
                   <Button
                     className="btn-hover-float"
@@ -318,6 +329,11 @@ const SearchBox = ({ updateListMapping }) => {
                   >
                     Add Categories
                   </Button>
+                  <Tooltip title={tooltipAddCategories}>
+                    <IconButton size="small" sx={{ p: 0, mb: 0.5 }}>
+                      <BsFillQuestionCircleFill role="button" />
+                    </IconButton>
+                  </Tooltip>
                 </Grid>
               </Grid>
             </StyledPaper>
@@ -370,7 +386,7 @@ const SearchBox = ({ updateListMapping }) => {
                 )}
               </SearchContainer>
               <Grid container spacing={3} alignItems={"end"}>
-                <Grid size={9}>
+                <Grid size={{ xs: 12, lg: 8 }}>
                   <ChipContainer>
                     {selectedProducts.map((product, index) => (
                       <Chip
@@ -382,10 +398,12 @@ const SearchBox = ({ updateListMapping }) => {
                   </ChipContainer>
                 </Grid>
                 <Grid
-                  size={3}
+                  display={"flex"}
                   justifyContent={"end"}
+                  size={{ xs: 12, lg: 4 }}
                   textAlign={"end"}
-                  alignItems={"end"}
+                  alignItems={"center"}
+                  gap={1}
                 >
                   <Button
                     className="btn-hover-float"
@@ -397,6 +415,11 @@ const SearchBox = ({ updateListMapping }) => {
                   >
                     Add Products
                   </Button>
+                  <Tooltip title={tooltipAddProducts}>
+                    <IconButton size="small" sx={{ p: 0, mb: 0.5 }}>
+                      <BsFillQuestionCircleFill role="button" />
+                    </IconButton>
+                  </Tooltip>
                 </Grid>
               </Grid>
             </StyledPaper>

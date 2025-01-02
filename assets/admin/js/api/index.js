@@ -19,6 +19,6 @@ export const Api = {
     return await makeRequest("/support-booking", params);
   },
   async deleteMappingItems(params) {
-    return await makeRequest("/support-booking/products", params, "DELETE");
+    return await makeRequest("/support-booking/delete", params, "DELETE");
   },
 };

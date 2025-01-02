@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import TableView from "../TableView";
 import TablePaginationCustom from "../TablePagination";
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteIcon from "@mui/icons-material/Delete";
 import { Button } from "@mui/material";
 import { Api } from "../../api";
 import { toast } from "react-toastify";
@@ -29,20 +29,15 @@ const ListProductsBooking = ({ mappingData, updateListMapping }) => {
 
     setData(formattedData);
     setLoadingState((prev) => ({ ...prev, global: false }));
-  }
+  };
 
-  const columns = [
-    "ID",
-    "Name",
-    "Type",
-    "Actions",
-  ];
+  const columns = ["ID", "Name", "Type", "Actions"];
 
   const columnWidths = {
     ID: "auto",
     Name: "auto",
     Type: "auto",
-    Actions: "10%"
+    Actions: "10%",
   };
 
   const paginatedData = data.slice(
@@ -63,25 +58,32 @@ const ListProductsBooking = ({ mappingData, updateListMapping }) => {
     const confirm = await deleteConfirm();
     if (!confirm) {
       return false;
-    } 
-    // data : {ID: '71', Name: "...", Type: "product || category"}
-    // deleteMappingItems([data.ID])
-
+    }
+    const deletedData = {
+      items_id: data.ID,
+      type: data.Type,
+    };
+    const del = await deleteMappingItems([deletedData]);
     updateListMapping();
-  }
+  };
 
   const handleDeleteMappingItems = async (rows) => {
     const confirm = await deleteConfirm();
     if (!confirm) {
       return false;
-    } 
+    }
     const deletedMappingIds = [];
-    paginatedData.map((item, index)=>{
-      rows[index] ? deletedMappingIds.push(item.ID) : null;
-    })
-    // deleteMappingItems(deletedMappingIds)
+    paginatedData.map((item, index) => {
+      rows[index]
+        ? deletedMappingIds.push({
+            items_id: item.ID,
+            type: item.Type,
+          })
+        : null;
+    });
+    const del = await deleteMappingItems(deletedMappingIds);
     updateListMapping();
-  }
+  };
 
   const deleteConfirm = async () => {
     const confirm = await Swal.fire({
@@ -91,23 +93,26 @@ const ListProductsBooking = ({ mappingData, updateListMapping }) => {
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!"
+      confirmButtonText: "Yes, delete it!",
     });
-    return confirm.isConfirmed ;
-  }
+    return confirm.isConfirmed;
+  };
 
   const deleteMappingItems = async (ids) => {
     try {
       const params = {
-        items_ids: ids,
-      }
+        request: ids,
+      };
       const { data } = await Api.deleteMappingItems(params);
+      if (!data || data.status != "success") {
+        toast.error("Delete failed!");
+      } else {
+        toast.success("Delete Successfully!");
+      }
     } catch (error) {
-      console.log(error);
       toast.error("Delete failed!");
-    } 
-
-  }
+    }
+  };
 
   useEffect(() => {
     fetchData(page, rowsPerPage);
@@ -121,12 +126,11 @@ const ListProductsBooking = ({ mappingData, updateListMapping }) => {
         rows={paginatedData.map((row) => ({
           ...row,
           Actions: (
-            <Button 
+            <Button
               variant="outlined"
               startIcon={<DeleteIcon />}
-              onClick={(e)=>handleDeleteMappingItem(row)}
+              onClick={(e) => handleDeleteMappingItem(row)}
             >
-
               Delete
             </Button>
           ),
