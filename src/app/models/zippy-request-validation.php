@@ -23,7 +23,7 @@ class Zippy_Request_Validation
 
 
             if ($rules["data_type"] == "range" && !empty($request[$field])) {
-                if (!in_array(strtoupper($request[$field]), $rules['allowed_values'], true)) {
+                if (!in_array(strtolower($request[$field]), $rules['allowed_values'], true)) {
                     return "$field must be one of: " . implode(", ", $rules['allowed_values']);
                 }
             }

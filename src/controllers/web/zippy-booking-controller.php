@@ -760,9 +760,9 @@ class Zippy_Booking_Controller
 
     public static function get_all_support_booking_categories(WP_REST_Request $request)
     {
+        $table_name = ZIPPY_BOOKING_PRODUCT_MAPPING_TABLE_NAME;
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'product_booking_mapping';
 
         $items = $wpdb->get_results(
             $wpdb->prepare(

@@ -138,9 +138,9 @@ if (!defined('ZIPPY_BOOKING_API_TOKEN')) {
 // load_plugin_textdomain('zippy-booking-car', false, basename(dirname(__FILE__)) . '/languages');
 
 
-// ini_set('display_errors', 1);
-// ini_set('display_startup_errors', 1);
-// error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 /* ------------------------------------------
 // Includes
