@@ -1,0 +1,29 @@
+@import "react-datepicker/dist/react-datepicker.css";
+.booking-page-title {
+  padding: 35px 0px 30px 0px;
+}
+
+body.bookings_page_calander, body.zippy-bookings_page_bookings, body.toplevel_page_zippy-bookings {
+  background: #fff;
+}
+
+#zippy-root .react-datepicker-wrapper {
+  width: 350px;
+}
+#zippy-root .react-datepicker-wrapper .react-datepicker__input-container input {
+  max-width: 100% !important;
+  text-align: center;
+}
+#zippy-root .date-picker {
+  position: relative;
+}
+#zippy-root .date-picker .MuiSvgIcon-root {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+#zippy-root .date-picker .form-control {
+  padding-left: 40px;
+}/*# sourceMappingURL=app.css.map */
