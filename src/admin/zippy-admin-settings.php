@@ -157,9 +157,7 @@ class Zippy_Admin_Settings
             duration VARCHAR(255) NULL,
             store_email VARCHAR(255) NULL,
             allow_overlap BOOLEAN NOT NULL,
-            weekdays VARCHAR(255) NOT NULL,
-            open_at TIME NOT NULL,
-            close_at TIME NOT NULL,
+            store_working_time LONGTEXT NOT NULL,
             PRIMARY KEY  (id)
         );";
 
