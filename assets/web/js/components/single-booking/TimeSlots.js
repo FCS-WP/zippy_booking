@@ -6,6 +6,7 @@ const TimeSlots = ({ slots = [], onSelectTime }) => {
     setTimeActive(index);
     onSelectTime(time);
   };
+
   return (
     <div>
       <h4>Time Slots</h4>
