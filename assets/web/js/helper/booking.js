@@ -6,7 +6,7 @@ export const getBookingsByDate = async (booking_id, date) => {
     product_id: booking_id,
     booking_start_date: format(date, "yyyy-MM-dd"),
     booking_end_date: format(date, "yyyy-MM-dd"),
-    booking_status: "pending",
+    booking_status: "pendding",
   };
   const res = await webApi.getBookings(queryParams);
   if (res.data.data.length == 0) {

@@ -5,184 +5,148 @@ import CustomLoader from "../CustomLoader";
 import Message from "./Message";
 
 const BookingStep1 = ({ handleNextStep }) => {
-  const [isloading, setIsloading] = useState(false);
-  const [categorySelected, setCategorySelected] = useState({});
-  const [productSelected, setProductSelected] = useState(null);
-  const [activeCategory, setActiveCategory] = useState(0);
-  const [activeProduct, setActiveProduct] = useState(-1);
-  const [categories, setCategories] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isProductLoading, setIsProductLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [activeCategoryIndex, setActiveCategoryIndex] = useState(-1);
+  const [activeProductIndex, setActiveProductIndex] = useState(-1);
 
-  const getCategories = async () => {
-    setIsloading(true);
-    const spCategories = await webApi.getSupportCategories();
-    if (!spCategories) {
-      toast.error("No data: Categories.");
-      setIsloading(false);
-      return 0;
+  const fetchCategoriesAndProducts = async () => {
+    try {
+      setIsLoading(true);
+      const { data } = await webApi.getBookingSupports();
+
+      if (data.status !== "success" || !data.data?.length) {
+        toast.error("Failed to retrieve categories or products.");
+        return;
+      }
+
+      setCategories(
+        data.data.filter((item) => item.mapping_type === "category")
+      );
+      setProducts(data.data.filter((item) => item.mapping_type === "product"));
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      toast.error("An error occurred while fetching data.");
+    } finally {
+      setIsLoading(false);
     }
-
-    const response = spCategories.data;
-    if (response.status == "success") {
-      setCategories(response.data.categories);
-    }
-
-    if (response.data.categories.length == 0) {
-      toast.error("No data: Categories.");
-    }
-
-    response.data.categories[0].subcategories.length > 0
-      ? handleLoadProducts(response.data.categories[0].subcategories[0])
-      : handleLoadProducts(response.data.categories[0]);
-
-    setIsloading(false);
-  };
-
-  const handleLoadProducts = (category) => {
-    const productInCategory = category.subcategory_id
-      ? category.subcategory_products
-      : category.products_in_category;
-    setProducts(productInCategory);
-    if (productInCategory.length == 0) {
-      toast.error("No data: Products.");
-    }
-  };
-
-  const x1000 = (number) => {
-    return parseInt(number) * 1000;
   };
 
   useEffect(() => {
-    getCategories();
+    fetchCategoriesAndProducts();
   }, []);
 
-  const clearSelectedProduct = () => {
-    setProductSelected(null);
-    setActiveProduct(-1);
-  };
+  const handleCategorySelect = async (category, index) => {
+    try {
+      setIsProductLoading(true);
+      setActiveCategoryIndex(index);
+      setSelectedCategory(category);
 
-  const handleSelectCategory = (category, index) => {
-    setCategorySelected(category);
-    if (activeCategory != index) {
-      setActiveCategory(index);
-      handleLoadProducts(category);
-      clearSelectedProduct();
+      const { data } = await webApi.getBookingSupports({
+        category: category.items_id,
+      });
+      setProducts(data.data || []);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      toast.error("An error occurred while fetching products.");
+    } finally {
+      setIsProductLoading(false);
     }
   };
 
-  const handleSelectProduct = (product, index) => {
-    setProductSelected(product);
-    setActiveProduct(index);
+  const handleProductSelect = (product, index) => {
+    setSelectedProduct(product);
+    setActiveProductIndex(index);
   };
 
-  const handleSubmitStep1 = () => {
-    if (!productSelected) {
-      toast.warn("Please fill in all the required information.");
+  const handleNext = () => {
+    if (!selectedProduct) {
+      toast.warn("Please select a product to continue.");
       return;
     }
-    handleNextStep(1, productSelected);
+    handleNextStep(1, selectedProduct);
+  };
+
+  const renderCategories = () => {
+    if (!categories.length) {
+      return <Message message="No categories found!" />;
+    }
+
+    return categories.map((category, index) => (
+      <div
+        key={category.items_id}
+        className={`category-item ${
+          activeCategoryIndex === index ? "active" : ""
+        }`}
+        role="button"
+        aria-pressed={activeCategoryIndex === index}
+        onClick={() => handleCategorySelect(category, index)}
+      >
+        {category.item_name}
+      </div>
+    ));
+  };
+
+  const renderProducts = () => {
+    if (isProductLoading) {
+      return <CustomLoader />;
+    }
+
+    if (!products.length) {
+      return <Message message="No products found!" />;
+    }
+
+    return products.map((product, index) => (
+      <div
+        key={product.items_id}
+        className={`product-item ${
+          activeProductIndex === index ? "active" : ""
+        }`}
+        role="button"
+        aria-pressed={activeProductIndex === index}
+        onClick={() => handleProductSelect(product, index)}
+      >
+        <h5 className="product-title">{product.item_name}</h5>
+        <span className="product-price">Price: ${product.item_price}</span>
+      </div>
+    ));
   };
 
   return (
-    <>
-      <div className="booking-step-1">
-        {isloading ? (
-          <CustomLoader />
-        ) : (
-          <>
-          {categories ? (
-            <> 
-              <div>
-                <h4>Field</h4>
-                <div className="list-category">
-                  {categories &&
-                    categories.map((category, index) => {
-                      if (category.subcategories.length > 0) {
-                        return category.subcategories.map(
-                          (subCategory, subIndex) => (
-                            <div
-                              key={x1000(index) + subIndex}
-                              className={`category-item ${
-                                activeCategory == x1000(index) + subIndex
-                                  ? "active"
-                                  : ""
-                              } `}
-                              role="button"
-                              onClick={() =>
-                                handleSelectCategory(
-                                  subCategory,
-                                  x1000(index) + subIndex
-                                )
-                              }
-                            >
-                              {subCategory.subcategory_name}
-                            </div>
-                          )
-                        );
-                      } else {
-                        return (
-                          <div
-                            key={x1000(index)}
-                            className={`category-item ${
-                              activeCategory == x1000(index) ? "active" : ""
-                            } `}
-                            role="button"
-                            onClick={() =>
-                              handleSelectCategory(category, x1000(index))
-                            }
-                          >
-                            {category.category_name}
-                          </div>
-                        );
-                      }
-                    })}
-                </div>
-              </div>
-              <div>
-                <h4>Field Selection</h4>
-                <div className="list-product">
-                  {products.length != 0 &&
-                    products.map((product, index) => (
-                      <div
-                        key={index}
-                        role="button"
-                        onClick={() => handleSelectProduct(product, index)}
-                        className={`product-item ${
-                          activeProduct == index ? "active" : ""
-                        }`}
-                      >
-                        <h5 className="product-title">{product.product_name}</h5>
-                        <span className="product-price">
-                          price: ${product.product_price}
-                        </span>
-                      </div>
-                    ))}
-
-                  {products.length == 0 && (
-                    <Message message={"No Products Found"} />
-                  )} 
-                </div>
-              </div>
-              <div>
-                <div className="text-end">
-                  <span
-                    role="button"
-                    onClick={() => handleSubmitStep1()}
-                    className="next-step-btn"
-                    id="next-step-btn"
-                  >
-                    Continue
-                  </span>
-                </div>
-              </div>
-            </>
-          ): (
-            <Message message={"No categories found!"} />
-          )}
-          </>
-        )}
-      </div>
-    </>
+    <div className="booking-step-1">
+      {isLoading ? (
+        <CustomLoader />
+      ) : (
+        <>
+          <div className="booking-conent">
+            <div>
+              <h4>Field Categories</h4>
+              <div className="list-category">{renderCategories()}</div>
+            </div>
+            <div>
+              <h4>Field Avalible</h4>
+              <div className="list-product">{renderProducts()}</div>
+            </div>
+          </div>
+          <div className="booking-footer">
+            <div className="booking-ctn-button">
+              <span
+                role="button"
+                id="next-step-btn"
+                className="next-step-btn"
+                onClick={handleNext}
+              >
+                Continue
+              </span>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
   );
 };
 

@@ -51,50 +51,51 @@ const BookingForm = () => {
   }, []);
 
   return (
-    <> 
+    <>
       {pluginConfigs ? (
         <div id="zippy-booking-form">
-        <div className="steps-container">
-          <div className={`step-item ${currentStep == 1 ? "active" : ""}`}>
-            <span></span>
-            <h4>1. Select Field</h4>
+          <div className="steps-container">
+            <div className={`step-item ${currentStep == 1 ? "active" : ""}`}>
+              <span></span>
+              <h4>1. Select Field</h4>
+            </div>
+            <div className={`step-item ${currentStep == 2 ? "active" : ""}`}>
+              <span></span>
+              <h4>2. Select Date</h4>
+            </div>
+            <div className={`step-item ${currentStep == 3 ? "active" : ""}`}>
+              <span></span>
+              <h4>3. Review</h4>
+            </div>
           </div>
-          <div className={`step-item ${currentStep == 2 ? "active" : ""}`}>
-            <span></span>
-            <h4>2. Select Date</h4>
+          <div className="booking-container">
+            {currentStep == 1 && (
+              <BookingStep1 handleNextStep={handleNextStep} />
+            )}
+
+            {currentStep == 2 && (
+              <BookingStep2
+                handlePreviousStep={handlePreviousStep}
+                handleNextStep={handleNextStep}
+                selectedProduct={selectedProduct}
+                configs={pluginConfigs}
+              />
+            )}
+
+            {currentStep == 3 && (
+              <BookingStep3
+                selectedProduct={selectedProduct}
+                bookingData={bookingData}
+                handleNextStep={handleNextStep}
+              />
+            )}
           </div>
-          <div className={`step-item ${currentStep == 3 ? "active" : ""}`}>
-            <span></span>
-            <h4>3. Review</h4>
-          </div>
+          <ToastContainer />
         </div>
-        <div className="booking-container">
-          {currentStep == 1 && <BookingStep1 handleNextStep={handleNextStep} />}
-  
-          {currentStep == 2 && (
-            <BookingStep2
-              handlePreviousStep={handlePreviousStep}
-              handleNextStep={handleNextStep}
-              selectedProduct={selectedProduct}
-              configs={pluginConfigs}
-            />
-          )}
-  
-          {currentStep == 3 && (
-            <BookingStep3
-              selectedProduct={selectedProduct}
-              bookingData={bookingData}
-              handleNextStep={handleNextStep}
-            />
-          )}
-        </div>
-        <ToastContainer />
-      </div>
       ) : (
         <Message message={"Can not get booking configs."} />
       )}
     </>
-    
   );
 };
 
