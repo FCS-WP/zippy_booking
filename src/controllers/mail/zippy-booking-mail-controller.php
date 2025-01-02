@@ -43,22 +43,14 @@ class Zippy_Booking_Mail_Controller
             $status = wp_mail($customer_email, $subject, $content, $headers);
 
             if ($status) {
-                $log = Zippy_Log_Action::log(
+                Zippy_Log_Action::log(
                     'mail',
                     json_encode(['to' => $customer_email, 'subject' => $subject, 'content' => $content]),
                     $status ? 'success' : 'failure',
                     $status ? ZIPPY_BOOKING_SUCCESS : 'Email failed to send.'
                 );
 
-                if($log){
-                    return Zippy_Response_Handler::success([
-                        "subject" => $subject,
-                        "content" => $content,
-                        "customer_email" => $customer_email,
-                    ]);
-                } else {
-                    return Zippy_Response_Handler::error(ZIPPY_BOOKING_ERROR);    
-                }
+                return Zippy_Response_Handler::error(ZIPPY_BOOKING_ERROR);    
             } else {
                 return Zippy_Response_Handler::error("Fail to send email, please check the log!");
             }
