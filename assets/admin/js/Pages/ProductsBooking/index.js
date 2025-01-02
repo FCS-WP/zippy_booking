@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import SearchBox from '../../Components/Products/SearchBox'
 import ListProductsBooking from '../../Components/Products/ListProductsBooking'
 import { useState } from 'react'
+import { ToastContainer } from 'react-toastify'
 
 const ProductsBooking = () => {
   const [dataCategories, setDataCategories] = useState([]);
@@ -26,6 +27,7 @@ const ProductsBooking = () => {
     <div className='products-booking-page'>
         <SearchBox />
         <ListProductsBooking />
+        <ToastContainer />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Container,
@@ -17,18 +17,19 @@ import {
 import { styled } from "@mui/system";
 import { BsSearch } from "react-icons/bs";
 import { FiPlus } from "react-icons/fi";
-
+import { Api } from "../../api";
+import { toast } from "react-toastify";
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
   marginBottom: theme.spacing(3),
   borderRadius: theme.spacing(1),
-  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
 }));
 
 const SearchContainer = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(3),
-  position: "relative"
+  position: "relative",
 }));
 
 const SuggestionsContainer = styled(Box)(({ theme }) => ({
@@ -40,7 +41,7 @@ const SuggestionsContainer = styled(Box)(({ theme }) => ({
   backgroundColor: "#fff",
   borderRadius: theme.spacing(1),
   boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-  marginTop: theme.spacing(1)
+  marginTop: theme.spacing(1),
 }));
 
 const ChipContainer = styled(Box)(({ theme }) => ({
@@ -54,30 +55,57 @@ const SearchBox = () => {
   const [productSearch, setProductSearch] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
+  const [filteredCategories, setFilteredCategories] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
 
-  const dummyCategories = [
-    "Electronics",
-    "Clothing",
-    "Books",
-    "Home & Garden",
-    "Sports"
-  ];
+  const handleSearch = async (keyword, type) => {
+    try {
+      const params = {
+        keyword,
+        type,
+      };
+      const { data } = await Api.searchByKeyword(params);
+      return data.data;
+    } catch (error) {
+      console.log("Error when search", error);
+    }
+  };
 
-  const dummyProducts = [
-    "Smartphone",
-    "Laptop",
-    "T-shirt",
-    "Novel",
-    "Garden Tools"
-  ];
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (productSearch.trim()) {
+        const dataProducts = await handleSearch(productSearch, "product");
+        if (dataProducts) {
+          setFilteredProducts(dataProducts);
+        } else {
+          toast.error("Search error");
+          setFilteredProducts([]);
+        }
+      } else {
+        setFilteredProducts([]);
+      }
+    };
 
-  const filteredCategories = dummyCategories.filter((category) =>
-    category.toLowerCase().includes(categorySearch.toLowerCase())
-  );
+    fetchProducts();
+  }, [productSearch]);
 
-  const filteredProducts = dummyProducts.filter((product) =>
-    product.toLowerCase().includes(productSearch.toLowerCase())
-  );
+  useEffect(() => {
+    const fetchCategories = async () => {
+      if (categorySearch.trim()) {
+        const dataCategories = await handleSearch(categorySearch, "category");
+        if (dataCategories) {
+          setFilteredCategories(dataCategories);
+        } else {
+          toast.error("Search error");
+          setFilteredCategories([]);
+        }
+      } else {
+        setFilteredCategories([]);
+      }
+    };
+
+    fetchCategories();
+  }, [categorySearch]);
 
   const handleCategoryClick = (category) => {
     if (!selectedCategories.includes(category)) {
@@ -94,38 +122,103 @@ const SearchBox = () => {
   };
 
   const handleDeleteCategory = (categoryToDelete) => {
-    setSelectedCategories(selectedCategories.filter(category => category !== categoryToDelete));
+    setSelectedCategories(
+      selectedCategories.filter((category) => category !== categoryToDelete)
+    );
   };
 
   const handleDeleteProduct = (productToDelete) => {
-    setSelectedProducts(selectedProducts.filter(product => product !== productToDelete));
+    setSelectedProducts(
+      selectedProducts.filter((product) => product !== productToDelete)
+    );
   };
 
   const handleCategoryKeyDown = (event) => {
-    if (event.key === 'Enter' && filteredCategories.length > 0) {
-        handleCategoryClick(filteredCategories[0]);
-        event.preventDefault();
+    if (event.key === "Enter" && filteredCategories.length > 0) {
+      handleCategoryClick(filteredCategories[0]);
+      event.preventDefault();
     }
-  }
+  };
 
   const handleProductKeyDown = (event) => {
-    if (event.key === 'Enter' && filteredProducts.length > 0) {
-        handleProductClick(filteredProducts[0]);
-        event.preventDefault();
+    if (event.key === "Enter" && filteredProducts.length > 0) {
+      handleProductClick(filteredProducts[0]);
+      event.preventDefault();
     }
-  }
+  };
 
-  const handleApplyCategories = () => {
-    if (selectedCategories.length > 0) {
-        console.log("Add categories: ", selectedCategories);
+  const handleAddCategories = async () => {
+    if (selectedCategories.length <= 0) {
+      toast.error("Select category first!");
+      return false;
     }
-  }
 
-  const handleApplyProducts = () => {
-    if (selectedProducts.length > 0) {
-        console.log("Add products: ", selectedProducts);
+    try {
+      const addedIds = [];
+      const prepareRequestData = selectedCategories.map((item) => {
+        const categoryInfo = {
+          items_id: item.id,
+          mapping_type: "category",
+        };
+        addedIds.push(categoryInfo);
+      });
+      const params = {
+        categories: addedIds,
+      };
+      const { data } = await Api.addSupportCategories(params);
+      if (!data) {
+        toast.error("Can not add categories!");
+        return false;
+      }
+      if (data.status != "success") {
+        toast.error(data.message);
+        return false;
+      }
+      toast.success("Add categories successfully!");
+      setSelectedCategories([]);
+    } catch (error) {
+      console.log(error);
+      toast.error("Can not add categories!");
     }
-  }
+  };
+
+  const handleAddProducts = async () => {
+    if (selectedProducts.length <= 0) {
+      toast.error("Select product first!");
+      return false;
+    }
+
+    try {
+      const addedIds = [];
+      const prepareRequestData = selectedProducts.map((item) => {
+        const productInfo = {
+          items_id: item.id,
+          mapping_type: "product",
+        };
+        addedIds.push(productInfo);
+      });
+      const params = {
+        products: addedIds,
+      };
+      const { data } = await Api.addSupportProducts(params);
+
+      if (!data) {
+        toast.error("Can not add categories!");
+        return false;
+      }
+
+      if (data.status != "success") {
+        toast.error(data.message);
+        return false;
+      }
+
+      toast.success("Add products successfully!");
+      setSelectedProducts([]);
+    } catch (error) {
+      console.log(error);
+      toast.error("Can not add products!");
+    }
+  };
 
   return (
     <Container disableGutters maxWidth={"xxxl"} className="custom-mui">
@@ -142,14 +235,15 @@ const SearchBox = () => {
                   placeholder="Enter category name..."
                   value={categorySearch}
                   onChange={(e) => setCategorySearch(e.target.value)}
-                  slotProps= {{
-                    input: { startAdornment: (
+                  slotProps={{
+                    input: {
+                      startAdornment: (
                         <InputAdornment position="start">
                           <BsSearch />
                         </InputAdornment>
-                      )}
+                      ),
+                    },
                   }}
-           
                 />
                 {categorySearch && (
                   <SuggestionsContainer>
@@ -157,11 +251,11 @@ const SearchBox = () => {
                       {filteredCategories.length > 0 ? (
                         filteredCategories.map((category, index) => (
                           <ListItemButton
-                            key={index} 
+                            key={index}
                             divider={index !== filteredCategories.length - 1}
                             onClick={() => handleCategoryClick(category)}
                           >
-                            <ListItemText primary={category} />
+                            <ListItemText primary={category.name} />
                           </ListItemButton>
                         ))
                       ) : (
@@ -176,22 +270,33 @@ const SearchBox = () => {
                   </SuggestionsContainer>
                 )}
               </SearchContainer>
-              <Grid container spacing={3} alignItems={'end'}>
-                <Grid size={9} >
-                    <ChipContainer>
-                        {selectedCategories.map((category, index) => (
-                        <Chip
-                            key={index}
-                            label={category}
-                            onDelete={() => handleDeleteCategory(category)}
-                        />
-                        ))}
-                    </ChipContainer>
+              <Grid container spacing={3} alignItems={"end"}>
+                <Grid size={9}>
+                  <ChipContainer>
+                    {selectedCategories.map((category, index) => (
+                      <Chip
+                        key={index}
+                        label={category.name}
+                        onDelete={() => handleDeleteCategory(category)}
+                      />
+                    ))}
+                  </ChipContainer>
                 </Grid>
-                <Grid size={3} justifyContent={'end'} textAlign={'end'} alignItems={'end'}>
-                    <Button className="btn-hover-float" onClick={handleApplyCategories} variant="contained" startIcon={<FiPlus />}>
-                        Apply
-                    </Button>
+                <Grid
+                  size={3}
+                  justifyContent={"end"}
+                  textAlign={"end"}
+                  alignItems={"end"}
+                >
+                  <Button
+                    className="btn-hover-float"
+                    sx={{ fontSize: "12px" }}
+                    onClick={handleAddCategories}
+                    variant="contained"
+                    startIcon={<FiPlus />}
+                  >
+                    Add Categories
+                  </Button>
                 </Grid>
               </Grid>
             </StyledPaper>
@@ -208,12 +313,14 @@ const SearchBox = () => {
                   value={productSearch}
                   onChange={(e) => setProductSearch(e.target.value)}
                   onKeyDown={handleProductKeyDown}
-                  slotProps= {{
-                    input: { startAdornment: (
+                  slotProps={{
+                    input: {
+                      startAdornment: (
                         <InputAdornment position="start">
                           <BsSearch />
                         </InputAdornment>
-                      )}
+                      ),
+                    },
                   }}
                 />
                 {productSearch && (
@@ -221,12 +328,12 @@ const SearchBox = () => {
                     <List>
                       {filteredProducts.length > 0 ? (
                         filteredProducts.map((product, index) => (
-                          <ListItemButton 
-                            key={index} 
+                          <ListItemButton
+                            key={index}
                             divider={index !== filteredProducts.length - 1}
                             onClick={() => handleProductClick(product)}
                           >
-                            <ListItemText primary={product} />
+                            <ListItemText primary={product.name} />
                           </ListItemButton>
                         ))
                       ) : (
@@ -241,22 +348,33 @@ const SearchBox = () => {
                   </SuggestionsContainer>
                 )}
               </SearchContainer>
-              <Grid container spacing={3} alignItems={'end'}>
-                <Grid size={9} >
-                    <ChipContainer>
+              <Grid container spacing={3} alignItems={"end"}>
+                <Grid size={9}>
+                  <ChipContainer>
                     {selectedProducts.map((product, index) => (
-                    <Chip
+                      <Chip
                         key={index}
-                        label={product}
+                        label={product.name}
                         onDelete={() => handleDeleteProduct(product)}
-                    />
+                      />
                     ))}
-                </ChipContainer>
+                  </ChipContainer>
                 </Grid>
-                <Grid size={3} justifyContent={'end'} textAlign={'end'} alignItems={'end'}>
-                    <Button className="btn-hover-float" onClick={handleApplyProducts} variant="contained" startIcon={<FiPlus />}>
-                        Apply
-                    </Button>
+                <Grid
+                  size={3}
+                  justifyContent={"end"}
+                  textAlign={"end"}
+                  alignItems={"end"}
+                >
+                  <Button
+                    className="btn-hover-float"
+                    sx={{ fontSize: "12px" }}
+                    onClick={handleAddProducts}
+                    variant="contained"
+                    startIcon={<FiPlus />}
+                  >
+                    Add Products
+                  </Button>
                 </Grid>
               </Grid>
             </StyledPaper>
