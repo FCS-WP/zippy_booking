@@ -1,7 +1,6 @@
 import React from 'react';
 
 function Prebooking({ bookings }) {
-  console.log(bookings);
     return (
         <div>
             <h6>Pre-order Schedule</h6>

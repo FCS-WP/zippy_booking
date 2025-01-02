@@ -130,6 +130,7 @@ function BookingPopUp() {
                   <Timepicker
                     onStartTimeSelect={handleStartTimeSelect}
                     onEndTimeSelect={handleEndTimeSelect}
+                    bookings={bookings}
                   />
                   <Prebooking bookings={bookings}/>
                 </div>
