@@ -156,7 +156,6 @@ const Settings = () => {
                             startIcon={<AddCircleOutlineIcon />}
                             onClick={() => handleAddTimeSlot(item.day)}
                           >
-                            Add Time Slot
                           </Button>
                         </TableCell>
                       </TableRow>
