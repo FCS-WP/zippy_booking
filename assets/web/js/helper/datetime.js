@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format,getDay } from "date-fns";
 
 export const generateTimeSlots = (startTime, endTime, gapTime) => {
   const timeSlots = [];
@@ -103,3 +103,11 @@ export const isInFilterDates = (bookingStart, start, end) => {
   }
   return false;
 };
+
+
+
+export const getCustomDayOfWeek = (date) => {
+    const inputDate = new Date(date);
+    const originalDay = getDay(inputDate);
+    return originalDay === 0 ? 6 : originalDay - 1;
+}
