@@ -1,6 +1,7 @@
 <div class="wrap">
   <div id="zippy-root">
-    <div id="root_app">
+    <div id="zippy_settings">
+      
     </div>
   </div>
 </div>
