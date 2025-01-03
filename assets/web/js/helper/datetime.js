@@ -1,5 +1,4 @@
-import { format,getDay } from "date-fns";
-
+import { parse, format, addMinutes, isBefore, getDay, isAfter } from "date-fns";
 export const generateTimeSlots = (startTime, endTime, gapTime) => {
   const timeSlots = [];
 
@@ -14,8 +13,8 @@ export const generateTimeSlots = (startTime, endTime, gapTime) => {
     if (slotEnd > end) break;
 
     timeSlots.push({
-      start: format(slotStart, 'HH:mm'),
-      end:  format(slotEnd, 'HH:mm'),
+      start: format(slotStart, "HH:mm"),
+      end: format(slotEnd, "HH:mm"),
     });
 
     current.setMinutes(current.getMinutes() + parseInt(gapTime));
@@ -24,50 +23,61 @@ export const generateTimeSlots = (startTime, endTime, gapTime) => {
 };
 
 export const getTimeFromBooking = (booking) => {
-  const startDateString = booking.booking_start_date + 'T' + booking.booking_start_time;
-  const endDateString = booking.booking_end_date + 'T' + booking.booking_end_time;
+  const startDateString =
+    booking.booking_start_date + "T" + booking.booking_start_time;
+  const endDateString =
+    booking.booking_end_date + "T" + booking.booking_end_time;
 
   const startDate = new Date(startDateString);
   const endDate = new Date(endDateString);
 
-  return { start: format(startDate, 'HH:mm'), end: format(endDate, 'HH:mm') };
+  return { start: format(startDate, "HH:mm"), end: format(endDate, "HH:mm") };
 };
 
-export const filterTimeSlots = (
-  timeSlots = [],
-  date = new Date(),
-  bookingList = []
-) => {
+export const getAvailableTimeSlots = (configTime, duration, bookings = []) => {
+  const { open_at, close_at } = configTime;
 
-  const targetDate = format(date, "yyyy-MM-dd");
+  // Adjust parsing and formatting for HH:mm:ss format
+  const parseTime = (timeStr) => parse(timeStr, "HH:mm:ss", new Date());
+  const formatTime = (time) => format(time, "HH:mm:ss");
 
-  const getSameBookingDate = bookingList.filter((booking) => {
-    const datePart = new Date(booking.booking_start_date);
-    return format(datePart, "yyyy-MM-dd") === targetDate;
-  });
+  const startTime = parseTime(open_at);
+  const endTime = parseTime(close_at);
+  const timeSlots = [];
 
-  if (getSameBookingDate.length == 0) {
-    return timeSlots;
+  // Convert bookings to date objects
+  const bookingIntervals = bookings.map((booking) => ({
+    start: parseTime(booking.booking_start_time),
+    end: parseTime(booking.booking_end_time),
+  }));
+
+  // Generate time slots
+  let currentTime = startTime;
+  while (
+    isBefore(currentTime, endTime) &&
+    isBefore(addMinutes(currentTime, duration), endTime)
+  ) {
+    const slotEnd = addMinutes(currentTime, duration);
+
+    // Check if the slot overlaps or falls entirely within any booking
+    const isExcluded = bookingIntervals.some(
+      (booking) =>
+        (isBefore(currentTime, booking.end) &&
+          isAfter(slotEnd, booking.start)) ||
+        (isAfter(currentTime, booking.start) && isBefore(slotEnd, booking.end))
+    );
+
+    // Add the slot with isDisabled key
+    timeSlots.push({
+      start: formatTime(currentTime),
+      end: formatTime(slotEnd),
+      isDisabled: isExcluded,
+    });
+
+    currentTime = addMinutes(currentTime, duration);
   }
 
-  const excludeSlots = [];
-  getSameBookingDate.map((booking) => {
-    const slot = getTimeFromBooking(booking);
-    excludeSlots.push(slot);
-  });
-
-  const newTimeSlots = timeSlots.filter((item) => {
-    return !excludeSlots.find(
-      (slot) => slot.start == item.start && slot.end == item.end
-    );
-  });
-
-  return newTimeSlots;
-};
-
-export const isWorkingDate = (date, checkArr = []) => {
-  const day = date.getDay();
-  return checkArr.includes(day);
+  return timeSlots;
 };
 
 export const getBookingTime = (time) => {
@@ -86,7 +96,7 @@ export const isInFilterDates = (bookingStart, start, end) => {
     return false;
   }
   let filterDate = new Date(bookingStart);
-   
+
   let startDate = new Date(start);
   let endDate = new Date(end);
   filterDate.setHours(0, 0, 0);
@@ -104,10 +114,8 @@ export const isInFilterDates = (bookingStart, start, end) => {
   return false;
 };
 
-
-
 export const getCustomDayOfWeek = (date) => {
-    const inputDate = new Date(date);
-    const originalDay = getDay(inputDate);
-    return originalDay === 0 ? 6 : originalDay - 1;
-}
+  const inputDate = new Date(date);
+  const originalDay = getDay(inputDate);
+  return originalDay === 0 ? 6 : originalDay - 1;
+};
