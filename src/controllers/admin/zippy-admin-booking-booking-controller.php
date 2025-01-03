@@ -137,6 +137,8 @@ class Zippy_Admin_Booking_Booking_Controller
         $config_query = "SELECT booking_type, duration, store_email, allow_overlap, store_working_time FROM $config_table_name WHERE 1=1";
         $config_results = $wpdb->get_results($config_query);
 
+        $configs = [];
+
         $configs = $config_results[0];
         if (!empty($configs->store_working_time)) {
             $configs->store_working_time = json_decode($configs->store_working_time);
