@@ -7,6 +7,8 @@ import { blue, orange, green, red } from "@mui/material/colors";
 const StatusSelect = ({ currentStatus, onStatusChange, isLoading }) => {
   const handleChange = (event) => {
     const newStatus = event.target.value;
+    console.log(newStatus,"ss");
+    
     onStatusChange(newStatus);
   };
 
@@ -22,12 +24,12 @@ const StatusSelect = ({ currentStatus, onStatusChange, isLoading }) => {
         text: green[800],
         border: green[200],
       },
-      approve: {
+      approved: {
         background: blue[200],
       text: blue[800],
       border: blue[200],
     },
-      cancel: {
+    cancelled: {
         background: red[200],
         text: red[800],
         border: red[200],
@@ -81,11 +83,11 @@ const StatusSelect = ({ currentStatus, onStatusChange, isLoading }) => {
           <MenuItem key={"completed"} value={"completed"}>
             Completed
           </MenuItem>
-          <MenuItem key={"approve"} value={"approve"}>
-            Approve
+          <MenuItem key={"approved"} value={"approved"}>
+            Approved
           </MenuItem>
-          <MenuItem key={"cancel"} value={"cancel"}>
-            Cancel
+          <MenuItem key={"cancelled"} value={"cancelled"}>
+            Cancelled
           </MenuItem>
         </Select>
         {isLoading && (

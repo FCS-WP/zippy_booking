@@ -26,6 +26,8 @@ const Index = () => {
 
       if (responseData.status === "success") {
         const formattedData = responseData.data.bookings.map((booking) => {
+          console.log(booking.booking_status);
+
           return {
             ID: booking.ID,
             Date:
@@ -131,19 +133,25 @@ const Index = () => {
       <TableView
         cols={columns}
         columnWidths={columnWidths}
-        rows={paginatedData.map((row) => ({
-          ...row,
-          Status: (
-            <StatusSelect
-              currentStatus={row.Status}
-              isLoading={!!loadingState.rows[row.ID]}
-              onStatusChange={(newStatus) => {
-                handleStatusChange(row.ID, newStatus);
-              }}
-            />
-          ),
-        }))}
+        rows={paginatedData.map((row) => {
+          // Log the value of row.Status
+          console.log(row.Status);
+
+          return {
+            ...row,
+            Status: (
+              <StatusSelect
+                currentStatus={row.Status}
+                isLoading={!!loadingState.rows[row.ID]}
+                onStatusChange={(newStatus) => {
+                  handleStatusChange(row.ID, newStatus);
+                }}
+              />
+            ),
+          };
+        })}
       />
+
       <TablePaginationCustom
         count={data.length}
         rowsPerPage={rowsPerPage}
