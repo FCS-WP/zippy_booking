@@ -134,21 +134,21 @@ class Zippy_Admin_Booking_Booking_Controller
             $products[] = $res;
         }
     
-        // Booking Configs
-        $config_table_name = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
-        $config_query = "SELECT booking_type, duration, store_email, allow_overlap, store_working_time FROM $config_table_name WHERE 1=1";
-        $config_results = $wpdb->get_results($config_query);
+        // // Booking Configs
+        // $config_table_name = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
+        // $config_query = "SELECT booking_type, duration, store_email, allow_overlap, store_working_time FROM $config_table_name WHERE 1=1";
+        // $config_results = $wpdb->get_results($config_query);
     
-        $configs = $config_results[0];
-        if (!empty($configs->store_working_time)) {
-            $configs->store_working_time = json_decode($configs->store_working_time);
-        }
+        // $configs = $config_results[0];
+        // if (!empty($configs->store_working_time)) {
+        //     $configs->store_working_time = json_decode($configs->store_working_time);
+        // }
     
         // Prepare Data
         $data["bookings"] = $products;
         $data["count"] = count($results);
         $data["total_count"] = $total_count;
-        $data["configs"] = $configs;
+        // $data["configs"] = $configs;
     
         return Zippy_Response_Handler::success($data);
     }
