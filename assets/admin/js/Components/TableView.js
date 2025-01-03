@@ -11,13 +11,17 @@ import {
   FormControlLabel,
   Button,
   Box,
+  Grid2,
 } from "@mui/material";
+import FilterContainer from "../../../web/js/components/history/FilterContainer";
 
 const TableView = ({
   cols,
   rows,
   columnWidths = {},
+  canBeDeleted = false,
   onDeleteRows = () => {},
+  showBookingFilter = false,
 }) => {
   const [selectedRows, setSelectedRows] = useState({});
 
@@ -50,8 +54,8 @@ const TableView = ({
   const isMasterIndeterminate =
     !isMasterChecked && Object.values(selectedRows).some((checked) => checked);
 
-  return (
-    <TableContainer component={Paper}>
+  const renderDeleteButton = () => {
+    return (
       <Box textAlign={"end"} m={2}>
         <Button
           disabled={!isMasterChecked && !isMasterIndeterminate ? true : false}
@@ -62,6 +66,12 @@ const TableView = ({
           Delete Selected Rows
         </Button>
       </Box>
+    )
+  }
+
+  return (
+    <TableContainer component={Paper}>
+      {canBeDeleted ? renderDeleteButton() : ''}
       <Table>
         <TableHead sx={{ backgroundColor: "#f1f1f1" }}>
           <TableRow>

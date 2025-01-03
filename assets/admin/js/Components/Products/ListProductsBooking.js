@@ -135,6 +135,7 @@ const ListProductsBooking = ({ mappingData, updateListMapping }) => {
             </Button>
           ),
         }))}
+        canBeDeleted={true}
         onDeleteRows={handleDeleteMappingItems}
       />
       <TablePaginationCustom
