@@ -34,7 +34,7 @@ const BookingStep2 = ({
   const handleSubmitStep2 = async () => {
     let userEmail = "";
     if (!selectedTimes) {
-      toast.warn("Please fill in all the required information.");
+      toast.warn("Please select a time slot to proceed.");
       return;
     }
     setIsSubmitLoading(true);

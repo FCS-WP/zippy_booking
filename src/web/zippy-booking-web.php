@@ -33,12 +33,27 @@ class Zippy_Booking_Web
     /* Set timezone SG */
     date_default_timezone_set('Asia/Singapore');
 
+    /* Shortcode add btn booking */
+    add_shortcode('btn_booking_on_single_product_page', array($this, 'btn_booking_on_single_product_page'));
+
     /* Booking Assets  */
     add_action('wp_enqueue_scripts', array($this, 'booking_assets'));
     add_shortcode('zippy_booking_form',  array($this, 'zippy_booking_form_shortcode'));
     add_shortcode('zippy_booking_history',  array($this, 'zippy_booking_history_shortcode'));
     add_action('pre_get_posts', array($this, 'exclude_products_by_category'));
   }
+
+
+  public function btn_booking_on_single_product_page(){
+    if ( is_product() ) {
+        global $post;
+        $product_id = $post->ID;
+        echo "<div id='btn_booking' data-id-product='" . esc_attr( $product_id ) . "'></div>";
+    } else {
+        return;
+    }
+}
+
 
   public function booking_assets()
   {

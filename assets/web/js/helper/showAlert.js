@@ -1,12 +1,30 @@
 import Swal from "sweetalert2";
 
-export const showAlert = (status, title, text, timer = 2000) => {
+export const showAlert = (status, title, text, timer = 0) => {
   Swal.fire({
     title: title,
     text: text,
     icon: status,
     confirmButtonText: "OK",
     timer: timer,
+  });
+};
+
+export const showAlertMultipleProduct = (status, title, text, timer = 0) => {
+  Swal.fire({
+    title: title,
+    text: text,
+    icon: status,
+    showCancelButton: true, 
+    confirmButtonText: "View Booking",
+    cancelButtonText: "Cancel",
+    timer: timer,
+  }).then((result) => {
+    if (result.isConfirmed) {
+      window.location.href = '/booking-history';
+    } else if (result.isDismissed) {
+      window.location.href = './';
+    }
   });
 };
 
