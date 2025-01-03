@@ -92,8 +92,8 @@ class Zippy_Admin_Settings
     // SubPage 
     add_submenu_page('zippy-bookings', 'Bookings', 'Bookings', 'manage_options', 'bookings', array($this, 'bookings_render'));
     add_submenu_page('zippy-bookings', 'Calander', 'Calander', 'manage_options', 'calander', array($this, 'render'));
-    add_submenu_page('zippy-bookings', 'Products Booking', 'Products Booking', 'manage_options', 'products-booking', array($this, 'render'));
     add_submenu_page('zippy-bookings', 'Settings', 'Settings', 'manage_options', 'settings', array($this, 'settings_render'));
+    add_submenu_page('zippy-bookings', 'Products Booking', 'Products Booking', 'manage_options', 'products-booking', array($this, 'render_products_booking'));
     add_submenu_page('zippy-bookings', 'Customize', 'Customize', 'manage_options', 'customize', array($this, 'render'));
   }
 
@@ -207,9 +207,13 @@ class Zippy_Admin_Settings
     echo Zippy_Utils_Core::get_template('settings.php', [], dirname(__FILE__), '/templates');
   }
 
-  function generate_zippy_booking_api_token()
+  public function render_products_booking ()
   {
-    if (get_option(ZIPPY_BOOKING_API_TOKEN_NAME) == false) {
+    echo Zippy_Utils_Core::get_template('booking-products.php', [], dirname(__FILE__), '/templates');
+  }
+
+  function generate_zippy_booking_api_token(){
+    if(get_option(ZIPPY_BOOKING_API_TOKEN_NAME) == false){
       add_option(ZIPPY_BOOKING_API_TOKEN_NAME, ZIPPY_BOOKING_API_TOKEN);
     }
   }

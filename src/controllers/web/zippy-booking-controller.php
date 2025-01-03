@@ -288,5 +288,4 @@ class Zippy_Booking_Controller
             return Zippy_Response_Handler::error('You do not have permission to update this booking.');
         }
     }
-
 }

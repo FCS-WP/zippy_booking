@@ -12,4 +12,19 @@ export const Api = {
   async getSettings(params) {
     return await makeRequest("/configs", params, "GET");
   },
+  async searchByKeyword(params) {
+    return await makeRequest("/prodegories", params);
+  },
+  async addSupportCategories(params) {
+    return await makeRequest("/support-booking/categories", params, "POST");
+  },
+  async addSupportProducts(params) {
+    return await makeRequest("/support-booking/products", params, "POST");
+  },
+  async getMappingData(params) {
+    return await makeRequest("/support-booking", params);
+  },
+  async deleteMappingItems(params) {
+    return await makeRequest("/support-booking/delete", params, "DELETE");
+  },
 };

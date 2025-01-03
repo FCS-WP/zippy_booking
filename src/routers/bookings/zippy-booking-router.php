@@ -24,6 +24,8 @@ use Zippy_Booking\Src\Routers\Bookings\Admin\Zippy_Admin_Booking_Seeding_Route;
 
 use Zippy_Booking\Src\Routers\Bookings\Mail\Zippy_Booking_Mail_Route;
 
+use Zippy_Booking\Src\Middleware\Admin\Zippy_Booking_Permission;
+
 
 
 defined('ABSPATH') or die();
@@ -77,11 +79,11 @@ class Zippy_Booking_Router
             'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
 
         ));
-        register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/product', array(
+        register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/delete', array(
             'methods' => 'DELETE',
-            'callback' => [Zippy_Booking_Support_Controller::class, 'delete_support_booking_product'],
-            'args' => Zippy_Api_Booking_Model::get_delete_product_args(),
-            'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
+            'callback' => [Zippy_Booking_Support_Controller::class, 'delete_support_booking'],
+            // 'args' => Zippy_Api_Booking_Model::get_delete_product_args(),
+            'permission_callback' => array(Zippy_Booking_Permission::class, 'zippy_permission_callback'),
         ));
 
 

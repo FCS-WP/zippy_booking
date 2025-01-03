@@ -123,23 +123,27 @@ const BookingStep1 = ({ handleNextStep }) => {
         <CustomLoader />
       ) : (
         <>
-          <div>
-            <h4>Field Categories</h4>
-            <div className="list-category">{renderCategories()}</div>
+          <div className="booking-conent">
+            <div>
+              <h4>Field Categories</h4>
+              <div className="list-category">{renderCategories()}</div>
+            </div>
+            <div>
+              <h4>Field Avalible</h4>
+              <div className="list-product">{renderProducts()}</div>
+            </div>
           </div>
-          <div>
-            <h4>Field Avalible</h4>
-            <div className="list-product">{renderProducts()}</div>
-          </div>
-          <div className="text-end">
-            <span
-              role="button"
-              id="next-step-btn"
-              className="next-step-btn"
-              onClick={handleNext}
-            >
-              Continue
-            </span>
+          <div className="booking-footer">
+            <div className="booking-ctn-button">
+              <span
+                role="button"
+                id="next-step-btn"
+                className="next-step-btn"
+                onClick={handleNext}
+              >
+                Continue
+              </span>
+            </div>
           </div>
         </>
       )}

@@ -69,10 +69,10 @@ class Zippy_Admin_Booking_Seeding_Controller
             $connection_str .= ';port=' . $port;
         }
         }
-        
+
         // Open the connection
         $pdo = new PDO($connection_str, 'root', 'root');
-        
+
         $seeder = new \tebazil\dbseeder\Seeder($pdo);
         $generator = $seeder->getGeneratorConfigurator();
         $faker = $generator->getFakerConfigurator();

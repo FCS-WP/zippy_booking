@@ -35,7 +35,7 @@ class Zippy_Admin_Booking_Booking_Controller
             "limit" => ["data_type" => "number"],
             "offset" => ["data_type" => "number"],
             "order_by" => ["data_type" => "string"],
-            "sort_order" => ["data_type" => "range", "allowed_values" => ["ASC", "DESC"]],
+            "sort_order" => ["data_type" => "range", "allowed_values" => ["asc", "desc"]],
         ];
         
         // Validate Request Fields
@@ -134,16 +134,13 @@ class Zippy_Admin_Booking_Booking_Controller
         // Booking Configs
         $config_table_name = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
 
-        $config_query = "SELECT booking_type, duration, store_email, allow_overlap, weekdays, open_at, close_at FROM $config_table_name WHERE 1=1";
+        $config_query = "SELECT booking_type, duration, store_email, allow_overlap, store_working_time FROM $config_table_name WHERE 1=1";
         $config_results = $wpdb->get_results($config_query);
 
-        $configs = [];
-
-        if(!empty($config_results)){
-            $configs = $config_results[0];
-            !empty($configs->weekdays) ? $configs->weekdays = unserialize($configs->weekdays) : $configs->weekdays;
+        $configs = $config_results[0];
+        if (!empty($configs->store_working_time)) {
+            $configs->store_working_time = json_decode($configs->store_working_time);
         }
-
 
         // Prepare Data
         $data["bookings"] = $products;

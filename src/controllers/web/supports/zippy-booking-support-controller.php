@@ -13,6 +13,7 @@ use WP_Query;
 
 use Zippy_Booking\Src\App\Zippy_Response_Handler;
 use Zippy_Booking\Src\App\Models\Zippy_Request_Validation;
+use Zippy_booking\Src\App\Models\Zippy_Log_Action;
 
 
 defined('ABSPATH') or die();
@@ -769,114 +770,81 @@ class Zippy_Booking_Support_Controller
             'Category items retrieved successfully.'
         );
     }
-    public static function delete_support_booking_product(WP_REST_Request $request)
+    public static function delete_support_booking(WP_REST_Request $request)
     {
-        global $wpdb;
+        $required_fields = [
+            'items_id' => ['required' => true, 'data_type' => 'number'],
+            'type' => ['required' => true, 'data_type' => 'range', 'allowed_values' => ['product', 'category']],
+        ];
 
-        $items_ids = $request->get_param('items_ids');
+        // Validate Request Fields
+        $request_body = $request["request"];
 
-        if (empty($items_ids) || !is_array($items_ids)) {
-            return Zippy_Response_Handler::error('Items IDs are required and should be an array.');
+        if (empty($request_body)) {
+            Zippy_Response_Handler::error('Request body is required.');
         }
 
-        $table_name = $wpdb->prefix . 'product_booking_mapping';
+        foreach ($request["request"] as $req) {
+            $validate = Zippy_Request_Validation::validate_request($required_fields, $req);
+            if(!empty($validate)){
+                return Zippy_Response_Handler::error($validate);
+            }        
+        }    
 
-        $deleted_items = [];
-        $not_found_items = [];
+        try {
+            global $wpdb;
 
-        foreach ($items_ids as $items_id) {
-            if (!is_numeric($items_id)) {
-                continue;
-            }
+            $table_name = ZIPPY_BOOKING_PRODUCT_MAPPING_TABLE_NAME;
 
-            $exists = $wpdb->get_var($wpdb->prepare(
-                "SELECT COUNT(*) FROM {$table_name} WHERE items_id = %d AND mapping_type = 'product'",
-                $items_id
-            ));
+            $deleted_items = [];
 
-            if ($exists > 0) {
-                $result = $wpdb->delete(
-                    $table_name,
-                    array('items_id' => $items_id, 'mapping_type' => 'product'),
-                    array('%d', '%s')
+            // Search if product/category exists in fcs_data_product_booking_mapping table or not
+            foreach ($request_body as $body) {
+
+                $item_id = $body["items_id"];
+                $item_type = $body["type"];
+
+                $sql = $wpdb->prepare(
+                    "SELECT * FROM {$table_name} WHERE items_id = %d AND mapping_type = %s",
+                    $body["items_id"],
+                    $body["type"],
                 );
 
-                if ($result !== false) {
-                    $product = wc_get_product($items_id);
-                    if ($product) {
-                        $deleted_items[] = [
-                            'items_id' => $items_id,
-                            'product_name' => $product->get_name(),
-                            'product_price' => $product->get_price(),
-                        ];
-                    }
+                $count = count($wpdb->get_results($sql));
+
+                if ($count < 1) {
+                    return Zippy_Response_Handler::error("Item with items_id: $item_id and type: $item_type not found.");
                 }
-            } else {
-                $not_found_items[] = $items_id;
-            }
-        }
-
-        if (empty($deleted_items)) {
-            return Zippy_Response_Handler::error('No valid products were deleted.', ['not_found_items' => $not_found_items]);
-        }
-
-        return Zippy_Response_Handler::success(
-            ['deleted_items' => $deleted_items, 'not_found_items' => $not_found_items],
-            'Products deleted successfully.'
-        );
-    }
-    public static function delete_support_booking_category(WP_REST_Request $request)
-    {
-        global $wpdb;
-
-        $category_ids = $request->get_param('items_ids');
-
-        if (empty($category_ids) || !is_array($category_ids)) {
-            return Zippy_Response_Handler::error('Category IDs are required and should be an array.');
-        }
-
-        $table_name = $wpdb->prefix . 'product_booking_mapping';
-        $deleted_categories = [];
-        $not_found_categories = [];
-
-        foreach ($category_ids as $category_id) {
-            if (!is_numeric($category_id)) {
-                continue;
             }
 
-            $exists = $wpdb->get_var($wpdb->prepare(
-                "SELECT COUNT(*) FROM {$table_name} WHERE items_id = %d AND mapping_type = 'category'",
-                $category_id
-            ));
 
-            if ($exists > 0) {
-                $result = $wpdb->delete(
-                    $table_name,
-                    array('items_id' => $category_id, 'mapping_type' => 'category'),
-                    array('%d', '%s')
-                );
-
-                if ($result !== false) {
-                    $category = get_term_by('id', $category_id, 'product_cat');
-                    if ($category) {
-                        $deleted_categories[] = [
-                            'category_id' => $category_id,
-                            'category_name' => $category->name,
-                        ];
+            // Perform delete operation
+            foreach ($request_body as $body) {
+                    $item_id = $body["items_id"];
+                    $item_type = $body["type"];
+        
+                    $sql = $wpdb->prepare(
+                        "DELETE FROM {$table_name} WHERE items_id = %d AND mapping_type = %s",
+                        $body["items_id"],
+                        $body["type"],
+                    );
+        
+                    $result = $wpdb->query($sql);
+        
+                    if ($result === false) {
+                        Zippy_Log_Action::log('delete_support_booking', json_encode($request), 'failure', "Error deleting item with items_id: $item_id and type: $item_type.");
+                        return Zippy_Response_Handler::error("Error deleting item with items_id: $item_id and type: $item_type.");
                     }
-                }
-            } else {
-                $not_found_categories[] = $category_id;
+        
+                    $deleted_items[] = $body;
             }
+            Zippy_Log_Action::log('delete_support_booking', json_encode($deleted_items), 'Success', 'Success');
+            return Zippy_Response_Handler::success($deleted_items);   
+        } catch (\Throwable $th) {
+            $message = $th->getMessage();
+            Zippy_Log_Action::log('delete_support_booking', json_encode($request), 'failure', $message);
+            return Zippy_Response_Handler::error($message);
         }
 
-        if (empty($deleted_categories)) {
-            return Zippy_Response_Handler::error('No valid categories were deleted.', ['not_found_categories' => $not_found_categories]);
-        }
-
-        return Zippy_Response_Handler::success(
-            ['deleted_categories' => $deleted_categories, 'not_found_categories' => $not_found_categories],
-            'Categories deleted successfully.'
-        );
     }
 }
