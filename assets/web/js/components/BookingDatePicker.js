@@ -1,56 +1,7 @@
 import React, { useState } from "react";
 import DatePicker from "react-datepicker";
-const BookingDatePicker = ({ handleSelectDate }) => {
-  const config = {
-    booking_type: "single",
-    duration: 30,
-    allow_overlap: 1,
-    store_email: "nha.le@floatingcube.com",
-    store_working_time: [
-      {
-        is_open: 1,
-        weekday: 0,
-        open_at: "10:00",
-        close_at: "20:00",
-      },
-      {
-        is_open: 1,
-        weekday: 1,
-        open_at: "10:00",
-        close_at: "20:00",
-      },
-      {
-        is_open: 1,
-        weekday: 2,
-        open_at: "10:00",
-        close_at: "20:00",
-      },
-      {
-        is_open: 1,
-        weekday: 3,
-        open_at: "10:00",
-        close_at: "20:00",
-      },
-      {
-        is_open: 1,
-        weekday: 4,
-        open_at: "10:00",
-        close_at: "20:00",
-      },
-      {
-        is_open: 1,
-        weekday: 5,
-        open_at: "10:00",
-        close_at: "20:00",
-      },
-      {
-        is_open: 1,
-        weekday: 6,
-        open_at: "10:00",
-        close_at: "20:00",
-      },
-    ],
-  };
+const BookingDatePicker = ({ handleSelectDate , config }) => {
+
   const [selectedDate, setSelectedDate] = useState();
 
   // Parse working time configuration

@@ -27,6 +27,12 @@ const BookingForm = () => {
     }
   };
 
+  const STEP_LABELS = {
+    1: "Select Field",
+    2: "Select Date",
+    3: "Review",
+  };
+
   const handleNextStep = (currentStep, data) => {
     switch (currentStep) {
       case 1:
@@ -55,18 +61,15 @@ const BookingForm = () => {
       {pluginConfigs ? (
         <div id="zippy-booking-form">
           <div className="steps-container">
-            <div className={`step-item ${currentStep == 1 ? "active" : ""}`}>
-              <span></span>
-              <h4>1. Select Field</h4>
-            </div>
-            <div className={`step-item ${currentStep == 2 ? "active" : ""}`}>
-              <span></span>
-              <h4>2. Select Date</h4>
-            </div>
-            <div className={`step-item ${currentStep == 3 ? "active" : ""}`}>
-              <span></span>
-              <h4>3. Review</h4>
-            </div>
+            {Object.keys(STEP_LABELS).map((step) => (
+              <div
+                key={step}
+                className={`step-item ${currentStep == step ? "active" : ""}`}
+              >
+                <span></span>
+                <h4>{`${step}. ${STEP_LABELS[step]}`}</h4>
+              </div>
+            ))}
           </div>
           <div className="booking-container">
             {currentStep == 1 && (
