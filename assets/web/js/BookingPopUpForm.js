@@ -3,7 +3,7 @@ import Calendar from "./components/popup-booking/calendar/calendar";
 import Timepicker from "./components/popup-booking/timepicker/timepicker";
 import Prebooking from "./components/popup-booking/pre-booking/prebooking";
 import { webApi } from "./api";
-import { alertInputEmail, showAlert } from "./helper/showAlert";
+import { alertInputEmail, showAlert, showAlertMultipleProduct } from "./helper/showAlert";
 
 function BookingPopUp() {
     const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -12,6 +12,8 @@ function BookingPopUp() {
     const [selectedEndTime, setSelectedEndTime] = useState(null);
     const [productId, setProductId] = useState(null);
     const [bookings, setBookings] = useState([]);
+    const [configs, setConfigs] = useState([]);
+    const [configsDate, setConfigsDate] = useState([new Date()]);
 
     const openPopup = () => {
       setIsPopupOpen(true);
@@ -20,9 +22,19 @@ function BookingPopUp() {
     const closePopup = () => {
       setIsPopupOpen(false);
     };
-  
+    
+    const [typeBooking, setTypeBooking] = useState(false);
+    useEffect(() => {
+      if (configs.booking_type === "multiple") {
+        setTypeBooking(true);
+      } else {
+        setTypeBooking(false);
+      }
+    }, [configs.booking_type]);
+
     const handleChooseDate = (date) => {
       setSelectedDate(date);
+      setConfigsDate(date)
     };
   
     const handleStartTimeSelect = (time) => {
@@ -55,6 +67,8 @@ function BookingPopUp() {
       return `${hours}:${minutes}:${seconds}`;
     };
 
+    
+
     const createBooking = async () =>{
       try {
 
@@ -78,7 +92,7 @@ function BookingPopUp() {
 
         const newBookings = await webApi.createBooking(params); 
         if(newBookings.data.status == 'success'){
-          showAlert("success", "Booking Successful", "Your booking has been created successfully!");
+          showAlertMultipleProduct("success", "Booking Successful", "Your booking has been created successfully!");
         }else{
           showAlert("error", "Booking Failed", err.message || "An unknown error occurred.");
         }
@@ -86,6 +100,20 @@ function BookingPopUp() {
         showAlert("error", "Booking Failed", err.message || "An unknown error occurred.");
       } 
     }
+    
+    
+    const getConfig = async() =>{
+      try{
+        const configResponse = await webApi.getConfigs();
+        setConfigs(configResponse.data.data || []);
+      }catch(err){
+        showAlert("error", "Get Config Failed", err.message || "An unknown error occurred.");
+      }
+    };
+    useEffect(() => {
+      getConfig();
+    }, []);
+
 
     const getAllBooking = async () =>{
       try {
@@ -97,6 +125,7 @@ function BookingPopUp() {
         const bookingsResponse = await webApi.getBookings(params);
         
         setBookings(bookingsResponse.data.data.bookings || []);
+        
       }catch(err){
         showAlert("error", "Get Booking Failed", err.message || "An unknown error occurred.");
       }
@@ -109,7 +138,12 @@ function BookingPopUp() {
 
     return (
       <>
-        <button className="booking_popup_form" onClick={openPopup}>Booking</button>
+        {typeBooking && (
+          <button className="booking_popup_form" onClick={openPopup}>
+            Booking
+          </button>
+        )}
+        
   
         {isPopupOpen && (
           <div className="box_pop_up">
@@ -124,15 +158,22 @@ function BookingPopUp() {
               </p>
               <div className="row_booking">
                 <div className="col_booking_5">
-                  <Calendar onDateSelect={handleChooseDate} />
+                  <Calendar 
+                    onDateSelect={handleChooseDate} 
+                    configs={configs}
+                  />
                 </div>
                 <div className="col_booking_5">
                   <Timepicker
                     onStartTimeSelect={handleStartTimeSelect}
                     onEndTimeSelect={handleEndTimeSelect}
                     bookings={bookings}
+                    configs={configs}
+                    configsDate={configsDate}
                   />
-                  <Prebooking bookings={bookings}/>
+                  <Prebooking
+                    bookings={bookings}
+                  />
                 </div>
               </div>
               <div className="flex-space-between">
