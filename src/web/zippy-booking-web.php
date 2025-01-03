@@ -73,13 +73,13 @@ class Zippy_Booking_Web
   function zippy_booking_form_shortcode()
   {
     // Output content for the shortcode
-    return '<div id="zippy-root">Loading booking app...</div>';
+    return '<div id="zippy-root"></div>';
   }
 
   function zippy_booking_history_shortcode()
   {
     // Output content for the shortcode
-    return '<div id="zippy-booking-history">Loading your bookings...</div>';
+    return '<div id="zippy-booking-history"></div>';
   }
 
   function exclude_products_by_category($query)
