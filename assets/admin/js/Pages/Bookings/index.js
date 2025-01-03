@@ -26,7 +26,6 @@ const Index = () => {
 
       if (responseData.status === "success") {
         const formattedData = responseData.data.bookings.map((booking) => {
-          console.log(booking.booking_status);
 
           return {
             ID: booking.ID,
@@ -36,9 +35,8 @@ const Index = () => {
               formatDate(booking.booking_end_date),
             Customer: booking.email,
             Product: booking.product.name,
-            duration: booking.duration,
             Status: booking.booking_status,
-            "Created Date": formatDate(booking.booking_start_date),
+            "Created Date": formatDate(booking.created_at),
           };
         });
 
@@ -104,7 +102,6 @@ const Index = () => {
     "Date",
     "Customer",
     "Product",
-    "Duration",
     "Status",
     "Created Date",
   ];
@@ -113,7 +110,6 @@ const Index = () => {
     Date: "auto",
     Customer: "auto",
     Product: "auto",
-    duration: "auto",
     Status: "10%",
     "Created Date": "auto",
   };
@@ -134,9 +130,6 @@ const Index = () => {
         cols={columns}
         columnWidths={columnWidths}
         rows={paginatedData.map((row) => {
-          // Log the value of row.Status
-          console.log(row.Status);
-
           return {
             ...row,
             Status: (

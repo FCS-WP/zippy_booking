@@ -269,7 +269,7 @@ class Zippy_Admin_Settings
             $booking_status = 'approved';
             break;
         case 'completed':
-            $booking_status = 'approved';
+            $booking_status = 'completed';
             break;
         case 'cancelled':
             $booking_status = 'cancelled';
