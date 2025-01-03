@@ -24,6 +24,7 @@ import {
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import { Api } from "../../api";
+import { toast, ToastContainer } from "react-toastify";
 
 const daysOfWeek = [
   "Sunday",
@@ -42,10 +43,10 @@ const Settings = () => {
   const [duration, setDuration] = useState(5);
   const [storeEmail, setStoreEmail] = useState("");
   const [allowOverlap, setAllowOverlap] = useState(false);
-  const [openAt, setOpenAt] = useState("");
-  const [closeAt, setCloseAt] = useState("");
   const [bookingType, setBookingType] = useState("single");
   const [loading, setLoading] = useState(true);
+  const [configId, setConfigId] = useState(null);
+  const [isConfigExisting, setIsConfigExisting] = useState(false);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -54,35 +55,44 @@ const Settings = () => {
         const response = await Api.getSettings();
         const data = response.data.data;
 
-        const fetchedSchedule = daysOfWeek.map((day, index) => {
-          const daySchedule = data.store_working_time.find(
-            (time) => parseInt(time.weekday) === index
-          );
+        if (
+          data &&
+          data.store_working_time &&
+          data.store_working_time.length > 0
+        ) {
+          setIsConfigExisting(true);
+          setConfigId(data.id); 
+          const fetchedSchedule = daysOfWeek.map((day, index) => {
+            const daySchedule = data.store_working_time.find(
+              (time) => parseInt(time.weekday) === index
+            );
 
-          if (daySchedule && daySchedule.is_open === "1") {
-            return {
-              day,
-              slots: [
-                {
-                  from: daySchedule.open_at || "",
-                  to: daySchedule.close_at || "",
-                },
-              ],
-            };
-          } else {
-            return { day, slots: [] };
-          }
-        });
+            if (daySchedule && daySchedule.is_open === "1") {
+              return {
+                day,
+                slots: [
+                  {
+                    from: daySchedule.open_at || "",
+                    to: daySchedule.close_at || "",
+                  },
+                ],
+              };
+            } else {
+              return { day, slots: [] };
+            }
+          });
 
-        setSchedule(fetchedSchedule);
-        setDuration(data.duration || 5);
-        setStoreEmail(data.store_email || "");
-        setAllowOverlap(data.allow_overlap === "1");
-        setOpenAt(data.openAt || "");
-        setCloseAt(data.closeAt || "");
-        setBookingType(data.booking_type || "single");
+          setSchedule(fetchedSchedule);
+          setDuration(data.duration || 5);
+          setStoreEmail(data.store_email || "");
+          setAllowOverlap(data.allow_overlap === "1");
+          setBookingType(data.booking_type || "single");
+        } else {
+          setIsConfigExisting(false);
+        }
       } catch (error) {
         console.error("Error fetching settings:", error);
+        setIsConfigExisting(false);
         setSchedule(daysOfWeek.map((day) => ({ day, slots: [] })));
       } finally {
         setLoading(false);
@@ -139,47 +149,49 @@ const Settings = () => {
       };
     });
 
-    const params = {
+    const create_params = {
       booking_type: bookingType,
-      duration: bookingType === "single" ? duration : null,
+      duration: duration,
+      store_email: storeEmail,
+      allow_overlap: allowOverlap ? "1" : "0",
+      store_working_time: storeWorkingTime,
+    };
+
+    const update_params = {
+      id: configId,
+      booking_type: bookingType,
+      duration: duration,
       store_email: storeEmail,
       allow_overlap: allowOverlap ? "1" : "0",
       store_working_time: storeWorkingTime,
     };
 
     try {
-      const response = await Api.updateSettings(params);
+      if (isConfigExisting) {
+        const response = await Api.updateSettings(update_params);
 
-      const updatedResponse = await Api.getSettings();
-      const updatedData = updatedResponse.data;
-
-      const updatedSchedule = daysOfWeek.map((day, index) => {
-        const daySchedule = updatedData.store_working_time.find(
-          (time) => parseInt(time.weekday) === index
-        );
-
-        if (daySchedule && daySchedule.is_open === "1") {
-          return {
-            day,
-            slots: [
-              {
-                from: daySchedule.open_at || "",
-                to: daySchedule.close_at || "",
-              },
-            ],
-          };
+        if (response.data.status === "success") {
+          toast.success(
+            response.data.message || "Settings updated successfully!"
+          );
         } else {
-          return { day, slots: [] };
+          toast.error(response.data.message || "Error updating settings.");
         }
-      });
-
-      setSchedule(updatedSchedule);
-      setDuration(updatedData.duration || "5");
-      setStoreEmail(updatedData.store_email || "");
-      setAllowOverlap(updatedData.allow_overlap === "1");
-      setBookingType(updatedData.booking_type || "single");
+      } else {
+        const response = await Api.createSettings(create_params);
+        if (response.data.status === "success") {
+          setConfigId(response.data.id);
+          setIsConfigExisting(true);
+          toast.success(
+            response.data.message || "Settings created successfully!"
+          );
+        } else {
+          toast.error(response.data.message || "Error creating settings.");
+        }
+      }
     } catch (error) {
-      console.error("Error updating settings:", error);
+      console.error("Error saving settings:", error);
+      toast.error("Error saving settings. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -228,6 +240,9 @@ const Settings = () => {
                 }
                 label="Allow Overlap"
               />
+              <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                Enable this if you want multiple bookings to overlap.
+              </Typography>
             </Box>
             <Box mb={1}>
               <Typography variant="body1">Duration</Typography>
@@ -248,6 +263,9 @@ const Settings = () => {
                   </MenuItem>
                 ))}
               </Select>
+              <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                Set the duration of each booking session.
+              </Typography>
             </Box>
             <Box mb={1}>
               <Typography variant="body1">Store Email</Typography>
@@ -330,6 +348,9 @@ const Settings = () => {
                                   e.target.value
                                 )
                               }
+                              inputProps={{
+                                step: 1,
+                              }}
                             />
                           </TableCell>
                           <TableCell>
@@ -345,6 +366,9 @@ const Settings = () => {
                                   e.target.value
                                 )
                               }
+                              inputProps={{
+                                step: 1,
+                              }}
                             />
                           </TableCell>
                           <TableCell>
@@ -366,6 +390,8 @@ const Settings = () => {
           )}
         </Grid>
       </Grid>
+
+      <ToastContainer />
     </Box>
   );
 };

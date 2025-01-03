@@ -37,6 +37,7 @@ class Zippy_Admin_Settings
 
     /* Register Assets Admin Part */
     add_action('admin_enqueue_scripts', array($this, 'admin_booking_assets'));
+    add_action('woocommerce_order_status_changed', array($this, 'update_booking_status_in_db_on_order_status_change'), 10, 3);
 
 
 
@@ -46,7 +47,7 @@ class Zippy_Admin_Settings
     register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'create_product_booking_table'));
 
     register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'create_booking_configs_table'));
-    
+
     /* Create Zippy API Token */
     register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'generate_zippy_booking_api_token'));
 
@@ -64,7 +65,6 @@ class Zippy_Admin_Settings
 
     /* Delete Zippy API Token */
     register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'remove_zippy_booking_api_token'));
-    
   }
 
   public function admin_booking_assets()
@@ -207,19 +207,22 @@ class Zippy_Admin_Settings
     echo Zippy_Utils_Core::get_template('settings.php', [], dirname(__FILE__), '/templates');
   }
 
-  function generate_zippy_booking_api_token(){
-    if(get_option(ZIPPY_BOOKING_API_TOKEN_NAME) == false){
+  function generate_zippy_booking_api_token()
+  {
+    if (get_option(ZIPPY_BOOKING_API_TOKEN_NAME) == false) {
       add_option(ZIPPY_BOOKING_API_TOKEN_NAME, ZIPPY_BOOKING_API_TOKEN);
     }
   }
-  function remove_zippy_booking_api_token(){
-    if(get_option(ZIPPY_BOOKING_API_TOKEN_NAME) == true){
+  function remove_zippy_booking_api_token()
+  {
+    if (get_option(ZIPPY_BOOKING_API_TOKEN_NAME) == true) {
       delete_option(ZIPPY_BOOKING_API_TOKEN_NAME);
     }
   }
 
 
-  function create_zippy_booking_log_table() {
+  function create_zippy_booking_log_table()
+  {
     global $wpdb;
     $table_name = $wpdb->prefix . 'zippy_booking_log';
 
@@ -247,4 +250,52 @@ class Zippy_Admin_Settings
 
     $wpdb->query("DROP TABLE IF EXISTS $table_name");
   }
+  public function update_booking_status_in_db_on_order_status_change($order_id, $old_status, $new_status)
+{
+    global $wpdb;
+
+    $order = wc_get_order($order_id);
+
+    $booking_status = '';
+    switch ($new_status) {
+        case 'on-hold':
+            $booking_status = 'pending';
+            break;
+        case 'pending':
+            $booking_status = 'approved';
+            break;
+        case 'completed':
+            $booking_status = 'approved';
+            break;
+        case 'cancelled':
+            $booking_status = 'cancelled';
+            break;
+        default:
+            return; 
+    }
+
+
+    $booking_id = $order->get_meta('booking_id');
+    if (!$booking_id) {
+        error_log("Booking ID not found for order ID: " . $order_id);
+        return;
+    }
+
+    $table_name = $wpdb->prefix . 'bookings';
+    
+    $wpdb->update(
+        $table_name,
+        array('booking_status' => $booking_status),  
+        array('order_id' => $order_id),        
+        array('%s'), 
+        array('%d') 
+    );
+
+    if ($wpdb->last_error) {
+        error_log("Error updating booking status for order ID " . $order_id . ": " . $wpdb->last_error);
+    } else {
+        error_log("Booking status updated to '$booking_status' for order ID " . $order_id);
+    }
+}
+
 }

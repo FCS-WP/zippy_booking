@@ -24,7 +24,6 @@ export const makeRequest = async (
   try {
     const res = await api.request(config);
     const data = res.data;
-    // console.log(error);
 
     return { data };
   } catch (error) {

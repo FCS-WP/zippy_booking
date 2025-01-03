@@ -76,7 +76,7 @@ class Zippy_Admin_Booking_Config_Controller
                     return Zippy_Response_Handler::error("open_at and close_at are required when is_open is 1 for $weekday.");
                 }
                 if (!Zippy_Request_Validation::validate_time($open_at) || !Zippy_Request_Validation::validate_time($close_at)) {
-                    return Zippy_Response_Handler::error("open_at and close_at must be time in format H:i for $weekday.");
+                    return Zippy_Response_Handler::error("open_at and close_at must be in HH:mm:ss format for $weekday.");
                 }
             }
         }
@@ -216,6 +216,7 @@ class Zippy_Admin_Booking_Config_Controller
 
             $data = [
                 'booking_type' => $booking_type,
+                'duration'=> $duration,
                 'store_email' => $store_email,
                 'allow_overlap' => $allow_overlap,
                 'store_working_time' => json_encode($store_working_time),

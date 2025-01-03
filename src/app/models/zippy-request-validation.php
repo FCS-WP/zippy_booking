@@ -104,7 +104,7 @@ class Zippy_Request_Validation
     }
     public static function validate_time($time)
     {
-        $datetime = DateTime::createFromFormat('H:i', $time);
-        return $datetime && $datetime->format('H:i') == $time;
+        $datetime = DateTime::createFromFormat('H:i:s', $time);
+        return $datetime && $datetime->format('H:i:s') == $time;
     }
 }
