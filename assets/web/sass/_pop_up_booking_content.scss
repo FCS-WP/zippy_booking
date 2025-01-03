@@ -64,3 +64,16 @@
         }
     }
 }
+
+@media(max-width: 1024px){
+    .row_booking{
+        flex-wrap: wrap;
+        .col_booking_5{
+            width: 100% !important;
+            margin-bottom: 20px;
+            .react-datepicker{
+                width: 100% !important;
+            }
+        }
+    }
+}

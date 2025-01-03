@@ -2,8 +2,31 @@ import React, { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 
 const Timepicker = ({ onStartTimeSelect, onEndTimeSelect, bookings, configs, configsDate }) => {
-    const [startTime, setStartTime] = useState(new Date());
-    const [endTime, setEndTime] = useState(new Date());
+  const calculateTimeWithDurationAndRound = (durationMinutes) => {
+    const initialTime = new Date();
+    
+    const newTime = new Date(initialTime.getTime() + durationMinutes * 60000);
+    
+    const hours = newTime.getHours();
+    let minutes = newTime.getMinutes();
+    const seconds = newTime.getSeconds();
+  
+    if (seconds >= 30) {
+      minutes += 1;
+    }
+  
+    minutes = Math.floor(minutes / 30) * 30;
+  
+    const roundedTime = new Date(newTime);
+    roundedTime.setMinutes(minutes);
+    roundedTime.setSeconds(0);
+  
+    return roundedTime;
+  };
+
+    const resultTime = calculateTimeWithDurationAndRound(configs.duration);
+    const [startTime, setStartTime] = useState(resultTime);
+    const [endTime, setEndTime] = useState(resultTime);
     
     const formatDate = (dateString) => {
       const dateObject = new Date(dateString);
@@ -18,29 +41,38 @@ const Timepicker = ({ onStartTimeSelect, onEndTimeSelect, bookings, configs, con
       return daysOfWeek[date.getDay()];
     };
     
-    const getTimeParts = (timeString) => {
-      const time = new Date('1970-01-01T' + timeString + ':00Z'); 
-      const hours = time.getUTCHours();
-      const minutes = time.getUTCMinutes();
-      return { hours, minutes };
-    };
+    const parseTime = (timeString) => {
+      const [hours, minutes, seconds] = timeString.split(':').map(Number);
+      return { hours, minutes, seconds };
+  };
 
     const indexDate = parseInt(getDayOfWeek(new Date(formatDate(configsDate))), 10);
 
     const TimeStore =  configs.store_working_time.find(day => day.weekday === indexDate);
 
+    const currentTime = new Date();
+    const hoursCurrent = currentTime.getHours();
+    let minTimeConfig = 0;
+
+    if( (hoursCurrent > parseTime(TimeStore.open_at).hours) && (formatDate(currentTime) == formatDate(configsDate))  ){
+      minTimeConfig = hoursCurrent;
+    }else{
+      minTimeConfig = parseTime(TimeStore.open_at).hours;
+    }
+
     const minTime = new Date();
-    minTime.setHours(getTimeParts(TimeStore.open_at).hours, getTimeParts(TimeStore.open_at).minutes, 0); 
-    // minTime.setHours(HH, MM, SS); 
+    minTime.setHours(minTimeConfig,parseTime(TimeStore.open_at).minutes, 0); 
 
     const maxTime = new Date();
-    maxTime.setHours(getTimeParts(TimeStore.close_at).hours, getTimeParts(TimeStore.close_at).minutes, 0);
+    maxTime.setHours(parseTime(TimeStore.close_at).hours, parseTime(TimeStore.close_at).minutes, 0);
 
     const handleStartTimeChange = (time) => {
       setStartTime(time);
       onStartTimeSelect(time); 
+      
     };
-  
+
+
     const handleEndTimeChange = (time) => {
       setEndTime(time);
       onEndTimeSelect(time);
@@ -90,7 +122,7 @@ const Timepicker = ({ onStartTimeSelect, onEndTimeSelect, bookings, configs, con
             timeCaption="End Time"
             dateFormat="h:mm aa"
             filterTime={isTimeDisabled}
-            minTime={minTime} 
+            minTime={startTime} 
             maxTime={maxTime} 
           />
         </div>
