@@ -1,3 +1,5 @@
+@import 'variables';
+
 .box_pop_up{
     position: fixed;
     top: 0;
@@ -51,16 +53,16 @@
 
                         h2{
                             font-size: 20px;
-                            color: var(--theme-primary-color);
+                            color: $primary;
                         }
                         .react-datepicker__day{
-                            width: 4rem;
+                            width: 40px;
                             font-size: 12px;
                             padding: 7px 5px;
                             margin: 0px;
                         }
                         .react-datepicker__day-name{
-                            width: 4rem;
+                            width: 40px;
                             font-size: 12px;
                             padding: 5px;
                         }
@@ -81,7 +83,7 @@
 }
 
 .react-datepicker__day--selected{
-    background-color: var(--theme-primary-color) !important;
+    background-color: $primary !important;
 }
 .react-datepicker-time__header{
     font-size: 12px ;

@@ -1,3 +1,5 @@
+@import 'variables';
+
 .row-booking{
     display: flex;
     justify-content: space-between;
@@ -41,11 +43,17 @@
         font-weight: bolder;
         padding: 5px 20px;
     }
+
+    .cancel_popup_button{
+        background: $white;
+        color: $primary;
+        border-color:  $primary;
+    }
     
-    button:last-child{
-        background: var(--theme-primary-color);
-        color: #fff;
-        border-color:  var(--theme-primary-color);
+    .continute_popup_button{
+        background: $primary;
+        color: $white;
+        border: none;
     }
 }
 

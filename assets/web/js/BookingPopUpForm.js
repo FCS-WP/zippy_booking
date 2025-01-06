@@ -169,8 +169,8 @@ function BookingPopUp() {
               </div>
             </div>
             <div className="flex-space-between">
-              <button onClick={closePopup}>Cancel</button>
-              <button
+              <button className="cancel_popup_button" onClick={closePopup}>Cancel</button>
+              <button className="continute_popup_button"
                 onClick={() => {
                   createBooking();
                 }}
