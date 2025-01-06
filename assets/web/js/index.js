@@ -5,7 +5,7 @@ import BookingHistory from "./components/BookingHistory";
 import BookingPopUp from "./BookingPopUpForm";
 
 document.addEventListener("DOMContentLoaded", function () {
-  const zippyMain = document.getElementById("zippy-root");
+  const zippyMain = document.getElementById("zippy-booking-root");
 
   if (typeof zippyMain != "undefined" && zippyMain != null) {
     const root = ReactDOM.createRoot(zippyMain);
