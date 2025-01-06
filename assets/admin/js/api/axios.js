@@ -1,5 +1,6 @@
 import axios from "axios";
 
+
 export const makeRequest = async (
   endpoint,
   params = {},
@@ -10,7 +11,7 @@ export const makeRequest = async (
   const api = axios.create({
     baseURL: baseURL,
   });
-
+ 
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
   const config = {
@@ -23,7 +24,6 @@ export const makeRequest = async (
   try {
     const res = await api.request(config);
     const data = res.data;
-    // console.log(error);
 
     return { data };
   } catch (error) {
