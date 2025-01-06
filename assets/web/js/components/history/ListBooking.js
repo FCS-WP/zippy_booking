@@ -174,7 +174,6 @@ const ListBooking = () => {
       start,
       end,
     });
-    console.log([start, end]);
   };
 
   const handleFilterStatus = (status) => {

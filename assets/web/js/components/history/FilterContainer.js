@@ -34,7 +34,7 @@ const FilterContainer = ({ handleFilterDate, handleFilterStatus }) => {
   };
 
   return (
-    <Box maxWidth="lg">
+    <Box>
       <Stack
         className="filter-container"
         direction={{ xs: "column", sm: "row" }}

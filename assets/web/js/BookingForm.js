@@ -11,19 +11,25 @@ const BookingForm = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [bookingData, setBookingData] = useState();
   const [pluginConfigs, setPluginConfigs] = useState();
+  const [isLoading, setIsLoading] = useState(true);
 
   const handlePreviousStep = () => {
     setCurrentStep(1);
   };
 
   const getPluginConfigs = async () => {
-    const getConfigs = await webApi.getConfigs();
-    if (!getConfigs) {
-      toast.error("Booking settings not found!");
-      return false;
-    }
-    if (getConfigs.data.status == "success") {
-      setPluginConfigs(getConfigs.data.data);
+    try {
+      setIsLoading(true);
+      const response = await webApi.getConfigs();
+      if (response?.data?.status === "success") {
+        setPluginConfigs(response.data.data);
+      } else {
+        toast.error("Failed to fetch booking configurations.");
+      }
+    } catch (error) {
+      toast.error("An error occurred while fetching configurations.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -56,6 +62,9 @@ const BookingForm = () => {
     getPluginConfigs();
   }, []);
 
+  if (isLoading) {
+    return <Message message="Loading booking configurations..." />;
+  }
   return (
     <>
       {pluginConfigs ? (
@@ -103,3 +112,5 @@ const BookingForm = () => {
 };
 
 export default BookingForm;
+
+

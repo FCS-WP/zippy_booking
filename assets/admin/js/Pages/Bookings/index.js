@@ -6,13 +6,18 @@ import { formatDate } from "../../utils/dateHelper";
 import TablePaginationCustom from "../../Components/TablePagination";
 import StatusSelect from "../../Components/StatusSelect";
 import { toast, ToastContainer } from "react-toastify";
-import Loading from "../../Components/Loading";
+import Box from "@mui/material/Box";
+import BookingFilter from "../../Components/BookingFilter";
+import { isInFilterDates } from "../../../../web/js/helper/datetime";
 
 const Index = () => {
   const pageTitle = "Bookings";
   const [data, setData] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterDates, setFilterDates] = useState(null);
+  const [filterStatus, setFilterStatus] = useState('')
 
   const [loadingState, setLoadingState] = useState({
     global: true,
@@ -114,7 +119,35 @@ const Index = () => {
     "Created Date": "auto",
   };
 
-  const paginatedData = data.slice(
+  const handleDataFilter = (dataFilter) => {
+    const byStatus = dataFilter.filter(item=>{
+      if (filterStatus == '') {
+        return item;
+      }
+      return item.Status == filterStatus;
+    })
+
+    const byQuery = byStatus.filter(item=>{
+      if (searchQuery == '') {
+        return item;
+      }
+      return item.Customer.toLowerCase().includes(searchQuery.toLowerCase()) || item.Product.toLowerCase().includes(searchQuery.toLowerCase()) ;
+    })
+
+    const byDate = byQuery.filter(item=>{
+      if (!filterDates) {
+        return item;
+      }
+      const [stringStartDate, stringEndDate] = item.Date.split(" - ").map(date => date.trim());
+      const startDate = new Date(stringStartDate);
+      return isInFilterDates(startDate, filterDates[0], filterDates[1]);
+    })
+    return byDate;
+  }
+
+  const filteredData = handleDataFilter(data) ?? [];
+  
+  const paginatedData = filteredData.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
@@ -123,30 +156,44 @@ const Index = () => {
     return <Loading />;
   }
 
+  const handleFilterDate = (value) => {
+    setFilterDates(value);
+  }
+  const handleFilterStatus = (value) => {
+    setFilterStatus(value);
+  }
+  const handleChangeSearchQuery = (value) => {
+    setSearchQuery(value);
+  }
+
   return (
-    <div>
+    <div className="custom-mui">
       <Header title={pageTitle} />
+      <BookingFilter
+        onChangeSearchQuery={handleChangeSearchQuery}
+        onChangeFilterDate={handleFilterDate}
+        onChangeFilterStatus={handleFilterStatus}
+      />
       <TableView
         cols={columns}
         columnWidths={columnWidths}
-        rows={paginatedData.map((row) => {
-          return {
-            ...row,
-            Status: (
-              <StatusSelect
-                currentStatus={row.Status}
-                isLoading={!!loadingState.rows[row.ID]}
-                onStatusChange={(newStatus) => {
-                  handleStatusChange(row.ID, newStatus);
-                }}
-              />
-            ),
-          };
-        })}
+        rows={paginatedData.map((row) => ({
+          ...row,
+          Status: (
+            <StatusSelect
+              currentStatus={row.Status}
+              isLoading={!!loadingState.rows[row.ID]}
+              onStatusChange={(newStatus) => {
+                handleStatusChange(row.ID, newStatus);
+              }}
+            />
+          ),
+        }))}
+        showBookingFilter={true}
       />
 
       <TablePaginationCustom
-        count={data.length}
+        count={filteredData.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
