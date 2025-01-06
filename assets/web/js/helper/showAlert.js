@@ -1,30 +1,25 @@
 import Swal from "sweetalert2";
 
-export const showAlert = (status, title, text, timer = 0) => {
+export const showAlert = (status, title, text) => {
   Swal.fire({
-    title: title,
-    text: text,
     icon: status,
-    confirmButtonText: "OK",
-    timer: timer,
+    title,
+    text,
+    timer: 3000,
+    showConfirmButton: false,
   });
 };
 
-export const showAlertMultipleProduct = (
-  timer = 0,
-  status,
-  title,
-  text,
-  handleConfirm
-) => {
+export const bookingSuccessfully = (handleConfirm) => {
   Swal.fire({
-    title: title,
-    text: text,
-    icon: status,
+    customClass:"booking_success",
+    title: "Booking Successful",
+    text: "Your booking has been created successfully!",
+    icon: "success",
     showCancelButton: true,
     confirmButtonText: "View Booking",
     cancelButtonText: "Cancel",
-    timer: timer,
+    timer: 0,
   }).then((result) => {
     handleConfirm(result);
   });
