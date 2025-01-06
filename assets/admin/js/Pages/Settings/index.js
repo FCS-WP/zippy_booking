@@ -61,7 +61,7 @@ const Settings = () => {
           data.store_working_time.length > 0
         ) {
           setIsConfigExisting(true);
-          setConfigId(data.id); 
+          setConfigId(data.id);
           const fetchedSchedule = daysOfWeek.map((day, index) => {
             const daySchedule = data.store_working_time.find(
               (time) => parseInt(time.weekday) === index
@@ -124,13 +124,40 @@ const Settings = () => {
         item.day === day
           ? {
               ...item,
-              slots: item.slots.map((slot, index) =>
-                index === slotIndex ? { ...slot, [field]: value } : slot
-              ),
+              slots: item.slots.map((slot, index) => {
+                if (index === slotIndex) {
+                  const newSlot = { ...slot, [field]: value };
+                  // If 'from' is changed, calculate 'to' time based on duration
+                  if (field === "from") {
+                    const fromTime = value.split(":");
+                    let [hours, minutes] = [parseInt(fromTime[0]), parseInt(fromTime[1])];
+                    minutes += duration;
+
+                    // If minutes exceed 60, increment hour
+                    if (minutes >= 60) {
+                      hours += Math.floor(minutes / 60);
+                      minutes = minutes % 60;
+                    }
+
+                    const toTime = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`;
+
+                    return { ...newSlot, to: toTime };
+                  }
+
+                  return newSlot;
+                }
+                return slot;
+              }),
             }
           : item
       )
     );
+    
+  };
+  const formatTime = (time) => {
+    if (!time) return "";
+    const [hours, minutes] = time.split(":");
+    return `${hours}:${minutes}:00`;
   };
 
   const handleSaveChanges = async () => {
@@ -140,12 +167,13 @@ const Settings = () => {
       const openSlot = item.slots[0] || {};
 
       const weekdayIndex = daysOfWeek.indexOf(item.day);
-
+    
+      
       return {
         is_open: isOpen ? "1" : "0",
         weekday: weekdayIndex.toString(),
-        open_at: isOpen ? openSlot.from || "" : "",
-        close_at: isOpen ? openSlot.to || "" : "",
+        open_at: isOpen ? formatTime(openSlot.from) || "" : "",
+        close_at: isOpen ? formatTime(openSlot.to) || "" : "",
       };
     });
 
@@ -349,7 +377,7 @@ const Settings = () => {
                                 )
                               }
                               inputProps={{
-                                step: 1,
+                                step: 60,
                               }}
                             />
                           </TableCell>
@@ -367,7 +395,7 @@ const Settings = () => {
                                 )
                               }
                               inputProps={{
-                                step: 1,
+                                step: 60,
                               }}
                             />
                           </TableCell>
