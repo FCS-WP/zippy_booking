@@ -24,7 +24,7 @@ const BookingFilter = ({
     <Box className="custom-input-filter" my={2}>
       <Grid2 container spacing={4}>
         <Grid2 size={{ xs: 12, md: 6 }}>
-          <Box maxWidth={"600px"}>
+          <Box maxWidth={{ lg: '600px', sm: '100%'}}>
             <TextField
               fullWidth
               label="Search bookings"
