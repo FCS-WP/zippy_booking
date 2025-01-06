@@ -165,10 +165,9 @@ const Settings = () => {
     const storeWorkingTime = schedule.map((item) => {
       const isOpen = item.slots.length > 0;
       const openSlot = item.slots[0] || {};
-
+  
       const weekdayIndex = daysOfWeek.indexOf(item.day);
-    
-      
+  
       return {
         is_open: isOpen ? "1" : "0",
         weekday: weekdayIndex.toString(),
@@ -176,7 +175,7 @@ const Settings = () => {
         close_at: isOpen ? formatTime(openSlot.to) || "" : "",
       };
     });
-
+  
     const create_params = {
       booking_type: bookingType,
       duration: duration,
@@ -184,7 +183,7 @@ const Settings = () => {
       allow_overlap: allowOverlap ? "1" : "0",
       store_working_time: storeWorkingTime,
     };
-
+  
     const update_params = {
       id: configId,
       booking_type: bookingType,
@@ -193,26 +192,26 @@ const Settings = () => {
       allow_overlap: allowOverlap ? "1" : "0",
       store_working_time: storeWorkingTime,
     };
-
+  
     try {
       if (isConfigExisting) {
+        // Update existing config
         const response = await Api.updateSettings(update_params);
-
+  
         if (response.data.status === "success") {
-          toast.success(
-            response.data.message || "Settings updated successfully!"
-          );
+          toast.success(response.data.message || "Settings updated successfully!");
         } else {
           toast.error(response.data.message || "Error updating settings.");
         }
       } else {
+        // Create new config
         const response = await Api.createSettings(create_params);
+  
         if (response.data.status === "success") {
-          setConfigId(response.data.id);
+          const newId = response.data.data.id; 
+          setConfigId(newId);
           setIsConfigExisting(true);
-          toast.success(
-            response.data.message || "Settings created successfully!"
-          );
+          toast.success(response.data.message || "Settings created successfully!");
         } else {
           toast.error(response.data.message || "Error creating settings.");
         }
@@ -224,6 +223,7 @@ const Settings = () => {
       setLoading(false);
     }
   };
+  
 
   const durationOptions = [];
   for (let i = 5; i <= 180; i += 5) {
