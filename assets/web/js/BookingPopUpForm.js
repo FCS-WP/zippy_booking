@@ -77,6 +77,7 @@ function BookingPopUp() {
         email = await alertInputEmail();
         if (!email) {
           showAlert("warning", "Canceled", "You did not enter a valid email or canceled the booking.");
+          setIsLoading(false);
           return;
         }
       }

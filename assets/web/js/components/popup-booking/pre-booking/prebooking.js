@@ -13,9 +13,6 @@ function Prebooking({ bookings }) {
                           <div className="pre_booking_items__time">
                             <span>{booking.booking_start_time} - {booking.booking_end_time}</span>
                           </div>
-                          <div className="pre_booking_items__name">
-                            <span>{booking.email}</span>
-                          </div>
                         </div>
                       </div>
                     ))}
