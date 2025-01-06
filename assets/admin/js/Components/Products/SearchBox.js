@@ -1,14 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Container,
   TextField,
-  Typography,
   Grid2 as Grid,
   InputAdornment,
   Paper,
   List,
-  ListItem,
   ListItemText,
   Chip,
   ListItemButton,
@@ -21,6 +19,7 @@ import { BsSearch, BsFillQuestionCircleFill } from "react-icons/bs";
 import { FiPlus } from "react-icons/fi";
 import { Api } from "../../api";
 import { toast } from "react-toastify";
+import { debounce } from "../../utils/searchHelper";
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -74,40 +73,48 @@ const SearchBox = ({ updateListMapping }) => {
     }
   };
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      if (productSearch.trim()) {
-        const dataProducts = await handleSearch(productSearch, "product");
-        if (dataProducts) {
-          setFilteredProducts(dataProducts);
-        } else {
-          toast.error("Search error");
-          setFilteredProducts([]);
-        }
-      } else {
-        setFilteredProducts([]);
+  const debounceFetchProducts = useCallback(
+    debounce(async (keyword , type) => {
+      switch (type) {
+        case 'product':
+          if (keyword.trim()) {
+            const dataProducts = await handleSearch(keyword, "product");
+            if (dataProducts) {
+              setFilteredProducts(dataProducts);
+            } else {
+              toast.error("Search error");
+              setFilteredProducts([]);
+            }
+          } else {
+            setFilteredProducts([]);
+          }
+          break;
+        case 'category': 
+          if (keyword.trim()) {
+            const dataCategories = await handleSearch(keyword, "category");
+            if (dataCategories) {
+              setFilteredCategories(dataCategories);
+            } else {
+              toast.error("Search error");
+              setFilteredCategories([]);
+            }
+          } else {
+            setFilteredCategories([]);
+          }
+          break;
+        default:
+          break;
       }
-    };
+    }, 500),
+    []
+  );
 
-    fetchProducts();
+  useEffect(() => {
+    debounceFetchProducts(productSearch, "product");
   }, [productSearch]);
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      if (categorySearch.trim()) {
-        const dataCategories = await handleSearch(categorySearch, "category");
-        if (dataCategories) {
-          setFilteredCategories(dataCategories);
-        } else {
-          toast.error("Search error");
-          setFilteredCategories([]);
-        }
-      } else {
-        setFilteredCategories([]);
-      }
-    };
-
-    fetchCategories();
+    debounceFetchProducts(categorySearch, "category");
   }, [categorySearch]);
 
   const handleCategoryClick = (category) => {
