@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import { webApi } from "../../api";
 import { toast } from "react-toastify";
 import CustomLoader from "../CustomLoader";

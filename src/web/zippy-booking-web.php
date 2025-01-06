@@ -34,7 +34,7 @@ class Zippy_Booking_Web
     date_default_timezone_set('Asia/Singapore');
 
     /* Shortcode add btn booking */
-    add_shortcode('btn_booking_on_single_product_page', array($this, 'btn_booking_on_single_product_page'));
+    add_shortcode('btn_booking_form', array($this, 'btn_booking_on_single_product_page'));
 
     /* Booking Assets  */
     add_action('wp_enqueue_scripts', array($this, 'booking_assets'));

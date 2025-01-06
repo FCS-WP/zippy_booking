@@ -5,7 +5,6 @@ import { Bookings } from "../../api/bookings";
 import { formatDate } from "../../utils/dateHelper";
 import TablePaginationCustom from "../../Components/TablePagination";
 import StatusSelect from "../../Components/StatusSelect";
-import CircularProgress from "@mui/material/CircularProgress";
 import { toast, ToastContainer } from "react-toastify";
 import Box from "@mui/material/Box";
 import BookingFilter from "../../Components/BookingFilter";
@@ -32,6 +31,7 @@ const Index = () => {
 
       if (responseData.status === "success") {
         const formattedData = responseData.data.bookings.map((booking) => {
+
           return {
             ID: booking.ID,
             Date:
@@ -40,9 +40,8 @@ const Index = () => {
               formatDate(booking.booking_end_date),
             Customer: booking.email,
             Product: booking.product.name,
-            duration: booking.duration,
             Status: booking.booking_status,
-            "Created Date": formatDate(booking.booking_start_date),
+            "Created Date": formatDate(booking.created_at),
           };
         });
 
@@ -108,7 +107,6 @@ const Index = () => {
     "Date",
     "Customer",
     "Product",
-    "Duration",
     "Status",
     "Created Date",
   ];
@@ -117,7 +115,6 @@ const Index = () => {
     Date: "auto",
     Customer: "auto",
     Product: "auto",
-    duration: "auto",
     Status: "10%",
     "Created Date": "auto",
   };
@@ -156,18 +153,7 @@ const Index = () => {
   );
 
   if (loadingState.global) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
+    return <Loading />;
   }
 
   const handleFilterDate = (value) => {
@@ -205,6 +191,7 @@ const Index = () => {
         }))}
         showBookingFilter={true}
       />
+
       <TablePaginationCustom
         count={filteredData.length}
         rowsPerPage={rowsPerPage}
