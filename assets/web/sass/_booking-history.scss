@@ -7,7 +7,7 @@ input[type='text']{
         width: 100%;
     }
     .react-datepicker__day--selected, .react-datepicker__day--in-range, .react-datepicker__day--in-selecting-range {
-        background-color: #4A8875;
+        background-color: $primary;
     }
     .react-datepicker__current-month {
         font-size: 20px;

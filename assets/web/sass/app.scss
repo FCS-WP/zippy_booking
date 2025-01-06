@@ -1,5 +1,6 @@
+@import 'variables';
+
 #zippy-root {
-    @import 'variables';
     @import 'booking-form';
     @import 'custom-datepicker';
 }
@@ -9,4 +10,6 @@
 @import "react-datepicker/dist/react-datepicker.css";
 @import 'custom-alert';
 @import 'loader';
+
+@import 'overwrite_css_calendar_react';
 @import 'components';
