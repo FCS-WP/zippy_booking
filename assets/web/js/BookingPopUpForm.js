@@ -3,7 +3,11 @@ import Timepicker from "./components/popup-booking/timepicker/timepicker";
 import Prebooking from "./components/popup-booking/pre-booking/prebooking";
 import BookingDatePicker from "./components/BookingDatePicker";
 import { webApi } from "./api";
-import { alertInputEmail, showAlert, showAlertMultipleProduct } from "./helper/showAlert";
+import {
+  alertInputEmail,
+  showAlert,
+  showAlertMultipleProduct,
+} from "./helper/showAlert";
 import CustomLoader from "./components/CustomLoader";
 
 function BookingPopUp() {
@@ -69,6 +73,14 @@ function BookingPopUp() {
     return `${hours}:${minutes}:${seconds}`;
   };
 
+  const handleConfirm = (result) => {
+    if (result.isConfirmed) {
+      window.location.href = "/booking-history";
+    } else if (result.isDismissed) {
+      closePopup();
+    }
+  };
+
   const createBooking = async () => {
     setIsLoading(true);
     try {
@@ -76,7 +88,11 @@ function BookingPopUp() {
       if (!email) {
         email = await alertInputEmail();
         if (!email) {
-          showAlert("warning", "Canceled", "You did not enter a valid email or canceled the booking.");
+          showAlert(
+            "warning",
+            "Canceled",
+            "You did not enter a valid email or canceled the booking."
+          );
           setIsLoading(false);
           return;
         }
@@ -88,21 +104,35 @@ function BookingPopUp() {
         booking_start_date: formatDate(selectedDate),
         booking_end_date: formatDate(selectedDate),
         booking_start_time: convertToTime(selectedStartTime),
-        booking_end_time: convertToTime(selectedEndTime)
+        booking_end_time: convertToTime(selectedEndTime),
       };
 
       const newBookings = await webApi.createBooking(params);
-      
+
       if (newBookings.data.status === "success") {
         setIsLoading(false);
-        showAlertMultipleProduct("success", "Booking Successful", "Your booking has been created successfully!");
+        showAlertMultipleProduct(
+          0,
+          "success",
+          "Booking Successful",
+          "Your booking has been created successfully!",
+          handleConfirm
+        );
       } else {
         setIsLoading(false);
-        showAlert("error", "Booking Failed", newBookings.data.message || "An unknown error occurred.");
+        showAlert(
+          "error",
+          "Booking Failed",
+          newBookings.data.message || "An unknown error occurred."
+        );
       }
     } catch (err) {
       setIsLoading(false);
-      showAlert("error", "Booking Failed", err.message || "An unknown error occurred.");
+      showAlert(
+        "error",
+        "Booking Failed",
+        err.message || "An unknown error occurred."
+      );
     }
   };
 
@@ -111,7 +141,11 @@ function BookingPopUp() {
       const configResponse = await webApi.getConfigs();
       setConfigs(configResponse.data.data || []);
     } catch (err) {
-      showAlert("error", "Get Config Failed", err.message || "An unknown error occurred.");
+      showAlert(
+        "error",
+        "Get Config Failed",
+        err.message || "An unknown error occurred."
+      );
     }
   };
 
@@ -129,7 +163,11 @@ function BookingPopUp() {
       const bookingsResponse = await webApi.getBookings(params);
       setBookings(bookingsResponse.data.data.bookings || []);
     } catch (err) {
-      showAlert("error", "Get Booking Failed", err.message || "An unknown error occurred.");
+      showAlert(
+        "error",
+        "Get Booking Failed",
+        err.message || "An unknown error occurred."
+      );
     }
   };
 
@@ -138,7 +176,7 @@ function BookingPopUp() {
       getAllBooking();
     }
   }, [selectedDate, productId]);
-  console.log(isLoading);
+
   return (
     <>
       {typeBooking && (
@@ -178,8 +216,11 @@ function BookingPopUp() {
               </div>
             </div>
             <div className="flex-space-between">
-              <button className="cancel_popup_button" onClick={closePopup}>Cancel</button>
-              <button className="continute_popup_button"
+              <button className="cancel_popup_button" onClick={closePopup}>
+                Cancel
+              </button>
+              <button
+                className="continute_popup_button"
                 onClick={() => {
                   createBooking();
                 }}

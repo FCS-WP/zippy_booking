@@ -10,21 +10,23 @@ export const showAlert = (status, title, text, timer = 0) => {
   });
 };
 
-export const showAlertMultipleProduct = (status, title, text, timer = 0) => {
+export const showAlertMultipleProduct = (
+  timer = 0,
+  status,
+  title,
+  text,
+  handleConfirm
+) => {
   Swal.fire({
     title: title,
     text: text,
     icon: status,
-    showCancelButton: true, 
+    showCancelButton: true,
     confirmButtonText: "View Booking",
     cancelButtonText: "Cancel",
     timer: timer,
   }).then((result) => {
-    if (result.isConfirmed) {
-      window.location.href = '/booking-history';
-    } else if (result.isDismissed) {
-      window.location.href = './';
-    }
+    handleConfirm(result);
   });
 };
 
