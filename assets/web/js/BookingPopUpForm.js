@@ -4,6 +4,7 @@ import Prebooking from "./components/popup-booking/pre-booking/prebooking";
 import BookingDatePicker from "./components/BookingDatePicker";
 import { webApi } from "./api";
 import { alertInputEmail, showAlert, showAlertMultipleProduct } from "./helper/showAlert";
+import CustomLoader from "./components/CustomLoader";
 
 function BookingPopUp() {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -14,6 +15,7 @@ function BookingPopUp() {
   const [bookings, setBookings] = useState([]);
   const [configs, setConfigs] = useState([]);
   const [configsDate, setConfigsDate] = useState([new Date()]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const openPopup = () => {
     setIsPopupOpen(true);
@@ -68,6 +70,7 @@ function BookingPopUp() {
   };
 
   const createBooking = async () => {
+    setIsLoading(true);
     try {
       let email = admin_data.user_email;
       if (!email) {
@@ -88,12 +91,16 @@ function BookingPopUp() {
       };
 
       const newBookings = await webApi.createBooking(params);
+      
       if (newBookings.data.status === "success") {
+        setIsLoading(false);
         showAlertMultipleProduct("success", "Booking Successful", "Your booking has been created successfully!");
       } else {
+        setIsLoading(false);
         showAlert("error", "Booking Failed", newBookings.data.message || "An unknown error occurred.");
       }
     } catch (err) {
+      setIsLoading(false);
       showAlert("error", "Booking Failed", err.message || "An unknown error occurred.");
     }
   };
@@ -130,7 +137,7 @@ function BookingPopUp() {
       getAllBooking();
     }
   }, [selectedDate, productId]);
-
+  console.log(isLoading);
   return (
     <>
       {typeBooking && (
@@ -166,6 +173,7 @@ function BookingPopUp() {
                   configsDate={configsDate}
                 />
                 <Prebooking bookings={bookings} />
+                {isLoading && <CustomLoader />}
               </div>
             </div>
             <div className="flex-space-between">

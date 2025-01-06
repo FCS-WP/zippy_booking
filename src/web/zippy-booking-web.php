@@ -44,15 +44,18 @@ class Zippy_Booking_Web
   }
 
 
-  public function btn_booking_on_single_product_page(){
-    if ( is_product() ) {
-        global $post;
-        $product_id = $post->ID;
-        echo "<div id='btn_booking' data-id-product='" . esc_attr( $product_id ) . "'></div>";
-    } else {
-        return;
-    }
-}
+  public function btn_booking_on_single_product_page()
+  {
+    global $product;
+
+    $product_id = $product->get_id();
+
+    $support_booking = $product->get_meta('product_booking_mapping');
+
+    if (!is_array($support_booking) || !is_product()) return;
+
+    echo "<div id='btn_booking' data-id-product='" . esc_attr($product_id) . "'></div>";
+  }
 
 
   public function booking_assets()
