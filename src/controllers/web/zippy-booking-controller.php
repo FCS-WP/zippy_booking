@@ -20,7 +20,7 @@ class Zippy_Booking_Controller
     public static function create_booking_with_product(WP_REST_Request $request)
     {
         global $wpdb;
-        $table_name = 'fcs_data_bookings';
+        $table_name = ZIPPY_BOOKING_TABLE_NAME;
 
         $product_id = intval($request->get_param('product_id'));
         $user_id = intval($request->get_param('user_id'));
@@ -60,14 +60,40 @@ class Zippy_Booking_Controller
             }
         }
 
+
+
+        /** 
+         * 
+         * Check if booking time is available or not. 
+         * If the time range from booking_start_date + booking_start_time to booking_end_date + booking_end_time is between any other booking time of this product or opposite, return error.
+         * 
+         */
+
+
+        $query = "SELECT booking_start_date, booking_start_time, booking_end_date, booking_end_time FROM $table_name WHERE product_id = $product_id";
+        $results = $wpdb->get_results($query);
+        if (!empty($results)) {
+            foreach ($results as $result) {
+                $result_start_timestamp = strtotime($result->booking_start_date . ' ' . $result->booking_start_time);
+                $result_end_timestamp = strtotime($result->booking_end_date . ' ' . $result->booking_end_time);
+
+                $start_sample_timestamp = strtotime($booking_start_date . ' ' . $booking_start_time);
+                $end_sample_timestamp = strtotime($booking_end_date . ' ' . $booking_end_time);
+
+                if (($start_sample_timestamp >= $result_start_timestamp && $start_sample_timestamp <= $result_end_timestamp) || 
+                    ($end_sample_timestamp >= $result_start_timestamp && $end_sample_timestamp <= $result_end_timestamp) || 
+                    ($start_sample_timestamp <= $result_start_timestamp && $end_sample_timestamp >= $result_end_timestamp)) {
+                    return Zippy_Response_Handler::error('This range of time is already booked for this product.');
+                }
+            }
+        }
+
+        
         $order = wc_create_order();
-
         $order->add_product($product, 1);
-
         $order->set_customer_id($user_id);
-
         $order->calculate_totals();
-        $order->save();
+       
         $order_id = $order->get_id();
 
         $inserted = $wpdb->insert($table_name, array(
@@ -92,10 +118,14 @@ class Zippy_Booking_Controller
         $order->add_order_note($custom_order_name);
         $order->update_meta_data('custom_order_name', $custom_order_name);
         $order->update_meta_data('booking_id', $booking_id);
+        $order->update_meta_data('booking_start_date', $booking_start_date);
+        $order->update_meta_data('booking_end_date', $booking_end_date);
         $order->update_meta_data('booking_start_time', $booking_start_time);
         $order->update_meta_data('booking_end_time', $booking_end_time);
         $order->save();
 
+        $order->update_status('on-hold');
+        
         return Zippy_Response_Handler::success(
             array(
                 'booking_id' => $booking_id,
@@ -228,10 +258,36 @@ class Zippy_Booking_Controller
         if (empty($data_to_update)) {
             return Zippy_Response_Handler::error('No valid fields to update.');
         }
+
         $updated = $wpdb->update($table_name, $data_to_update, $where);
 
         if ($updated === false) {
             return Zippy_Response_Handler::error('Failed to update the booking.');
+        }
+
+        $order_id = $booking->order_id;
+
+        if ($order_id) {
+            $order = wc_get_order($order_id);
+
+            if ($order) {
+                switch ($booking_status) {
+                    case 'pending':
+                        $order->update_status('on-hold');
+                        break;
+                    case 'approve':
+                        $order->update_status('pending');
+                        break;
+                    case 'completed':
+                        $order->update_status('completed');
+                        break;
+                    case 'cancel':
+                        $order->update_status('cancelled');
+                        break;
+                }
+
+                $order->save();
+            }
         }
 
         return Zippy_Response_Handler::success(
@@ -239,9 +295,10 @@ class Zippy_Booking_Controller
                 'booking_id' => $booking_id,
                 'updated_fields' => $data_to_update
             ),
-            'Booking updated successfully.'
+            'Booking and Order updated successfully.'
         );
     }
+
     public static function check_permission(WP_REST_Request $request)
     {
         global $wpdb;

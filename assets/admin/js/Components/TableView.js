@@ -9,9 +9,20 @@ import {
   Checkbox,
   Paper,
   FormControlLabel,
+  Button,
+  Box,
+  Grid2,
 } from "@mui/material";
+import FilterContainer from "../../../web/js/components/history/FilterContainer";
 
-const TableView = ({ cols, rows, columnWidths = {} }) => {
+const TableView = ({
+  cols,
+  rows,
+  columnWidths = {},
+  canBeDeleted = false,
+  onDeleteRows = () => {},
+  showBookingFilter = false,
+}) => {
   const [selectedRows, setSelectedRows] = useState({});
 
   useEffect(() => {
@@ -33,7 +44,7 @@ const TableView = ({ cols, rows, columnWidths = {} }) => {
     const newSelection = rows.reduce((acc, _, index) => {
       acc[index] = event.target.checked;
       return acc;
-    }, {});
+    }, []);
     setSelectedRows(newSelection);
   };
 
@@ -43,12 +54,31 @@ const TableView = ({ cols, rows, columnWidths = {} }) => {
   const isMasterIndeterminate =
     !isMasterChecked && Object.values(selectedRows).some((checked) => checked);
 
+  const renderDeleteButton = () => {
+    return (
+      <Box textAlign={"end"} m={2}>
+        <Button
+          disabled={!isMasterChecked && !isMasterIndeterminate ? true : false}
+          variant="outlined"
+          sx={{ fontSize: "12px" }}
+          onClick={() => onDeleteRows(selectedRows)}
+        >
+          Delete Selected Rows
+        </Button>
+      </Box>
+    )
+  }
+
   return (
     <TableContainer component={Paper}>
+      {canBeDeleted ? renderDeleteButton() : ''}
       <Table>
         <TableHead sx={{ backgroundColor: "#f1f1f1" }}>
           <TableRow>
-            <TableCell padding="checkbox" style={{ width: "50px" , textAlign: "center" }}>
+            <TableCell
+              padding="checkbox"
+              style={{ width: "50px", textAlign: "center" }}
+            >
               <FormControlLabel
                 control={
                   <Checkbox
@@ -58,13 +88,16 @@ const TableView = ({ cols, rows, columnWidths = {} }) => {
                     sx={{ textAlign: "center" }}
                   />
                 }
-                style={{ marginRight:0, }}
+                style={{ marginRight: 0 }}
               />
             </TableCell>
             {cols.map((col, index) => (
               <TableCell
                 key={index}
-                style={{ width: columnWidths[col] || "auto", backgroundColor: "#f1f1f1" }}
+                style={{
+                  width: columnWidths[col] || "auto",
+                  backgroundColor: "#f1f1f1",
+                }}
               >
                 {col}
               </TableCell>
@@ -73,7 +106,10 @@ const TableView = ({ cols, rows, columnWidths = {} }) => {
         </TableHead>
         <TableBody sx={{ backgroundColor: "#fff" }}>
           {rows.map((row, rowIndex) => (
-            <TableRow key={rowIndex} sx={{ backgroundColor: rowIndex % 2 === 0 ? "#fafafa" : "#fff" }}>
+            <TableRow
+              key={rowIndex}
+              sx={{ backgroundColor: rowIndex % 2 === 0 ? "#fafafa" : "#fff" }}
+            >
               <TableCell padding="checkbox" style={{ textAlign: "center" }}>
                 <FormControlLabel
                   control={
@@ -82,11 +118,14 @@ const TableView = ({ cols, rows, columnWidths = {} }) => {
                       onChange={() => handleRowCheckboxChange(rowIndex)}
                     />
                   }
-                  style={{ marginRight:0, }}
+                  style={{ marginRight: 0 }}
                 />
               </TableCell>
               {cols.map((col, colIndex) => (
-                <TableCell key={colIndex} style={{ width: columnWidths[col] || "auto" }}>
+                <TableCell
+                  key={colIndex}
+                  style={{ width: columnWidths[col] || "auto" }}
+                >
                   {row[col]}
                 </TableCell>
               ))}

@@ -18,6 +18,7 @@ const FilterContainer = ({ handleFilterDate, handleFilterStatus }) => {
     { value: "pending", label: "Pending" },
     { value: "completed", label: "Completed" },
     { value: "cancelled", label: "Cancelled" },
+    { value: "approved", label: "Approved" },
   ];
 
   const handleStatusChange = (event) => {
@@ -34,15 +35,15 @@ const FilterContainer = ({ handleFilterDate, handleFilterStatus }) => {
   };
 
   return (
-    <Box maxWidth="lg">
+    <Box>
       <Stack
         className="filter-container"
         direction={{ xs: "column", sm: "row" }}
-        justifyContent={"end"}
+        justifyContent={"space-between"}
         flexWrap={"wrap"}
-        spacing={3}
+        gap={2}
       >
-        <Box sx={{ minWidth: 250, width: { xs: "100%", sm: "auto" } }}>
+        <Box className="status-filter" sx={{ minWidth: 250, width: { xs: "100%", sm: "48%" } }}>
           <Select
             color="success"
             value={status}
@@ -62,7 +63,7 @@ const FilterContainer = ({ handleFilterDate, handleFilterStatus }) => {
             ))}
           </Select>
         </Box>
-        <Box sx={{ minWidth: 250, width: { xs: "100%", sm: "auto" } }}>
+        <Box className="date-filter" sx={{ minWidth: 250, width: { xs: "100%", sm: "48%" } }}>
           <DatePicker
             width={"100%"}
             selected={startDate}
@@ -78,6 +79,7 @@ const FilterContainer = ({ handleFilterDate, handleFilterStatus }) => {
                 color="success"
               />
             }
+            dateFormat="MMMM d, yyyy"
             selectsRange
             isClearable
           />

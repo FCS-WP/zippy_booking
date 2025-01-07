@@ -11,20 +11,32 @@ const BookingForm = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [bookingData, setBookingData] = useState();
   const [pluginConfigs, setPluginConfigs] = useState();
+  const [isLoading, setIsLoading] = useState(true);
 
   const handlePreviousStep = () => {
     setCurrentStep(1);
   };
 
   const getPluginConfigs = async () => {
-    const getConfigs = await webApi.getConfigs();
-    if (!getConfigs) {
-      toast.error("Booking settings not found!");
-      return false;
+    try {
+      setIsLoading(true);
+      const response = await webApi.getConfigs();
+      if (response?.data?.status === "success") {
+        setPluginConfigs(response.data.data);
+      } else {
+        toast.error("Failed to fetch booking configurations.");
+      }
+    } catch (error) {
+      toast.error("An error occurred while fetching configurations.");
+    } finally {
+      setIsLoading(false);
     }
-    if (getConfigs.data.status == "success") {
-      setPluginConfigs(getConfigs.data.data);
-    }
+  };
+
+  const STEP_LABELS = {
+    1: "Select Field",
+    2: "Select Date",
+    3: "Review",
   };
 
   const handleNextStep = (currentStep, data) => {
@@ -50,52 +62,55 @@ const BookingForm = () => {
     getPluginConfigs();
   }, []);
 
+  if (isLoading) {
+    return <Message message="Loading booking configurations..." />;
+  }
   return (
-    <> 
+    <>
       {pluginConfigs ? (
         <div id="zippy-booking-form">
-        <div className="steps-container">
-          <div className={`step-item ${currentStep == 1 ? "active" : ""}`}>
-            <span></span>
-            <h4>1. Select Field</h4>
+          <div className="steps-container">
+            {Object.keys(STEP_LABELS).map((step) => (
+              <div
+                key={step}
+                className={`step-item ${currentStep == step ? "active" : ""}`}
+              >
+                <span></span>
+                <h4>{`${step}. ${STEP_LABELS[step]}`}</h4>
+              </div>
+            ))}
           </div>
-          <div className={`step-item ${currentStep == 2 ? "active" : ""}`}>
-            <span></span>
-            <h4>2. Select Date</h4>
+          <div className="booking-container">
+            {currentStep == 1 && (
+              <BookingStep1 handleNextStep={handleNextStep} />
+            )}
+
+            {currentStep == 2 && (
+              <BookingStep2
+                handlePreviousStep={handlePreviousStep}
+                handleNextStep={handleNextStep}
+                selectedProduct={selectedProduct}
+                configs={pluginConfigs}
+              />
+            )}
+
+            {currentStep == 3 && (
+              <BookingStep3
+                selectedProduct={selectedProduct}
+                bookingData={bookingData}
+                handleNextStep={handleNextStep}
+              />
+            )}
           </div>
-          <div className={`step-item ${currentStep == 3 ? "active" : ""}`}>
-            <span></span>
-            <h4>3. Review</h4>
-          </div>
+          <ToastContainer />
         </div>
-        <div className="booking-container">
-          {currentStep == 1 && <BookingStep1 handleNextStep={handleNextStep} />}
-  
-          {currentStep == 2 && (
-            <BookingStep2
-              handlePreviousStep={handlePreviousStep}
-              handleNextStep={handleNextStep}
-              selectedProduct={selectedProduct}
-              configs={pluginConfigs}
-            />
-          )}
-  
-          {currentStep == 3 && (
-            <BookingStep3
-              selectedProduct={selectedProduct}
-              bookingData={bookingData}
-              handleNextStep={handleNextStep}
-            />
-          )}
-        </div>
-        <ToastContainer />
-      </div>
       ) : (
         <Message message={"Can not get booking configs."} />
       )}
     </>
-    
   );
 };
 
 export default BookingForm;
+
+

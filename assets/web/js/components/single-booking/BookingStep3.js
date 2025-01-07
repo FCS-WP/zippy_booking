@@ -13,16 +13,23 @@ const BookingStep3 = ({ selectedProduct, bookingData, handleNextStep }) => {
 
   const showBookingTimes = (bookingData) => {
     if (bookingData) {
-      const startDateString = bookingData.booking_start_date + 'T' + bookingData.booking_start_time;
-      const endDateString = bookingData.booking_end_date + 'T' + bookingData.booking_end_time;
-  
+      const startDateString =
+        bookingData.booking_start_date + "T" + bookingData.booking_start_time;
+      const endDateString =
+        bookingData.booking_end_date + "T" + bookingData.booking_end_time;
+
       const startDate = new Date(startDateString);
       const endDate = new Date(endDateString);
-      const result = "From " + format(startDate, 'HH:mm aaa') + " " + "to " +  format(endDate, 'HH:mm aaa');
+      const result =
+        "From " +
+        format(startDate, "HH:mm") +
+        " " +
+        "to " +
+        format(endDate, "HH:mm");
       return result;
     }
-    return
-  }
+    return;
+  };
 
   useEffect(() => {
     if (pageFocusRef.current) {
@@ -73,13 +80,13 @@ const BookingStep3 = ({ selectedProduct, bookingData, handleNextStep }) => {
               <li>
                 <div className="summary-item">
                   <span>Field:</span>
-                  <h4>{selectedProduct.product_name}</h4>
+                  <h4>{selectedProduct.item_name}</h4>
                 </div>
               </li>
               <li>
                 <div className="summary-item">
                   <span>Price:</span>
-                  <h4>$ {selectedProduct.product_price}</h4>
+                  <h4>$ {selectedProduct.item_price}</h4>
                 </div>
               </li>
             </ul>

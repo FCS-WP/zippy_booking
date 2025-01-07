@@ -1,4 +1,6 @@
 <div class="wrap">
-  <div id="root_app">
+  <div id="zippy-booking-root">
+    <div id="root_app">
+    </div>
   </div>
 </div>

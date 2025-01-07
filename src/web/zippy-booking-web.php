@@ -33,12 +33,30 @@ class Zippy_Booking_Web
     /* Set timezone SG */
     date_default_timezone_set('Asia/Singapore');
 
+    /* Shortcode add btn booking */
+    add_shortcode('btn_booking_form', array($this, 'btn_booking_on_single_product_page'));
+
     /* Booking Assets  */
     add_action('wp_enqueue_scripts', array($this, 'booking_assets'));
     add_shortcode('zippy_booking_form',  array($this, 'zippy_booking_form_shortcode'));
     add_shortcode('zippy_booking_history',  array($this, 'zippy_booking_history_shortcode'));
     add_action('pre_get_posts', array($this, 'exclude_products_by_category'));
   }
+
+
+  public function btn_booking_on_single_product_page()
+  {
+    global $product;
+
+    $product_id = $product->get_id();
+
+    $support_booking = $product->get_meta('product_booking_mapping');
+
+    if (!is_array($support_booking) || !is_product()) return;
+
+    echo "<div id='btn_booking' data-id-product='" . esc_attr($product_id) . "'></div>";
+  }
+
 
   public function booking_assets()
   {
@@ -58,13 +76,13 @@ class Zippy_Booking_Web
   function zippy_booking_form_shortcode()
   {
     // Output content for the shortcode
-    return '<div id="zippy-root">Loading booking app...</div>';
+    return '<div id="zippy-booking-root"></div>';
   }
 
   function zippy_booking_history_shortcode()
   {
     // Output content for the shortcode
-    return '<div id="zippy-booking-history">Loading your bookings...</div>';
+    return '<div id="zippy-booking-history"></div>';
   }
 
   function exclude_products_by_category($query)

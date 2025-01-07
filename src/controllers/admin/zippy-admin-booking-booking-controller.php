@@ -20,7 +20,6 @@ class Zippy_Admin_Booking_Booking_Controller
 {
     public static function get_booking_list_of_a_product(WP_REST_Request $request)
     {
-        
         // Rules
         $required_fields = [
             "product_id" => ["data_type" => "number"],
@@ -37,10 +36,10 @@ class Zippy_Admin_Booking_Booking_Controller
             "order_by" => ["data_type" => "string"],
             "sort_order" => ["data_type" => "range", "allowed_values" => ["asc", "desc"]],
         ];
-        
+
         // Validate Request Fields
         $validate = Zippy_Request_Validation::validate_request($required_fields, $request);
-        if(!empty($validate)){
+        if (!empty($validate)) {
             return Zippy_Response_Handler::error($validate);
         }
 
@@ -52,7 +51,7 @@ class Zippy_Admin_Booking_Booking_Controller
             "product_id" => sanitize_text_field($request->get_param('product_id')),
             "email" => sanitize_text_field($request->get_param('email')),
             "user_id" => sanitize_text_field($request->get_param('user_id')),
-            "order_id" => sanitize_text_field($request->get_param('user_id')),
+            "order_id" => sanitize_text_field($request->get_param('order_id')),
             "booking_status" => sanitize_text_field($request->get_param('booking_status')),
         ];
 
@@ -61,14 +60,10 @@ class Zippy_Admin_Booking_Booking_Controller
 
         // Count total
         $total_query = "SELECT ID FROM $table_name WHERE 1=1";
-
         $total_count = count($wpdb->get_results($total_query));
-    
-        
 
         // Query on params
         $query = "SELECT * FROM $table_name WHERE 1=1";
-        
         foreach ($query_param as $key => $value) {
             if ($value !== "" && $value !== null) {
                 $query .= $wpdb->prepare(" AND $key = %s ", $value);
@@ -80,19 +75,19 @@ class Zippy_Admin_Booking_Booking_Controller
         $booking_end_date = sanitize_text_field($request->get_param('booking_end_date'));
         $booking_end_time = sanitize_text_field($request->get_param('booking_end_time'));
 
-        if($booking_end_date != ""){
+        if ($booking_end_date != "") {
             $query .= $wpdb->prepare(" AND DATE(booking_end_date) <= %s ", $booking_end_date);
         }
 
-        if($booking_end_time != ""){
+        if ($booking_end_time != "") {
             $query .= $wpdb->prepare(" AND DATE(booking_end_time) <= %s ", $booking_end_time);
         }
 
-        if($booking_start_date != ""){
+        if ($booking_start_date != "") {
             $query .= $wpdb->prepare(" AND DATE(booking_start_date) >= %s ", $booking_start_date);
         }
-        
-        if($booking_start_time != ""){
+
+        if ($booking_start_time != "") {
             $query .= $wpdb->prepare(" AND DATE(booking_start_time) >= %s ", $booking_start_time);
         }
 
@@ -111,15 +106,13 @@ class Zippy_Admin_Booking_Booking_Controller
 
         $query .= " ORDER BY $order_by $sort_order";
         $results = $wpdb->get_results($query);
-        
+
         if (empty($results)) {
             return Zippy_Response_Handler::success([], ZIPPY_BOOKING_NOT_FOUND);
         }
 
-        
-        // get product info
+        // Get product info
         $products = [];
-
         foreach ($results as $res) {
             $product_id = $res->product_id;
             $product = wc_get_product($product_id);
@@ -128,6 +121,20 @@ class Zippy_Admin_Booking_Booking_Controller
             } else {
                 $res->product = [];
             }
+
+            // Check order status and add payment link if pending
+            $order_id = $res->order_id;
+            if (!empty($order_id)) {
+                $order = wc_get_order($order_id);
+                $order_data = [
+                    'ID' => $order_id,
+                    'order_status' => $order ? $order->get_status() : 'invalid',
+                    'order_total' => $order ? $order->get_total() : 0,
+                    'payment_link' => ($order && $order->get_status() === 'pending') ? $order->get_checkout_payment_url() : null
+                ];
+                $res->order = $order_data;
+            }
+
             $products[] = $res;
         }
 
@@ -136,6 +143,8 @@ class Zippy_Admin_Booking_Booking_Controller
 
         $config_query = "SELECT booking_type, duration, store_email, allow_overlap, store_working_time FROM $config_table_name WHERE 1=1";
         $config_results = $wpdb->get_results($config_query);
+
+        $configs = [];
 
         $configs = $config_results[0];
         if (!empty($configs->store_working_time)) {
@@ -146,15 +155,17 @@ class Zippy_Admin_Booking_Booking_Controller
         $data["bookings"] = $products;
         $data["count"] = count($results);
         $data["total_count"] = $total_count;
-        $data["configs"] = $configs;
+        // $data["configs"] = $configs;
 
         return Zippy_Response_Handler::success($data);
-
     }
 
 
+
+
     /* Booking Stats */
-    public static function get_booking_stats(WP_REST_Request $request){
+    public static function get_booking_stats(WP_REST_Request $request)
+    {
         global $wpdb;
         $table_name = ZIPPY_BOOKING_TABLE_NAME;
 
@@ -200,7 +211,7 @@ class Zippy_Admin_Booking_Booking_Controller
             "processing_count" => $processing_count,
             "cancelled_count" => $cancelled_count,
         ];
-        
+
         return Zippy_Response_Handler::success($data);
     }
 }

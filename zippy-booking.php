@@ -138,9 +138,9 @@ if (!defined('ZIPPY_BOOKING_API_TOKEN')) {
 // load_plugin_textdomain('zippy-booking-car', false, basename(dirname(__FILE__)) . '/languages');
 
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
 
 /* ------------------------------------------
 // Includes
@@ -158,7 +158,7 @@ use Zippy_Booking\Src\Routers\Bookings\Zippy_Booking_Router;
 
 use Zippy_Booking\Src\Middleware\Admin\Zippy_Booking_Permission;
 use Zippy_Booking\Src\Web\Zippy_Booking_Web;
-
+ use Zippy_Booking\Src\Woocommerce\Zippy_Woo_Booking;
 /**
  * Zippy Plugin update
  *
@@ -195,6 +195,6 @@ use Zippy_Booking\Src\Web\Zippy_Booking_Web;
 Zippy_Admin_Settings::get_instance();
 
 Zippy_Booking_Router::get_instance();
-
+Zippy_Woo_Booking::get_instance();
 Zippy_Booking_Web::get_instance();
 

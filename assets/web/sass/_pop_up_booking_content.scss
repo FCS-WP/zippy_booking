@@ -1,0 +1,89 @@
+@import "variables";
+
+.row-booking {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+
+  .col_booking_time {
+    width: 49%;
+    .react-datepicker-wrapper {
+      width: 100%;
+    }
+  }
+
+  .col_booking_time {
+    .pre_booking_items {
+      border-radius: 4px;
+      border: 1px solid rgba(0, 0, 0, 0.5);
+      padding: 5px;
+      margin-bottom: 10px;
+      .pre_booking_items__time {
+        font-size: 12px;
+        text-align: center;
+        font-weight: bold;
+      }
+      .pre_booking_items__name {
+        font-size: 14px;
+        text-align: center;
+      }
+    }
+  }
+}
+
+.flex-space-between {
+  display: flex;
+  justify-content: space-between;
+
+  button {
+    border-radius: 8px;
+    font-weight: bolder;
+    padding: 5px 20px;
+  }
+
+  .cancel_popup_button {
+    background: $white;
+    color: $primary;
+    border-color: $primary;
+    border: 1px solid;
+  }
+
+  .continute_popup_button {
+    background: $primary;
+    color: $white;
+    border: none;
+  }
+}
+
+.col_booking_5 {
+  h6 {
+    margin-bottom: 15px !important;
+    font-size: 24px;
+  }
+  #BookingInfoUser {
+    input {
+      width: 100%;
+      border: 1px solid rgba(0, 0, 0, 0.87);
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 12px;
+      &:focus {
+        border: none;
+      }
+    }
+  }
+}
+
+@media (max-width: 1024px) {
+  .row_booking {
+    flex-wrap: wrap;
+    .col_booking_5 {
+      width: 100% !important;
+      margin-bottom: 20px;
+      .react-datepicker {
+        width: 100% !important;
+      }
+    }
+  }
+}

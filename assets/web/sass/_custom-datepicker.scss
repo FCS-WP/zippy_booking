@@ -30,7 +30,7 @@
             }
 
             .react-datepicker__day--selected {
-                background: $primary;
+                background-color: $primary;
                 font-weight: 600;
             }
         }
@@ -39,7 +39,7 @@
             background: #ececec;
 
             &:hover {
-                background: $primary;
+                background-color: $primary;
                 color: white;
                 font-weight: 600;
             }
