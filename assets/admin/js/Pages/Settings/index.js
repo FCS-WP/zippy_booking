@@ -61,7 +61,7 @@ const Settings = () => {
           data.store_working_time.length > 0
         ) {
           setIsConfigExisting(true);
-          setConfigId(data.id); 
+          setConfigId(data.id);
           const fetchedSchedule = daysOfWeek.map((day, index) => {
             const daySchedule = data.store_working_time.find(
               (time) => parseInt(time.weekday) === index
@@ -124,13 +124,46 @@ const Settings = () => {
         item.day === day
           ? {
               ...item,
-              slots: item.slots.map((slot, index) =>
-                index === slotIndex ? { ...slot, [field]: value } : slot
-              ),
+              slots: item.slots.map((slot, index) => {
+                if (index === slotIndex) {
+                  const newSlot = { ...slot, [field]: value };
+                  // If 'from' is changed, calculate 'to' time based on duration
+                  if (field === "from") {
+                    const fromTime = value.split(":");
+                    let [hours, minutes] = [
+                      parseInt(fromTime[0], 10),
+                      parseInt(fromTime[1], 10),
+                    ];
+                    minutes += duration;
+  
+                    // Calculate new hours and minutes
+                    hours += Math.floor(minutes / 60);
+                    minutes = minutes % 60;
+  
+                    // Ensure hours wrap around if exceeding 23 (24-hour format)
+                    hours = hours % 24;
+  
+                    const toTime = `${String(hours).padStart(2, "0")}:${String(
+                      minutes
+                    ).padStart(2, "0")}`;
+  
+                    return { ...newSlot, to: toTime };
+                  }
+  
+                  return newSlot;
+                }
+                return slot;
+              }),
             }
           : item
       )
     );
+  };
+  
+  const formatTime = (time) => {
+    if (!time) return "";
+    const [hours, minutes] = time.split(":");
+    return `${hours}:${minutes}:00`;
   };
 
   const handleSaveChanges = async () => {
@@ -138,17 +171,17 @@ const Settings = () => {
     const storeWorkingTime = schedule.map((item) => {
       const isOpen = item.slots.length > 0;
       const openSlot = item.slots[0] || {};
-
+  
       const weekdayIndex = daysOfWeek.indexOf(item.day);
-
+  
       return {
         is_open: isOpen ? "1" : "0",
         weekday: weekdayIndex.toString(),
-        open_at: isOpen ? openSlot.from || "" : "",
-        close_at: isOpen ? openSlot.to || "" : "",
+        open_at: isOpen ? formatTime(openSlot.from) || "" : "",
+        close_at: isOpen ? formatTime(openSlot.to) || "" : "",
       };
     });
-
+  
     const create_params = {
       booking_type: bookingType,
       duration: duration,
@@ -156,7 +189,7 @@ const Settings = () => {
       allow_overlap: allowOverlap ? "1" : "0",
       store_working_time: storeWorkingTime,
     };
-
+  
     const update_params = {
       id: configId,
       booking_type: bookingType,
@@ -165,26 +198,26 @@ const Settings = () => {
       allow_overlap: allowOverlap ? "1" : "0",
       store_working_time: storeWorkingTime,
     };
-
+  
     try {
       if (isConfigExisting) {
+        // Update existing config
         const response = await Api.updateSettings(update_params);
-
+  
         if (response.data.status === "success") {
-          toast.success(
-            response.data.message || "Settings updated successfully!"
-          );
+          toast.success(response.data.message || "Settings updated successfully!");
         } else {
           toast.error(response.data.message || "Error updating settings.");
         }
       } else {
+        // Create new config
         const response = await Api.createSettings(create_params);
+  
         if (response.data.status === "success") {
-          setConfigId(response.data.id);
+          const newId = response.data.data.id; 
+          setConfigId(newId);
           setIsConfigExisting(true);
-          toast.success(
-            response.data.message || "Settings created successfully!"
-          );
+          toast.success(response.data.message || "Settings created successfully!");
         } else {
           toast.error(response.data.message || "Error creating settings.");
         }
@@ -196,6 +229,7 @@ const Settings = () => {
       setLoading(false);
     }
   };
+  
 
   const durationOptions = [];
   for (let i = 5; i <= 180; i += 5) {
@@ -349,7 +383,7 @@ const Settings = () => {
                                 )
                               }
                               inputProps={{
-                                step: 1,
+                                step: 60,
                               }}
                             />
                           </TableCell>
@@ -367,7 +401,7 @@ const Settings = () => {
                                 )
                               }
                               inputProps={{
-                                step: 1,
+                                step: 60,
                               }}
                             />
                           </TableCell>
