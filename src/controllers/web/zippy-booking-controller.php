@@ -104,7 +104,7 @@ class Zippy_Booking_Controller
             'booking_end_date' => $booking_end_date,
             'booking_start_time' => $booking_start_time,
             'booking_end_time' => $booking_end_time,
-            'booking_status' => 'pending',
+            'booking_status' => ZIPPY_BOOKING_BOOKING_STATUS_PENDING,
             'order_id' => $order_id,
         ));
 
@@ -124,7 +124,7 @@ class Zippy_Booking_Controller
         $order->update_meta_data('booking_end_time', $booking_end_time);
         $order->save();
 
-        $order->update_status('on-hold');
+        $order->update_status(ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD);
         
         return Zippy_Response_Handler::success(
             array(
@@ -136,7 +136,7 @@ class Zippy_Booking_Controller
                 'booking_end_date' => $booking_end_date,
                 'booking_start_time' => $booking_start_time,
                 'booking_end_time' => $booking_end_time,
-                'booking_status' => 'pending',
+                'booking_status' => ZIPPY_BOOKING_BOOKING_STATUS_PENDING,
                 'order_id' => $order_id,
                 'order_name' => $custom_order_name,
             ),
@@ -147,7 +147,7 @@ class Zippy_Booking_Controller
     public static function get_booking_with_product(WP_REST_Request $request)
     {
         global $wpdb;
-        $table_name = 'fcs_data_bookings';
+        $table_name = ZIPPY_BOOKING_TABLE_NAME;
 
         $booking_id = $request->get_param('booking_id');
         $email = $request->get_param('email');
@@ -186,7 +186,7 @@ class Zippy_Booking_Controller
     public static function delete_booking(WP_REST_Request $request)
     {
         global $wpdb;
-        $table_name = 'fcs_data_bookings';
+        $table_name = ZIPPY_BOOKING_TABLE_NAME;
 
         $booking_id = intval($request->get_param('booking_id'));
         $user_id = intval($request->get_param('user_id'));
@@ -222,13 +222,15 @@ class Zippy_Booking_Controller
     public static function update_booking(WP_REST_Request $request)
     {
         global $wpdb;
-        $table_name = 'fcs_data_bookings';
+        $table_name = ZIPPY_BOOKING_TABLE_NAME;
 
         $booking_id = intval($request->get_param('booking_id'));
+        $product_id = intval($request->get_param('product_id'));
         $booking_start_date = sanitize_text_field($request->get_param('booking_start_date'));
+        $booking_start_time = sanitize_text_field($request->get_param('booking_start_time'));
         $booking_end_date = sanitize_text_field($request->get_param('booking_end_date'));
+        $booking_end_time = sanitize_text_field($request->get_param('booking_end_time'));
         $booking_status = sanitize_text_field($request->get_param('booking_status'));
-        $user_id = intval($request->get_param('user_id'));
 
         if (empty($booking_id)) {
             return Zippy_Response_Handler::error('Missing booking_id parameter.');
@@ -242,6 +244,35 @@ class Zippy_Booking_Controller
             return Zippy_Response_Handler::error('Booking not found.');
         }
 
+
+
+        /** 
+         * 
+         * Check if booking time is available or not. 
+         * If the time range from booking_start_date + booking_start_time to booking_end_date + booking_end_time is between any other booking time of this product or opposite, return error.
+         * 
+         */
+
+
+         $query = "SELECT booking_start_date, booking_start_time, booking_end_date, booking_end_time FROM $table_name WHERE product_id = $product_id AND ID != $booking_id";
+         $results = $wpdb->get_results($query);
+         if (!empty($results)) {
+             foreach ($results as $result) {
+                 $result_start_timestamp = strtotime($result->booking_start_date . ' ' . $result->booking_start_time);
+                 $result_end_timestamp = strtotime($result->booking_end_date . ' ' . $result->booking_end_time);
+ 
+                 $start_sample_timestamp = strtotime($booking_start_date . ' ' . $booking_start_time);
+                 $end_sample_timestamp = strtotime($booking_end_date . ' ' . $booking_end_time);
+ 
+                 if (($start_sample_timestamp >= $result_start_timestamp && $start_sample_timestamp <= $result_end_timestamp) || 
+                     ($end_sample_timestamp >= $result_start_timestamp && $end_sample_timestamp <= $result_end_timestamp) || 
+                     ($start_sample_timestamp <= $result_start_timestamp && $end_sample_timestamp >= $result_end_timestamp)) {
+                     return Zippy_Response_Handler::error('This range of time is already booked for this product.');
+                 }
+             }
+         }
+
+
         $data_to_update = array();
         $where = array('ID' => $booking_id);
 
@@ -250,6 +281,12 @@ class Zippy_Booking_Controller
         }
         if (!empty($booking_end_date)) {
             $data_to_update['booking_end_date'] = $booking_end_date;
+        }
+        if (!empty($booking_start_time)) {
+            $data_to_update['booking_start_time'] = $booking_start_time;
+        }
+        if (!empty($booking_end_time)) {
+            $data_to_update['booking_end_time'] = $booking_end_time;
         }
         if (!empty($booking_status)) {
             $data_to_update['booking_status'] = $booking_status;
@@ -272,17 +309,17 @@ class Zippy_Booking_Controller
 
             if ($order) {
                 switch ($booking_status) {
-                    case 'pending':
-                        $order->update_status('on-hold');
+                    case ZIPPY_BOOKING_BOOKING_STATUS_PENDING:
+                        $order->update_status(ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD);
                         break;
-                    case 'approve':
-                        $order->update_status('pending');
+                    case ZIPPY_BOOKING_BOOKING_STATUS_APPROVE:
+                        $order->update_status(ZIPPY_BOOKING_BOOKING_STATUS_PENDING);
                         break;
-                    case 'completed':
-                        $order->update_status('completed');
+                    case ZIPPY_BOOKING_BOOKING_STATUS_COMPLETED:
+                        $order->update_status(ZIPPY_BOOKING_BOOKING_STATUS_COMPLETED);
                         break;
                     case 'cancel':
-                        $order->update_status('cancelled');
+                        $order->update_status(ZIPPY_BOOKING_BOOKING_STATUS_CANCELLED);
                         break;
                 }
 
