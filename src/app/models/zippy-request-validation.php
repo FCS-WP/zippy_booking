@@ -18,7 +18,7 @@ class Zippy_Request_Validation
     {
         /* Validate main required fields */
         foreach ($required_fields as $field => $rules) {
-            if ((isset($rules['required']) && $rules['required'] == true) &&  empty($request[$field])) {
+            if ((isset($rules['required']) && $rules['required'] == true) && empty($request[$field])) {
                 return "$field is required";
             }
 
@@ -90,7 +90,7 @@ class Zippy_Request_Validation
 
             // Boolean
             if ($rules["data_type"] == "boolean" && !empty($request[$field])) {
-                if (!in_array($request[$field], [0, 1])) {
+                if (!in_array($request[$field], ["T", "F"])) {
                     return "$field must be 0 or 1";
                 }
             }

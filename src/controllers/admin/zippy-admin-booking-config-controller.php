@@ -227,7 +227,7 @@ class Zippy_Admin_Booking_Config_Controller
 
             Zippy_Log_Action::log('update_booking_configs', json_encode($data), $log_status, $log_message);
 
-            if (!$update) {
+            if ($update == 0) {
                 return Zippy_Response_Handler::error("Failed to update data");
             }
 
@@ -264,6 +264,9 @@ class Zippy_Admin_Booking_Config_Controller
             }
 
             $data = $results[0];
+
+            $data->allow_overlap = 0 ? "F" : "T";
+
             if (!empty($data->store_working_time)) {
                 $data->store_working_time = json_decode($data->store_working_time);
             }
