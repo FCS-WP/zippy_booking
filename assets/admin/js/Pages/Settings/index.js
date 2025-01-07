@@ -130,20 +130,26 @@ const Settings = () => {
                   // If 'from' is changed, calculate 'to' time based on duration
                   if (field === "from") {
                     const fromTime = value.split(":");
-                    let [hours, minutes] = [parseInt(fromTime[0]), parseInt(fromTime[1])];
+                    let [hours, minutes] = [
+                      parseInt(fromTime[0], 10),
+                      parseInt(fromTime[1], 10),
+                    ];
                     minutes += duration;
-
-                    // If minutes exceed 60, increment hour
-                    if (minutes >= 60) {
-                      hours += Math.floor(minutes / 60);
-                      minutes = minutes % 60;
-                    }
-
-                    const toTime = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`;
-
+  
+                    // Calculate new hours and minutes
+                    hours += Math.floor(minutes / 60);
+                    minutes = minutes % 60;
+  
+                    // Ensure hours wrap around if exceeding 23 (24-hour format)
+                    hours = hours % 24;
+  
+                    const toTime = `${String(hours).padStart(2, "0")}:${String(
+                      minutes
+                    ).padStart(2, "0")}`;
+  
                     return { ...newSlot, to: toTime };
                   }
-
+  
                   return newSlot;
                 }
                 return slot;
@@ -152,8 +158,8 @@ const Settings = () => {
           : item
       )
     );
-    
   };
+  
   const formatTime = (time) => {
     if (!time) return "";
     const [hours, minutes] = time.split(":");
