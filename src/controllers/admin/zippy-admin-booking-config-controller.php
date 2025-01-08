@@ -30,12 +30,10 @@ class Zippy_Admin_Booking_Config_Controller
      */
     public static function zippy_booking_create_configs(WP_REST_Request $request)
     {
+
         $booking_type = $request["booking_type"];
-        $store_email = $request["store_email"];
-        $allow_overlap = $request["allow_overlap"];
         $duration = $request["duration"];
         $store_working_time = $request["store_working_time"];
-    
         // Rules
         $required_fields = [
             "booking_type" => ["required" => true, "data_type" => "string", "field_type" => "range", "allowed_values" => [ZIPPY_BOOKING_BOOKING_TYPE_SINGLE, ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE]],
@@ -88,6 +86,10 @@ class Zippy_Admin_Booking_Config_Controller
         }
     
         try {
+
+            $store_email = $request["store_email"];
+            $allow_overlap = $request["allow_overlap"] == "T" ? 1 : 0;
+
             /* Insert */
             global $wpdb;
             $table_name = ZIPPY_BOOKING_CONFIG_TABLE_NAME;

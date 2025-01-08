@@ -69,26 +69,39 @@ class Zippy_Booking_Controller
          * 
          */
 
+        
+        $config_table_name = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
 
-        $query = "SELECT booking_start_date, booking_start_time, booking_end_date, booking_end_time FROM $table_name WHERE product_id = $product_id";
-        $results = $wpdb->get_results($query);
-        if (!empty($results)) {
-            foreach ($results as $result) {
-                $result_start_timestamp = strtotime($result->booking_start_date . ' ' . $result->booking_start_time);
-                $result_end_timestamp = strtotime($result->booking_end_date . ' ' . $result->booking_end_time);
+        $config_query = "SELECT allow_overlap FROM $config_table_name";
 
-                $start_sample_timestamp = strtotime($booking_start_date . ' ' . $booking_start_time);
-                $end_sample_timestamp = strtotime($booking_end_date . ' ' . $booking_end_time);
 
-                if (($start_sample_timestamp >= $result_start_timestamp && $start_sample_timestamp <= $result_end_timestamp) || 
-                    ($end_sample_timestamp >= $result_start_timestamp && $end_sample_timestamp <= $result_end_timestamp) || 
-                    ($start_sample_timestamp <= $result_start_timestamp && $end_sample_timestamp >= $result_end_timestamp)) {
-                    return Zippy_Response_Handler::error('This range of time is already booked for this product.');
+        $config_results = $wpdb->get_results($config_query);
+
+        if(empty($config_results)){
+            return Zippy_Response_Handler::error('Failed to get booking config.');
+        }
+
+        if($config_results->allow_overlap == 0){
+            $query = "SELECT booking_start_date, booking_start_time, booking_end_date, booking_end_time FROM $table_name WHERE product_id = $product_id";
+            $results = $wpdb->get_results($query);
+            if (!empty($results)) {
+                foreach ($results as $result) {
+                    $result_start_timestamp = strtotime($result->booking_start_date . ' ' . $result->booking_start_time);
+                    $result_end_timestamp = strtotime($result->booking_end_date . ' ' . $result->booking_end_time);
+
+                    $start_sample_timestamp = strtotime($booking_start_date . ' ' . $booking_start_time);
+                    $end_sample_timestamp = strtotime($booking_end_date . ' ' . $booking_end_time);
+
+                    if (($start_sample_timestamp >= $result_start_timestamp && $start_sample_timestamp <= $result_end_timestamp) || 
+                        ($end_sample_timestamp >= $result_start_timestamp && $end_sample_timestamp <= $result_end_timestamp) || 
+                        ($start_sample_timestamp <= $result_start_timestamp && $end_sample_timestamp >= $result_end_timestamp)) {
+                        return Zippy_Response_Handler::error('This range of time is already booked for this product.');
+                    }
                 }
             }
         }
 
-        
+
         $order = wc_create_order();
         $order->add_product($product, 1);
         $order->set_customer_id($user_id);
@@ -253,24 +266,36 @@ class Zippy_Booking_Controller
          * 
          */
 
+        $config_table_name = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
 
-         $query = "SELECT booking_start_date, booking_start_time, booking_end_date, booking_end_time FROM $table_name WHERE product_id = $product_id AND ID != $booking_id";
-         $results = $wpdb->get_results($query);
-         if (!empty($results)) {
-             foreach ($results as $result) {
-                 $result_start_timestamp = strtotime($result->booking_start_date . ' ' . $result->booking_start_time);
-                 $result_end_timestamp = strtotime($result->booking_end_date . ' ' . $result->booking_end_time);
- 
-                 $start_sample_timestamp = strtotime($booking_start_date . ' ' . $booking_start_time);
-                 $end_sample_timestamp = strtotime($booking_end_date . ' ' . $booking_end_time);
- 
-                 if (($start_sample_timestamp >= $result_start_timestamp && $start_sample_timestamp <= $result_end_timestamp) || 
-                     ($end_sample_timestamp >= $result_start_timestamp && $end_sample_timestamp <= $result_end_timestamp) || 
-                     ($start_sample_timestamp <= $result_start_timestamp && $end_sample_timestamp >= $result_end_timestamp)) {
-                     return Zippy_Response_Handler::error('This range of time is already booked for this product.');
-                 }
-             }
-         }
+        $config_query = "SELECT allow_overlap FROM $config_table_name";
+
+
+        $config_results = $wpdb->get_results($config_query);
+
+        if(empty($config_results)){
+            return Zippy_Response_Handler::error('Failed to get booking config.');
+        }
+
+        if($config_results->allow_overlap == 0){
+            $query = "SELECT booking_start_date, booking_start_time, booking_end_date, booking_end_time FROM $table_name WHERE product_id = $product_id AND ID != $booking_id";
+            $results = $wpdb->get_results($query);
+            if (!empty($results)) {
+                foreach ($results as $result) {
+                    $result_start_timestamp = strtotime($result->booking_start_date . ' ' . $result->booking_start_time);
+                    $result_end_timestamp = strtotime($result->booking_end_date . ' ' . $result->booking_end_time);
+
+                    $start_sample_timestamp = strtotime($booking_start_date . ' ' . $booking_start_time);
+                    $end_sample_timestamp = strtotime($booking_end_date . ' ' . $booking_end_time);
+
+                    if (($start_sample_timestamp >= $result_start_timestamp && $start_sample_timestamp <= $result_end_timestamp) || 
+                        ($end_sample_timestamp >= $result_start_timestamp && $end_sample_timestamp <= $result_end_timestamp) || 
+                        ($start_sample_timestamp <= $result_start_timestamp && $end_sample_timestamp >= $result_end_timestamp)) {
+                        return Zippy_Response_Handler::error('This range of time is already booked for this product.');
+                    }
+                }
+            }
+        }
 
 
         $data_to_update = array();
