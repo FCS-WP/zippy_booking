@@ -116,6 +116,5 @@ export const isInFilterDates = (bookingStart, start, end) => {
 
 export const getCustomDayOfWeek = (date) => {
   const inputDate = new Date(date);
-  const originalDay = getDay(inputDate);
-  return originalDay === 0 ? 6 : originalDay - 1;
+  return  inputDate.getDay();
 };
