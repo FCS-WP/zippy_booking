@@ -25,7 +25,7 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import { Api } from "../../api";
 import { toast, ToastContainer } from "react-toastify";
-
+import Header from "../../Components/Layouts/Header";
 const daysOfWeek = [
   "Sunday",
   "Monday",
@@ -274,12 +274,10 @@ const Settings = () => {
   for (let i = 5; i <= 180; i += 5) {
     durationOptions.push(i);
   }
-
+  const title = "Settings";
   return (
-    <Box p={4}>
-      <Typography variant="h5" gutterBottom>
-        Settings
-      </Typography>
+    <Box>
+      <Header title={title} />
 
       <Grid container spacing={4}>
         <Grid item xs={12} md={4}>
