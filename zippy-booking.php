@@ -130,14 +130,6 @@ if (!defined('ZIPPY_BOOKING_API_TOKEN')) {
   define('ZIPPY_BOOKING_API_TOKEN', 'FEhI30q7ySHtMfzvSDo6RkxZUDVaQ1BBU3lBcGhYS3BrQStIUT09');
 }
 
-
-/* ------------------------------------------
-// i18n
----------------------------- --------------------------------------------- */
-
-// load_plugin_textdomain('zippy-booking-car', false, basename(dirname(__FILE__)) . '/languages');
-
-
 // ini_set('display_errors', 1);
 // ini_set('display_startup_errors', 1);
 // error_reporting(E_ALL);
@@ -146,46 +138,14 @@ if (!defined('ZIPPY_BOOKING_API_TOKEN')) {
 // Includes
  --------------------------- --------------------------------------------- */
 require ZIPPY_BOOKING_DIR_PATH . '/includes/autoload.php';
-// require ZIPPY_BOOKING_DIR_PATH . 'vendor/plugin-update-checker/plugin-update-checker.php';
-
-// require ZIPPY_BOOKING_DIR_PATH . 'vendor/autoload.php';
-
-// use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 use  Zippy_Booking\Src\Admin\Zippy_Admin_Settings;
 
 use Zippy_Booking\Src\Routers\Bookings\Zippy_Booking_Router;
 
-use Zippy_Booking\Src\Middleware\Admin\Zippy_Booking_Permission;
 use Zippy_Booking\Src\Web\Zippy_Booking_Web;
- use Zippy_Booking\Src\Woocommerce\Zippy_Woo_Booking;
-/**
- * Zippy Plugin update
- *
- */
-// if (is_admin()) {
 
-
-//   $zippyUpdateChecker = PucFactory::buildUpdateChecker(
-//     'https://github.com/FCS-WP/zippy-booking-car/',
-//     __FILE__,
-//     'zippy-booking-car'
-//   );
-
-//   $zippyUpdateChecker->setBranch('production');
-
-//   // $zippyUpdateChecker->setAuthentication('your-token-here');
-
-//   add_action('in_plugin_update_message-' . ZIPPY_BOOKING_NAME . '/' . ZIPPY_BOOKING_NAME . '.php', 'plugin_name_show_upgrade_notification', 10, 2);
-//   function plugin_name_show_upgrade_notification($current_plugin_metadata, $new_plugin_metadata)
-//   {
-
-//     if (isset($new_plugin_metadata->upgrade_notice) && strlen(trim($new_plugin_metadata->upgrade_notice)) > 0) {
-
-//       echo sprintf('<span style="background-color:#d54e21;padding:10px;color:#f9f9f9;margin-top:10px;display:block;"><strong>%1$s: </strong>%2$s</span>', esc_attr('Important Upgrade Notice', 'exopite-multifilter'), esc_html(rtrim($new_plugin_metadata->upgrade_notice)));
-//     }
-//   }
-// }
+use Zippy_Booking\Src\Woocommerce\Zippy_Woo_Booking;
 
 /**
  *
@@ -195,6 +155,7 @@ use Zippy_Booking\Src\Web\Zippy_Booking_Web;
 Zippy_Admin_Settings::get_instance();
 
 Zippy_Booking_Router::get_instance();
-Zippy_Woo_Booking::get_instance();
-Zippy_Booking_Web::get_instance();
 
+Zippy_Woo_Booking::get_instance();
+
+Zippy_Booking_Web::get_instance();
