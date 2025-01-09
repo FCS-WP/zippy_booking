@@ -47,13 +47,15 @@ const BookingMainChart = () => {
       <Box>
         <h2>Technical Analysis</h2>
       </Box>
-      <Line
-        height={430}
-        ref={chartRef}
-        width={780}
-        data={chartData}
-        options={options}
-      ></Line>
+      <Box bg={'#fff'}>
+        <Line
+          height={430}
+          ref={chartRef}
+          width={780}
+          data={chartData}
+          options={options}
+        ></Line>
+      </Box>
     </Stack>
   );
 };
