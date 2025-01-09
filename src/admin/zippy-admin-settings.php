@@ -153,11 +153,14 @@ class Zippy_Admin_Settings
     if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
       $sql = "CREATE TABLE $table_name (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
+            weekday INT NOT NULL,
+            is_open BOOLEAN NOT NULL,
+            open_at TIME NULL,
+            close_at TIME NULL,
             booking_type VARCHAR(255) NOT NULL,
-            duration VARCHAR(255) NULL,
-            store_email VARCHAR(255) NULL,
+            duration INT NOT NULL,
             allow_overlap BOOLEAN NOT NULL,
-            store_working_time LONGTEXT NOT NULL,
+            extra_time LONGTEXT NULL,
             PRIMARY KEY  (id)
         );";
 
