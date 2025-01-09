@@ -22,8 +22,6 @@ use Zippy_Booking\Src\Routers\Bookings\Admin\Zippy_Admin_Booking_Booking_Route;
 
 use Zippy_Booking\Src\Routers\Bookings\Admin\Zippy_Admin_Booking_Seeding_Route;
 
-use Zippy_Booking\Src\Routers\Bookings\Mail\Zippy_Booking_Mail_Route;
-
 use Zippy_Booking\Src\Middleware\Admin\Zippy_Booking_Permission;
 
 
@@ -55,7 +53,6 @@ class Zippy_Booking_Router
         new Zippy_Admin_Booking_Product_Route();
         new Zippy_Admin_Booking_Booking_Route();
         new Zippy_Admin_Booking_Seeding_Route();
-        new Zippy_Booking_Mail_Route();
     }
 
 
@@ -106,10 +103,16 @@ class Zippy_Booking_Router
             'callback' => [Zippy_Booking_Support_Controller::class, 'get_all_support_booking_categories'],
             'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
         ));
+
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/category', array(
             'methods' => 'DELETE',
             'callback' => [Zippy_Booking_Support_Controller::class, 'delete_support_booking_category'],
             'args' => Zippy_Api_Booking_Model::get_delete_category_args(),
+            'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
+        ));
+        register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/products/update-price', array(
+            'methods' => 'POST',
+            'callback' => [Zippy_Booking_Support_Controller::class, 'update_product_price'],
             'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
         ));
     }
