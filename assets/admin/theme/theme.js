@@ -3,19 +3,19 @@ import { createTheme } from "@mui/material/styles";
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#1976d2", // Customize the primary color
-      contrastText: "#ffffff", // Text color for primary buttons
+      main: "#40a944",
+      contrastText: "#ffffff",
     },
     secondary: {
-      main: "#ff4081", // Customize the secondary color
+      main: "#ff4081",
     },
     background: {
-      default: "#f5f5f5", // Background color for the app
-      paper: "#ffffff", // Background for paper components
+      default: "#f5f5f5",
+      paper: "#ffffff",
     },
     text: {
-      primary: "#333333", // Primary text color
-      secondary: "#666666", // Secondary text color
+      primary: "#333333",
+      secondary: "#666666",
     },
   },
   typography: {
@@ -45,7 +45,7 @@ const theme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          padding: "16px", 
+          padding: "16px",
         },
       },
     },
