@@ -1,30 +1,27 @@
 import Swal from "sweetalert2";
 
-export const showAlert = (status, title, text, timer = 0) => {
+export const showAlert = (status, title, text) => {
   Swal.fire({
-    title: title,
-    text: text,
     icon: status,
-    confirmButtonText: "OK",
-    timer: timer,
+    title,
+    text,
+    timer: 3000,
+    showConfirmButton: false,
   });
 };
 
-export const showAlertMultipleProduct = (status, title, text, timer = 0) => {
+export const bookingSuccessfully = (handleConfirm) => {
   Swal.fire({
-    title: title,
-    text: text,
-    icon: status,
-    showCancelButton: true, 
+    customClass:"booking_success",
+    title: "Booking Successful",
+    text: "Your booking has been created successfully!",
+    icon: "success",
+    showCancelButton: true,
     confirmButtonText: "View Booking",
     cancelButtonText: "Cancel",
-    timer: timer,
+    timer: 0,
   }).then((result) => {
-    if (result.isConfirmed) {
-      window.location.href = '/booking-history';
-    } else if (result.isDismissed) {
-      window.location.href = './';
-    }
+    handleConfirm(result);
   });
 };
 
