@@ -54,7 +54,6 @@ const Settings = () => {
       try {
         const response = await Api.getSettings();
         const data = response.data.data;
-
         if (
           data &&
           data.store_working_time &&
@@ -83,7 +82,7 @@ const Settings = () => {
           });
 
           setSchedule(fetchedSchedule);
-          setDuration(data.duration || 5);
+          setDuration(Number.parseInt(data.duration) || 5);
           setStoreEmail(data.store_email || "");
           setAllowOverlap(data.allow_overlap === "1");
           setBookingType(data.booking_type || "single");
@@ -119,47 +118,68 @@ const Settings = () => {
   };
 
   const handleTimeChange = (day, slotIndex, field, value) => {
-    setSchedule((prev) =>
-      prev.map((item) =>
-        item.day === day
-          ? {
-              ...item,
-              slots: item.slots.map((slot, index) => {
-                if (index === slotIndex) {
-                  const newSlot = { ...slot, [field]: value };
-                  // If 'from' is changed, calculate 'to' time based on duration
-                  if (field === "from") {
-                    const fromTime = value.split(":");
-                    let [hours, minutes] = [
-                      parseInt(fromTime[0], 10),
-                      parseInt(fromTime[1], 10),
-                    ];
-                    minutes += duration;
-  
-                    // Calculate new hours and minutes
-                    hours += Math.floor(minutes / 60);
-                    minutes = minutes % 60;
-  
-                    // Ensure hours wrap around if exceeding 23 (24-hour format)
-                    hours = hours % 24;
-  
-                    const toTime = `${String(hours).padStart(2, "0")}:${String(
-                      minutes
-                    ).padStart(2, "0")}`;
-  
-                    return { ...newSlot, to: toTime };
-                  }
-  
-                  return newSlot;
-                }
-                return slot;
-              }),
-            }
-          : item
-      )
-    );
+    if (!timeOptions.includes(value)) {
+      // Snap to the nearest valid time option if value is out-of-range
+      const nearestTime =
+        timeOptions.find((option) => option >= value) ||
+        timeOptions[timeOptions.length - 1];
+      value = nearestTime;
+    }
+
+    if (field === "from") {
+      // If "From" time is changed, calculate the "To" time based on the duration
+      const fromTime = value;
+      const fromMinutes = parseTimeToMinutes(fromTime);
+
+      // Calculate "To" time by adding the duration (in minutes)
+      const toMinutes = fromMinutes + duration;
+      const toTime = formatMinutesToTime(toMinutes);
+
+      // Update the "From" and "To" time
+      setSchedule((prev) =>
+        prev.map((item) =>
+          item.day === day
+            ? {
+                ...item,
+                slots: item.slots.map((slot, index) =>
+                  index === slotIndex
+                    ? { ...slot, from: fromTime, to: toTime }
+                    : slot
+                ),
+              }
+            : item
+        )
+      );
+    } else if (field === "to") {
+      // If "To" time is changed manually, update only the "To" field
+      setSchedule((prev) =>
+        prev.map((item) =>
+          item.day === day
+            ? {
+                ...item,
+                slots: item.slots.map((slot, index) =>
+                  index === slotIndex ? { ...slot, to: value } : slot
+                ),
+              }
+            : item
+        )
+      );
+    }
   };
-  
+
+  // Utility function to parse time (HH:mm) to minutes
+  const parseTimeToMinutes = (time) => {
+    const [hours, minutes] = time.split(":").map(Number);
+    return hours * 60 + minutes;
+  };
+
+  // Utility function to format minutes to HH:mm time format
+  const formatMinutesToTime = (minutes) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
+  };
+
   const formatTime = (time) => {
     if (!time) return "";
     const [hours, minutes] = time.split(":");
@@ -171,53 +191,57 @@ const Settings = () => {
     const storeWorkingTime = schedule.map((item) => {
       const isOpen = item.slots.length > 0;
       const openSlot = item.slots[0] || {};
-  
+
       const weekdayIndex = daysOfWeek.indexOf(item.day);
-  
+
       return {
-        is_open: isOpen ? "1" : "0",
-        weekday: weekdayIndex.toString(),
+        is_open: isOpen ? 1 : 0,
+        weekday: weekdayIndex,
         open_at: isOpen ? formatTime(openSlot.from) || "" : "",
         close_at: isOpen ? formatTime(openSlot.to) || "" : "",
       };
     });
-  
+
     const create_params = {
       booking_type: bookingType,
       duration: duration,
       store_email: storeEmail,
-      allow_overlap: allowOverlap ? "1" : "0",
+      allow_overlap: allowOverlap ? 1 : 0,
       store_working_time: storeWorkingTime,
     };
-  
+
     const update_params = {
       id: configId,
       booking_type: bookingType,
       duration: duration,
       store_email: storeEmail,
-      allow_overlap: allowOverlap ? "1" : "0",
+      allow_overlap: allowOverlap ? 1 : 0,
       store_working_time: storeWorkingTime,
     };
-  
+
     try {
       if (isConfigExisting) {
         // Update existing config
         const response = await Api.updateSettings(update_params);
-  
+
         if (response.data.status === "success") {
-          toast.success(response.data.message || "Settings updated successfully!");
+          toast.success(
+            response.data.message || "Settings updated successfully!"
+          );
         } else {
           toast.error(response.data.message || "Error updating settings.");
         }
       } else {
         // Create new config
         const response = await Api.createSettings(create_params);
-  
+
         if (response.data.status === "success") {
-          const newId = response.data.data.id; 
+          const newId = response.data.data.id;
           setConfigId(newId);
           setIsConfigExisting(true);
-          toast.success(response.data.message || "Settings created successfully!");
+          toast.success(
+            response.data.message || "Settings created successfully!"
+          );
         } else {
           toast.error(response.data.message || "Error creating settings.");
         }
@@ -229,7 +253,22 @@ const Settings = () => {
       setLoading(false);
     }
   };
-  
+  const generateTimeOptions = (duration) => {
+    const options = [];
+    for (let h = 0; h < 24; h++) {
+      for (let m = 0; m < 60; m += duration) {
+        const hours = String(h).padStart(2, "0");
+        const minutes = String(m).padStart(2, "0");
+        options.push(`${hours}:${minutes}`);
+      }
+    }
+    return options;
+  };
+
+  const timeOptions = generateTimeOptions(duration);
+  console.log(duration);
+
+  console.log(timeOptions);
 
   const durationOptions = [];
   for (let i = 5; i <= 180; i += 5) {
@@ -370,9 +409,7 @@ const Settings = () => {
                         <TableRow key={slotIndex}>
                           <TableCell>{item.day}</TableCell>
                           <TableCell>
-                            <TextField
-                              type="time"
-                              size="small"
+                            <Select
                               value={slot.from}
                               onChange={(e) =>
                                 handleTimeChange(
@@ -382,15 +419,18 @@ const Settings = () => {
                                   e.target.value
                                 )
                               }
-                              inputProps={{
-                                step: 60,
-                              }}
-                            />
+                              fullWidth
+                              size="small"
+                            >
+                              {timeOptions.map((option) => (
+                                <MenuItem key={option} value={option}>
+                                  {option}
+                                </MenuItem>
+                              ))}
+                            </Select>
                           </TableCell>
                           <TableCell>
-                            <TextField
-                              type="time"
-                              size="small"
+                            <Select
                               value={slot.to}
                               onChange={(e) =>
                                 handleTimeChange(
@@ -400,11 +440,17 @@ const Settings = () => {
                                   e.target.value
                                 )
                               }
-                              inputProps={{
-                                step: 60,
-                              }}
-                            />
+                              fullWidth
+                              size="small"
+                            >
+                              {timeOptions.map((option) => (
+                                <MenuItem key={option} value={option}>
+                                  {option}
+                                </MenuItem>
+                              ))}
+                            </Select>
                           </TableCell>
+
                           <TableCell>
                             <IconButton
                               onClick={() =>
