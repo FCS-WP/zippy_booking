@@ -3,21 +3,19 @@ import DatePicker from "react-datepicker";
 const BookingDatePicker = ({ handleSelectDate , config }) => {
 
   const [selectedDate, setSelectedDate] = useState();
-
+  
   // Parse working time configuration
   const workingTime = config.store_working_time;
 
-  // Adjust the weekday mapping: 0 (Monday) to 6 (Sunday)
-  const remapWeekday = (day) => (day === 6 ? 0 : day + 1);
-
   // Get valid days of the week
   const allowedDays = workingTime
-    .filter((day) => day.is_open === 1)
-    .map((day) => remapWeekday(day.weekday));
+    .filter(item => item.is_open === '1');
+  
   // Disable unavailable days
   const isDayDisabled = (date) => {
-    const dayOfWeek = remapWeekday(date.getDay());
-    return !allowedDays.includes(dayOfWeek);
+    const dayOfWeek = date.getDay().toString();
+    const isOpen = allowedDays.some(date => date.is_open === '1' && date.weekday === dayOfWeek);
+    return !isOpen;
   };
 
   const dateOnchange = (date) => {
