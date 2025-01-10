@@ -30,7 +30,8 @@ const Index = () => {
       const { data: responseData } = await Bookings.getBookings();
 
       if (responseData.status === "success") {
-        const formattedData = responseData.data.bookings.map((booking) => {
+        const bookings = responseData.data.bookings; 
+        const formattedData = bookings ? bookings.map((booking) => {
           return {
             ID: booking.ID,
             Date:
@@ -42,7 +43,7 @@ const Index = () => {
             Status: booking.booking_status,
             "Created Date": formatDate(booking.created_at),
           };
-        });
+        }) : [];
 
         setData(formattedData);
       }
