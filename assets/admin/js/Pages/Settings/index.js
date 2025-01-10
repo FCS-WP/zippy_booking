@@ -25,6 +25,8 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import { Api } from "../../api";
 import { toast, ToastContainer } from "react-toastify";
+import Header from "../../Components/Layouts/Header";
+import DatePicker from "react-datepicker";
 
 const daysOfWeek = [
   "Sunday",
@@ -48,12 +50,29 @@ const Settings = () => {
   const [configId, setConfigId] = useState(null);
   const [isConfigExisting, setIsConfigExisting] = useState(false);
 
+  const parseTime = (timeString) => {
+    if (!timeString) return null;
+    const [hours, minutes, seconds] = timeString.split(":").map(Number);
+    const now = new Date();
+    now.setHours(hours, minutes, seconds || 0);
+    return now;
+  };
+
+  const formatTime = (date) => {
+    if (!date) return "";
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const seconds = date.getSeconds().toString().padStart(2, "0");
+    return `${hours}:${minutes}:${seconds}`;
+  };
+
   useEffect(() => {
     const fetchSettings = async () => {
       setLoading(true);
       try {
         const response = await Api.getSettings();
         const data = response.data.data;
+
         if (
           data &&
           data.store_working_time &&
@@ -71,8 +90,8 @@ const Settings = () => {
                 day,
                 slots: [
                   {
-                    from: daySchedule.open_at || "",
-                    to: daySchedule.close_at || "",
+                    from: daySchedule.open_at || "00:00",
+                    to: daySchedule.close_at || "00:00",
                   },
                 ],
               };
@@ -104,8 +123,8 @@ const Settings = () => {
   const handleAddTimeSlot = (day) => {
     setSchedule((prev) =>
       prev.map((item) =>
-        item.day === day && item.slots.length === 0
-          ? { ...item, slots: [{ from: "", to: "" }] }
+        item.day === day
+          ? { ...item, slots: [...item.slots, { from: "", to: "" }] }
           : item
       )
     );
@@ -113,77 +132,52 @@ const Settings = () => {
 
   const handleRemoveTimeSlot = (day, slotIndex) => {
     setSchedule((prev) =>
-      prev.map((item) => (item.day === day ? { ...item, slots: [] } : item))
+      prev.map((item) =>
+        item.day === day
+          ? {
+              ...item,
+              slots: item.slots.filter((_, index) => index !== slotIndex),
+            }
+          : item
+      )
     );
   };
 
+  const calculateCloseAt = (openAt, duration) => {
+    if (!openAt) return "";
+    const openTime = new Date(openAt);
+    openTime.setMinutes(openTime.getMinutes() + duration);
+    return formatTime(openTime);
+  };
+
   const handleTimeChange = (day, slotIndex, field, value) => {
-    if (!timeOptions.includes(value)) {
-      // Snap to the nearest valid time option if value is out-of-range
-      const nearestTime =
-        timeOptions.find((option) => option >= value) ||
-        timeOptions[timeOptions.length - 1];
-      value = nearestTime;
-    }
+    const formattedValue = value
+      ? `${value.getHours().toString().padStart(2, "0")}:${value
+          .getMinutes()
+          .toString()
+          .padStart(2, "0")}:00`
+      : "";
 
-    if (field === "from") {
-      // If "From" time is changed, calculate the "To" time based on the duration
-      const fromTime = value;
-      const fromMinutes = parseTimeToMinutes(fromTime);
-
-      // Calculate "To" time by adding the duration (in minutes)
-      const toMinutes = fromMinutes + duration;
-      const toTime = formatMinutesToTime(toMinutes);
-
-      // Update the "From" and "To" time
-      setSchedule((prev) =>
-        prev.map((item) =>
-          item.day === day
-            ? {
-                ...item,
-                slots: item.slots.map((slot, index) =>
-                  index === slotIndex
-                    ? { ...slot, from: fromTime, to: toTime }
-                    : slot
-                ),
-              }
-            : item
-        )
-      );
-    } else if (field === "to") {
-      // If "To" time is changed manually, update only the "To" field
-      setSchedule((prev) =>
-        prev.map((item) =>
-          item.day === day
-            ? {
-                ...item,
-                slots: item.slots.map((slot, index) =>
-                  index === slotIndex ? { ...slot, to: value } : slot
-                ),
-              }
-            : item
-        )
-      );
-    }
-  };
-
-  // Utility function to parse time (HH:mm) to minutes
-  const parseTimeToMinutes = (time) => {
-    const [hours, minutes] = time.split(":").map(Number);
-    return hours * 60 + minutes;
-  };
-
-  // Utility function to format minutes to HH:mm time format
-  const formatMinutesToTime = (minutes) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
-  };
-
-  const formatTime = (time) => {
-    if (!time) return "";
-    const [hours, minutes] = time.split(":");
-    return `${hours}:${minutes}:00`;
+    setSchedule((prev) =>
+      prev.map((item) =>
+        item.day === day
+          ? {
+              ...item,
+              slots: item.slots.map((slot, index) => {
+                if (index === slotIndex) {
+                  if (field === "from") {
+                    const newCloseAt = calculateCloseAt(value, duration);
+                    return { ...slot, from: formattedValue, to: newCloseAt };
+                  } else {
+                    return { ...slot, [field]: formattedValue };
+                  }
+                }
+                return slot;
+              }),
+            }
+          : item
+      )
+    );
   };
 
   const handleSaveChanges = async () => {
@@ -191,27 +185,17 @@ const Settings = () => {
     const storeWorkingTime = schedule.map((item) => {
       const isOpen = item.slots.length > 0;
       const openSlot = item.slots[0] || {};
-
       const weekdayIndex = daysOfWeek.indexOf(item.day);
 
       return {
         is_open: isOpen ? 1 : 0,
         weekday: weekdayIndex,
-        open_at: isOpen ? formatTime(openSlot.from) || "" : "",
-        close_at: isOpen ? formatTime(openSlot.to) || "" : "",
+        open_at: isOpen ? String(openSlot.from) || "" : "",
+        close_at: isOpen ? String(openSlot.to) || "" : "",
       };
     });
 
-    const create_params = {
-      booking_type: bookingType,
-      duration: duration,
-      store_email: storeEmail,
-      allow_overlap: allowOverlap ? 1 : 0,
-      store_working_time: storeWorkingTime,
-    };
-
-    const update_params = {
-      id: configId,
+    const params = {
       booking_type: bookingType,
       duration: duration,
       store_email: storeEmail,
@@ -220,31 +204,18 @@ const Settings = () => {
     };
 
     try {
-      if (isConfigExisting) {
-        // Update existing config
-        const response = await Api.updateSettings(update_params);
+      const response = isConfigExisting
+        ? await Api.updateSettings({ id: configId, ...params })
+        : await Api.createSettings(params);
 
-        if (response.data.status === "success") {
-          toast.success(
-            response.data.message || "Settings updated successfully!"
-          );
-        } else {
-          toast.error(response.data.message || "Error updating settings.");
+      if (response.data.status === "success") {
+        toast.success(response.data.message || "Settings saved successfully!");
+        if (!isConfigExisting) {
+          setConfigId(response.data.data.id);
+          setIsConfigExisting(true);
         }
       } else {
-        // Create new config
-        const response = await Api.createSettings(create_params);
-
-        if (response.data.status === "success") {
-          const newId = response.data.data.id;
-          setConfigId(newId);
-          setIsConfigExisting(true);
-          toast.success(
-            response.data.message || "Settings created successfully!"
-          );
-        } else {
-          toast.error(response.data.message || "Error creating settings.");
-        }
+        toast.error(response.data.message || "Error saving settings.");
       }
     } catch (error) {
       console.error("Error saving settings:", error);
@@ -253,104 +224,86 @@ const Settings = () => {
       setLoading(false);
     }
   };
-  const generateTimeOptions = (duration) => {
-    const options = [];
-    for (let h = 0; h < 24; h++) {
-      for (let m = 0; m < 60; m += duration) {
-        const hours = String(h).padStart(2, "0");
-        const minutes = String(m).padStart(2, "0");
-        options.push(`${hours}:${minutes}`);
-      }
-    }
-    return options;
-  };
-
-  const timeOptions = generateTimeOptions(duration);
-  console.log(duration);
-
-  console.log(timeOptions);
-
-  const durationOptions = [];
-  for (let i = 5; i <= 180; i += 5) {
-    durationOptions.push(i);
-  }
-
+  const title = "Settings";
   return (
-    <Box p={4}>
-      <Typography variant="h5" gutterBottom>
-        Settings
-      </Typography>
+    <Box>
+      <Header title={title} />
 
       <Grid container spacing={4}>
         <Grid item xs={12} md={4}>
           <Box>
-            <Box mb={1}>
-              <Typography variant="body1">Booking Type</Typography>
-              <RadioGroup
-                row
-                value={bookingType}
-                onChange={(e) => setBookingType(e.target.value)}
-              >
-                <FormControlLabel
-                  value="single"
-                  control={<Radio />}
-                  label="Single"
-                />
-                <FormControlLabel
-                  value="multiple"
-                  control={<Radio />}
-                  label="Multiple"
-                />
-              </RadioGroup>
-            </Box>
-            <Box mb={1}>
+            <Typography variant="body1">Booking Type</Typography>
+            <RadioGroup
+              row
+              value={bookingType}
+              onChange={(e) => setBookingType(e.target.value)}
+            >
               <FormControlLabel
-                control={
-                  <Switch
-                    checked={allowOverlap}
-                    onChange={(e) => setAllowOverlap(e.target.checked)}
-                  />
-                }
-                label="Allow Overlap"
+                value="single"
+                control={<Radio />}
+                label="Single"
               />
-              <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                Enable this if you want multiple bookings to overlap.
-              </Typography>
-            </Box>
-            <Box mb={1}>
-              <Typography variant="body1">Duration</Typography>
-              <Select
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                fullWidth
-                size="small"
-                sx={{
-                  border: "1px solid #ccc",
-                  borderRadius: "4px",
-                  padding: "5px",
-                }}
-              >
-                {durationOptions.map((option) => (
+              <FormControlLabel
+                value="multiple"
+                control={<Radio />}
+                label="Multiple"
+              />
+            </RadioGroup>
+          </Box>
+
+          <Box mb={1}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={allowOverlap}
+                  onChange={(e) => setAllowOverlap(e.target.checked)}
+                />
+              }
+              label="Allow Overlap"
+            />
+            <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+              Enable this if you want multiple bookings to overlap.
+            </Typography>
+          </Box>
+
+          <Box mb={1}>
+            <Typography variant="body1">Duration</Typography>
+            <Select
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              fullWidth
+              size="small"
+              sx={{
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+                padding: "5px",
+                backgroundColor: "#fff",
+              }}
+            >
+              {Array.from({ length: 36 }, (_, i) => (i + 1) * 5).map(
+                (option) => (
                   <MenuItem key={option} value={option}>
                     {option} minutes
                   </MenuItem>
-                ))}
-              </Select>
-              <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                Set the duration of each booking session.
-              </Typography>
-            </Box>
-            <Box mb={1}>
-              <Typography variant="body1">Store Email</Typography>
-              <TextField
-                type="email"
-                value={storeEmail}
-                onChange={(e) => setStoreEmail(e.target.value)}
-                size="small"
-                fullWidth
-              />
-            </Box>
+                )
+              )}
+            </Select>
+            <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+              Set the duration of each booking session.
+            </Typography>
           </Box>
+
+          <Box mb={1}>
+            <Typography variant="body1">Store Email</Typography>
+            <TextField
+              type="email"
+              value={storeEmail}
+              onChange={(e) => setStoreEmail(e.target.value)}
+              size="small"
+              fullWidth
+            />
+          </Box>
+
           <Box mt={2}>
             <Button
               variant="contained"
@@ -367,6 +320,7 @@ const Settings = () => {
             </Button>
           </Box>
         </Grid>
+
         <Grid item xs={12} md={8}>
           {loading ? (
             <Box
@@ -398,7 +352,6 @@ const Settings = () => {
                           <TableCell>
                             <IconButton
                               onClick={() => handleAddTimeSlot(item.day)}
-                              disabled={item.slots.length > 0}
                             >
                               <AddCircleOutlineIcon color="primary" />
                             </IconButton>
@@ -409,48 +362,31 @@ const Settings = () => {
                         <TableRow key={slotIndex}>
                           <TableCell>{item.day}</TableCell>
                           <TableCell>
-                            <Select
-                              value={slot.from}
-                              onChange={(e) =>
-                                handleTimeChange(
-                                  item.day,
-                                  slotIndex,
-                                  "from",
-                                  e.target.value
-                                )
+                            <DatePicker
+                              selected={parseTime(slot.from)}
+                              onChange={(time) =>
+                                handleTimeChange(item.day, slotIndex, "from", time)
                               }
-                              fullWidth
-                              size="small"
-                            >
-                              {timeOptions.map((option) => (
-                                <MenuItem key={option} value={option}>
-                                  {option}
-                                </MenuItem>
-                              ))}
-                            </Select>
+                              showTimeSelect
+                              showTimeSelectOnly
+                              timeCaption="From"
+                              dateFormat="HH:mm"
+                              timeIntervals={duration}
+                            />
                           </TableCell>
                           <TableCell>
-                            <Select
-                              value={slot.to}
-                              onChange={(e) =>
-                                handleTimeChange(
-                                  item.day,
-                                  slotIndex,
-                                  "to",
-                                  e.target.value
-                                )
+                            <DatePicker
+                              selected={parseTime(slot.to)}
+                              onChange={(time) =>
+                                handleTimeChange(item.day, slotIndex, "to", time)
                               }
-                              fullWidth
-                              size="small"
-                            >
-                              {timeOptions.map((option) => (
-                                <MenuItem key={option} value={option}>
-                                  {option}
-                                </MenuItem>
-                              ))}
-                            </Select>
+                              showTimeSelect
+                              showTimeSelectOnly
+                              timeCaption="To"
+                              dateFormat="HH:mm"
+                              timeIntervals={duration}
+                            />
                           </TableCell>
-
                           <TableCell>
                             <IconButton
                               onClick={() =>
@@ -470,7 +406,6 @@ const Settings = () => {
           )}
         </Grid>
       </Grid>
-
       <ToastContainer />
     </Box>
   );
