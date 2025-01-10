@@ -7,7 +7,7 @@ const theme = createTheme({
       contrastText: "#ffffff",
     },
     secondary: {
-      main: "#ff4081",
+      main: "#216ba5",
     },
     background: {
       default: "#f5f5f5",
@@ -47,6 +47,20 @@ const theme = createTheme({
         root: {
           padding: "16px",
           boxShadow: "1px 2px 12px rgba(184, 193, 211, .4)",
+        },
+      },
+    },
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          borderRadius: 4,
+          border: "0px",
+          backgroundColor: "#ffffff",
+        },
+        input: {
+          // Styles for the input field
+          padding: "8px",
+          color: "#333",
         },
       },
     },

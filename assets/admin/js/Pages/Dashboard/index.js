@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import DatePicker from "react-datepicker";
 import {
   Box,
   Grid2,
@@ -8,12 +7,11 @@ import {
   CardContent,
   Typography,
 } from "@mui/material";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import { Bookings } from "../../api/bookings";
 import Loading from "../../Components/Loading";
 import BookingMainChart from "../../Components/Charts/BookingMainChart";
 import Header from "../../Components/Layouts/Header";
-
+import CustomeDatePicker from "../../Components/DatePicker/CustomeDatePicker";
 const getDateRange = (baseDate, startOffset, endOffset) => {
   const start = new Date(baseDate);
   start.setDate(start.getDate() + startOffset);
@@ -105,19 +103,11 @@ const Dashboard = () => {
           ) : (
             <>
               <Box display="flex" justifyContent="flex-end" mb={4}>
-                <div className="date-picker">
-                  <CalendarMonthIcon />
-                  <DatePicker
-                    selected={startDate}
-                    onChange={handleDateChange}
-                    startDate={startDate}
-                    endDate={endDate}
-                    selectsRange
-                    inline={false}
-                    className="form-control"
-                    dateFormat="MMMM d, yyyy"
-                  />
-                </div>
+                <CustomeDatePicker
+                  startDate={startDate}
+                  handleDateChange={handleDateChange}
+                  endDate={endDate}
+                />
               </Box>
               <Grid2 container size={4} spacing={2}>
                 <DashboardCard
