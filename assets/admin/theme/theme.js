@@ -59,7 +59,7 @@ const theme = createTheme({
         },
         input: {
           // Styles for the input field
-          padding: "8px",
+          padding: "10px",
           color: "#333",
         },
       },

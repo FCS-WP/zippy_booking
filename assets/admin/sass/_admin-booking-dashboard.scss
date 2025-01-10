@@ -25,14 +25,14 @@
     }
   }
 
-  // #zippy_settings {
-  //   input[type="email"] {
-  //     padding: 12px;
-  //     border: 0;
-  //     &:focus {
-  //       box-shadow: none;
-  //     }
-  //   }}
+  #zippy_settings {
+    input[type="email"] {
+      padding: 6px;
+      padding-left: 20px;
+      &:focus {
+        box-shadow: none;
+      }
+    }}
   input{
     border: 0px !important;
   }
