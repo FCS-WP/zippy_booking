@@ -52,7 +52,7 @@ class Zippy_Booking_Web
 
     $support_booking = $product->get_meta('product_booking_mapping');
 
-    // if (!is_array($support_booking) || !is_product()) return;
+    if (!is_array($support_booking) || !is_product()) return;
 
     echo "<div id='btn_booking' data-id-product='" . esc_attr($product_id) . "'></div>";
   }
