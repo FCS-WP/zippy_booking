@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from "react";
-import DatePicker from "react-datepicker";
-import { Box, Grid, Card, CardContent, Typography } from "@mui/material";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import {
+  Box,
+  Grid2,
+  Stack,
+  Card,
+  CardContent,
+  Typography,
+} from "@mui/material";
 import { Bookings } from "../../api/bookings";
 import Loading from "../../Components/Loading";
+import BookingMainChart from "../../Components/Charts/BookingMainChart";
+import Header from "../../Components/Layouts/Header";
+import CustomeDatePicker from "../../Components/DatePicker/CustomeDatePicker";
 const getDateRange = (baseDate, startOffset, endOffset) => {
   const start = new Date(baseDate);
   start.setDate(start.getDate() + startOffset);
@@ -32,7 +40,7 @@ const Dashboard = () => {
   }, []);
 
   const fetchBookings = async () => {
-    setLoading(true); 
+    setLoading(true);
     try {
       const response = await Bookings.getBookings();
 
@@ -84,51 +92,63 @@ const Dashboard = () => {
   const getPendingBookings = () =>
     filteredBookings.filter((booking) => booking.booking_status === "pending")
       .length;
-
+  const title = "Booking Dashboad";
   return (
-    <Box p={4}>
-      {loading ? (
-        <Loading />
-      ) : (
-        <>
-          <Box display="flex" justifyContent="flex-end" mb={4}>
-            <div className="date-picker">
-              <CalendarMonthIcon />
-              <DatePicker
-                selected={startDate}
-                onChange={handleDateChange}
-                startDate={startDate}
-                endDate={endDate}
-                selectsRange
-                inline={false}
-                className="form-control"
-                dateFormat="MMMM d, yyyy"
-              />
-            </div>
-          </Box>
-          <Grid container spacing={3}>
-            <DashboardCard title="Total Bookings" value={getTotalBookings()} />
-            <DashboardCard
-              title="Completed Bookings"
-              value={getCompletedBookings()}
-              highlight="success.main"
-            />
-            <DashboardCard
-              title="Pending Bookings"
-              value={getPendingBookings()}
-              highlight="warning.main"
-            />
-          </Grid>
-        </>
-      )}
-    </Box>
+    <Stack>
+      <Header title={title}></Header>
+      <Stack>
+        <Box>
+          {loading ? (
+            <Loading />
+          ) : (
+            <>
+              <Box display="flex" justifyContent="flex-end" mb={4}>
+                <CustomeDatePicker
+                  startDate={startDate}
+                  handleDateChange={handleDateChange}
+                  endDate={endDate}
+                />
+              </Box>
+              <Grid2 container size={4} spacing={2}>
+                <DashboardCard
+                  title="Total Bookings"
+                  value={getTotalBookings()}
+                />
+                <DashboardCard
+                  title="Completed Bookings"
+                  value={getCompletedBookings()}
+                  highlight="success.main"
+                />
+                <DashboardCard
+                  title="Pending Bookings"
+                  value={getPendingBookings()}
+                  highlight="warning.main"
+                />
+              </Grid2>
+            </>
+          )}
+        </Box>
+        <Stack mt={2}>
+          <Grid2 container>
+            <Grid2 size={6}>
+              <BookingMainChart />
+            </Grid2>
+          </Grid2>
+        </Stack>
+      </Stack>
+    </Stack>
   );
 };
 
 const DashboardCard = ({ title, value, highlight }) => {
   return (
-    <Grid item xs={12} sm={6} md={4} lg={2}>
-      <Card elevation={3}>
+    <Grid2 xs={12} sm={6} md={4} lg={2}>
+      <Card
+        style={{
+          minWidth: "215px",
+        }}
+        elevation={3}
+      >
         <CardContent>
           <Typography
             variant="h3"
@@ -142,7 +162,7 @@ const DashboardCard = ({ title, value, highlight }) => {
           </Typography>
         </CardContent>
       </Card>
-    </Grid>
+    </Grid2>
   );
 };
 

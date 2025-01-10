@@ -1,12 +1,12 @@
-import React, { useEffect } from 'react'
-import SearchBox from '../../Components/Products/SearchBox'
-import ListProductsBooking from '../../Components/Products/ListProductsBooking'
-import { useState } from 'react'
-import { toast, ToastContainer } from 'react-toastify'
-import { Api } from '../../api'
-import CustomLoader from '../../../../web/js/components/CustomLoader'
-import { Box, Container } from '@mui/material'
-
+import React, { useEffect } from "react";
+import SearchBox from "../../Components/Products/SearchBox";
+import ListProductsBooking from "../../Components/Products/ListProductsBooking";
+import { useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import { Api } from "../../api";
+import CustomLoader from "../../../../web/js/components/CustomLoader";
+import { Box, Container } from "@mui/material";
+import Header from "../../Components/Layouts/Header";
 const ProductsBooking = () => {
   const [mappingData, setMappingData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,28 +25,34 @@ const ProductsBooking = () => {
       toast.error("Can not get data!");
       console.log(error);
     }
-    setTimeout(()=>{
+    setTimeout(() => {
       setIsLoading(false);
     }, 500);
-  }
-  
-  useEffect(()=>{
-    updateListMapping();
-  }, [])
+  };
 
+  useEffect(() => {
+    updateListMapping();
+  }, []);
+  const title = "Products Booking";
   return (
-    <Box className='products-booking-page'>
+    <>
+      <Header title={title} />
+      <Box className="products-booking-page">
         <SearchBox updateListMapping={updateListMapping} />
         {isLoading ? (
-          <Box sx={{ position: 'relative', marginRight: "3rem" }} >
+          <Box sx={{ position: "relative", marginRight: "3rem" }}>
             <CustomLoader />
           </Box>
         ) : (
-          <ListProductsBooking mappingData={mappingData} updateListMapping={updateListMapping}/>
+          <ListProductsBooking
+            mappingData={mappingData}
+            updateListMapping={updateListMapping}
+          />
         )}
         <ToastContainer />
-    </Box>
-  )
-}
+      </Box>
+    </>
+  );
+};
 
-export default ProductsBooking
+export default ProductsBooking;

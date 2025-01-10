@@ -204,53 +204,84 @@ class Zippy_Api_Booking_Model
   }
   public static function get_support_booking_categories_args()
   {
-      return array(
-          'categories' => array(
-              'required' => true,
-              'validate_callback' => function ($param) {
-                  if (!is_array($param)) {
-                      return false;
-                  }
-                  foreach ($param as $category) {
-                      if (!isset($category['items_id']) || !is_numeric($category['items_id'])) {
-                          return false;
-                      }
-                      if (!isset($category['mapping_type']) || !is_string($category['mapping_type']) || $category['mapping_type'] !== 'category') {
-                          return false;
-                      }
-                  }
-                  return true;
-              },
-          ),
-      );
+    return array(
+      'categories' => array(
+        'required' => true,
+        'validate_callback' => function ($param) {
+          if (!is_array($param)) {
+            return false;
+          }
+          foreach ($param as $category) {
+            if (!isset($category['items_id']) || !is_numeric($category['items_id'])) {
+              return false;
+            }
+            if (!isset($category['mapping_type']) || !is_string($category['mapping_type']) || $category['mapping_type'] !== 'category') {
+              return false;
+            }
+          }
+          return true;
+        },
+      ),
+    );
   }
 
   public static function get_support_booking_category_args()
   {
-      return array(
-          'items_id' => array(
-              'required' => true,
-              'validate_callback' => function ($param) {
-                  return is_numeric($param) && $param > 0;
-              },
-          ),
-          'mapping_type' => array(
-              'required' => false,
-              'validate_callback' => function ($param) {
-                  return is_string($param) && $param === 'category';
-              },
-          ),
-      );
+    return array(
+      'items_id' => array(
+        'required' => true,
+        'validate_callback' => function ($param) {
+          return is_numeric($param) && $param > 0;
+        },
+      ),
+      'mapping_type' => array(
+        'required' => false,
+        'validate_callback' => function ($param) {
+          return is_string($param) && $param === 'category';
+        },
+      ),
+    );
   }
 
-public static function get_delete_category_args() {
+  public static function get_delete_category_args()
+  {
     return array(
-        'items_ids' => array(
-            'required' => true,
-            'validate_callback' => function ($param, $request, $key) {
-                return is_array($param);
-            },
-        ),
+      'items_ids' => array(
+        'required' => true,
+        'validate_callback' => function ($param, $request, $key) {
+          return is_array($param);
+        },
+      ),
     );
-}
+  }
+
+  public static function get_update_option_args()
+  {
+    return array(
+      'option_name' => array(
+        'required' => true,
+        'validate_callback' => function ($param, $request, $key) {
+          return is_array($param);
+        },
+      ),
+    );
+  }
+
+  public static function update_option_args()
+  {
+    return array(
+      'option_name' => array(
+        'required' => true,
+        'validate_callback' => function ($param, $request, $key) {
+          return is_array($param);
+        },
+      ),
+      'option_data' => array(
+        'required' => true,
+        'validate_callback' => function ($param, $request, $key) {
+          return is_array($param);
+        },
+      ),
+    );
+  }
 }

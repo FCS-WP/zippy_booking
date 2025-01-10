@@ -25,13 +25,28 @@
     }
   }
 
-  #zippy_settings {
-    input[type="email"] {
-      padding: 12px;
-      border: 0;
-      &:focus {
-        box-shadow: none;
-      }
+  // #zippy_settings {
+  //   input[type="email"] {
+  //     padding: 12px;
+  //     border: 0;
+  //     &:focus {
+  //       box-shadow: none;
+  //     }
+  //   }}
+  input{
+    border: 0px !important;
+  }
+  .date-picker {
+    position: relative;
+    .MuiSvgIcon-root {
+      position: absolute;
+      top: 50%;
+      left: 10px;
+      transform: translateY(-50%);
+      z-index: 1;
+    }
+    .form-control {
+      padding-left: 40px;
     }
   }
 }
