@@ -46,6 +46,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           padding: "16px",
+          boxShadow: "1px 2px 12px rgba(184, 193, 211, .4)",
         },
       },
     },

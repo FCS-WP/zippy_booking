@@ -153,7 +153,12 @@ const Dashboard = () => {
 const DashboardCard = ({ title, value, highlight }) => {
   return (
     <Grid2 xs={12} sm={6} md={4} lg={2}>
-      <Card elevation={3}>
+      <Card
+        style={{
+          minWidth: "215px",
+        }}
+        elevation={3}
+      >
         <CardContent>
           <Typography
             variant="h3"
