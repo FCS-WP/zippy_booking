@@ -1,14 +1,7 @@
 #zippy-booking-root {
-  .react-datepicker-wrapper {
-    width: 350px;
-    .react-datepicker__input-container {
-      input {
-        max-width: 100% !important;
-        text-align: center;
-      }
-    }
+  input{
+    border: 0px !important;
   }
-
   .date-picker {
     position: relative;
     .MuiSvgIcon-root {
