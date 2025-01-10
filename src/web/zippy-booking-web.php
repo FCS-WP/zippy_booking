@@ -50,7 +50,7 @@ class Zippy_Booking_Web
 
     $product_id = $product->get_id();
 
-    $support_booking = $product->get_meta('product_booking_mapping');
+    $support_booking = get_post_meta($product_id, 'product_booking_mapping');
 
     if (!is_array($support_booking) || !is_product()) return;
 

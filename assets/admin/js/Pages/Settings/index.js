@@ -273,12 +273,6 @@ const Settings = () => {
               onChange={(e) => setDuration(e.target.value)}
               fullWidth
               size="small"
-              sx={{
-                border: "1px solid #ccc",
-                borderRadius: "4px",
-                padding: "5px",
-                backgroundColor: "#fff",
-              }}
             >
               {Array.from({ length: 36 }, (_, i) => (i + 1) * 5).map(
                 (option) => (
