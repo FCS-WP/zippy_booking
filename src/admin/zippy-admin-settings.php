@@ -154,13 +154,15 @@ class Zippy_Admin_Settings
       $sql = "CREATE TABLE $table_name (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
             weekday INT NOT NULL,
-            is_open BOOLEAN NOT NULL,
+            is_open VARCHAR(255) NOT NULL,
             open_at TIME NULL,
             close_at TIME NULL,
             booking_type VARCHAR(255) NOT NULL,
             duration INT NOT NULL,
-            allow_overlap BOOLEAN NOT NULL,
+            allow_overlap VARCHAR(255) NOT NULL,
             extra_time LONGTEXT NULL,
+            created_at DATETIME NULL,
+            updated_at DATETIME NULL,
             PRIMARY KEY  (id)
         );";
 

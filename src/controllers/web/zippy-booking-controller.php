@@ -337,8 +337,8 @@ class Zippy_Booking_Controller
                     case ZIPPY_BOOKING_BOOKING_STATUS_PENDING:
                         $order->update_status(ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD);
                         break;
-                    case ZIPPY_BOOKING_BOOKING_STATUS_APPROVE:
-                        $order->update_status(ZIPPY_BOOKING_BOOKING_STATUS_PENDING);
+                    case 'approved':
+                        $order->update_status('pending');
                         break;
                     case ZIPPY_BOOKING_BOOKING_STATUS_COMPLETED:
                         $order->update_status(ZIPPY_BOOKING_BOOKING_STATUS_COMPLETED);

@@ -30,23 +30,21 @@ class Zippy_Admin_Booking_Config_Controller
      */
     public static function zippy_booking_create_configs(WP_REST_Request $request)
     {
-        
+
         // Rules
         $required_fields = [
-            "default_booking_status" => ["required" => true, "data_type" => "range", "allowed_values" => [ZIPPY_BOOKING_BOOKING_STATUS_PENDING,ZIPPY_BOOKING_BOOKING_STATUS_COMPLETED,ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD,ZIPPY_BOOKING_BOOKING_STATUS_CANCELLED,ZIPPY_BOOKING_BOOKING_STATUS_PROCESSING,ZIPPY_BOOKING_BOOKING_STATUS_APPROVE]],
+            "default_booking_status" => ["required" => true, "data_type" => "range", "allowed_values" => [ZIPPY_BOOKING_BOOKING_STATUS_PENDING, ZIPPY_BOOKING_BOOKING_STATUS_COMPLETED, ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD, ZIPPY_BOOKING_BOOKING_STATUS_CANCELLED, ZIPPY_BOOKING_BOOKING_STATUS_PROCESSING, ZIPPY_BOOKING_BOOKING_STATUS_APPROVE]],
             "store_email" => ["required" => true, "data_type" => "email"],
             "store_working_time" => ["required" => true, "data_type" => "array"],
         ];
-    
+
         // Validate Fields
         $validate = Zippy_Request_Validation::validate_request($required_fields, $request);
         if (!empty($validate)) {
             return Zippy_Response_Handler::error($validate);
         }
-    
+
         $store_working_time = $request["store_working_time"];
-        $store_email = $request["store_email"];
-        $default_booking_status = $request["default_booking_status"];
 
         // Validate store_working_time
         $required_weekdays = Zippy_Request_Validation::get_weekdays();
@@ -55,7 +53,7 @@ class Zippy_Admin_Booking_Config_Controller
         if (array_diff(array_map('strtolower', $required_weekdays), array_map('strtolower', $weekdays))) {
             return Zippy_Response_Handler::error("store_working_time must include all days from 0 to 6.");
         }
-    
+
         $working_time_required_fields = [
             "is_open" => ["required" => true, "data_type" => "boolean"],
             "booking_type" => ["required" => true, "data_type" => "range", "allowed_values" => [ZIPPY_BOOKING_BOOKING_TYPE_SINGLE, ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE]],
@@ -63,69 +61,89 @@ class Zippy_Admin_Booking_Config_Controller
             "allow_overlap" => ["required" => true, "data_type" => "boolean"],
             "open_at" => ["data_type" => "time"],
             "close_at" => ["data_type" => "time"],
+            "extra_time" => ["data_type" => "array"],
         ];
 
         foreach ($store_working_time as $value) {
-            // Validate Fields
+            // Validate working_time_required_fields
             $validate = Zippy_Request_Validation::validate_request($working_time_required_fields, $value);
             if (!empty($validate)) {
                 return Zippy_Response_Handler::error($validate);
             }
+
+            // validate extra_time
+            if (!empty($value["extra_time"])) {
+                $extra_time = $value["extra_time"];
+                foreach ($extra_time as $ext_time) {
+                    if (empty($ext_time["from"]) || empty($ext_time["to"])) {
+                        return Zippy_Response_Handler::error("extra_time must have both from and to");
+                    }
+                }
+            }
+
         }
 
         try {
+            //insert data to config table
 
-            // insert store_email, default_booking_status to wp_option
-
-
-
-
-
-
-
-
-            /* Insert */
             global $wpdb;
             $table_name = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
-    
-            $result = $wpdb->get_results("SELECT * from $table_name");
-    
-            if (!empty($result)) {
-                return Zippy_Response_Handler::error("Configs already exists!");
+            foreach ($store_working_time as $key => $value) {
+                $result = $wpdb->get_results("SELECT ID from $table_name WHERE 'weekday' = $key");
+                if (!empty($result)) {
+                    return Zippy_Response_Handler::error("Config for weekday: $key already exists!");
+                }
             }
-    
-            $data = [
-                'booking_type' => $booking_type,
-                'duration' => $duration,
-                'store_email' => $store_email,
-                'allow_overlap' => $allow_overlap,
-                'store_working_time' => json_encode($store_working_time),
+
+            $insert_id = [];
+
+            /* Insert to config table */
+            foreach ($store_working_time as $key => $value) {
+                $data = [
+                    'weekday' => $key,
+                    'is_open' => sanitize_text_field($value['is_open']),
+                    'booking_type' => sanitize_text_field($value['booking_type']),
+                    'duration' => sanitize_text_field($value['duration']),
+                    'allow_overlap' => sanitize_text_field($value['allow_overlap']),
+                    'open_at' => sanitize_text_field($value['open_at']),
+                    'close_at' => sanitize_text_field($value['close_at']),
+                    'extra_time' => !empty($value['extra_time']) ? json_encode($value['extra_time']) : "",
+                    'created_at' => current_time("mysql"),
+                    'updated_at' => current_time("mysql"),
+                ];
+
+                $insert = $wpdb->insert($table_name, $data);
+                $insert_id[] = $wpdb->insert_id;
+                if ($insert == 0) {
+                    $message = 'Failed to insert data';
+                    Zippy_Log_Action::log('create_booking_configs', json_encode($data), 'failure', $message);
+                    return Zippy_Response_Handler::error($message);
+                }
+            }
+
+            // insert store_email, default_booking_status to wp_option
+            $options = [
+                "store_email",
+                "default_booking_status",
             ];
-    
-            $insert = $wpdb->insert($table_name, $data);
-    
-            if (!$insert) {
-                $message = 'Failed to insert data';
-                Zippy_Log_Action::log('create_booking_configs', json_encode($data), 'failure', $message);
-                return Zippy_Response_Handler::error($message);
+
+            foreach ($options as $opt) {
+                $add = add_option($opt, sanitize_text_field($request[$opt]));
+                if (!$add) {
+                    return Zippy_Response_Handler::error("Failed to insert $opt");
+                }
             }
-    
-            // Retrieve the ID of the inserted record
-            $config_id = $wpdb->insert_id;
-    
-            Zippy_Log_Action::log('create_booking_configs', json_encode($data), 'Success', 'Success');
-    
-            // Add the ID to the response data
-            $data['id'] = $config_id;
-    
-            return Zippy_Response_Handler::success($data);
+
+            Zippy_Log_Action::log('create_booking_configs', json_encode($request), 'Success', 'Success');
+            return Zippy_Response_Handler::success($insert_id);
+
         } catch (\Throwable $th) {
             $message = $th->getMessage();
-            Zippy_Log_Action::log('create_booking_configs', json_encode($data), 'failure', $message);
+            Zippy_Log_Action::log('create_booking_configs', json_encode($request), 'failure', $message);
             return Zippy_Response_Handler::error($message);
         }
     }
-    
+
 
 
     /**
@@ -136,103 +154,115 @@ class Zippy_Admin_Booking_Config_Controller
      */
     public static function zippy_booking_update_configs(WP_REST_Request $request)
     {
-
-
-        $booking_id = $request["id"];
-        $booking_type = $request["booking_type"];
-        $store_email = $request["store_email"];
-        $allow_overlap = $request["allow_overlap"];
-        $duration = $request["duration"];
-        $store_working_time = $request["store_working_time"];
-
-        /* Rules */
+        // Rules
         $required_fields = [
-            "id" => ["required" => true, "data_type" => "number"],
-            "booking_type" => ["required" => true, "data_type" => "string", "field_type" => "range", "allowed_values" => [ZIPPY_BOOKING_BOOKING_TYPE_SINGLE, ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE]],
+            "default_booking_status" => ["required" => true, "data_type" => "range", "allowed_values" => [ZIPPY_BOOKING_BOOKING_STATUS_PENDING, ZIPPY_BOOKING_BOOKING_STATUS_COMPLETED, ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD, ZIPPY_BOOKING_BOOKING_STATUS_CANCELLED, ZIPPY_BOOKING_BOOKING_STATUS_PROCESSING, ZIPPY_BOOKING_BOOKING_STATUS_APPROVE]],
             "store_email" => ["required" => true, "data_type" => "email"],
-            "allow_overlap" => ["data_type" => "boolean"],
             "store_working_time" => ["required" => true, "data_type" => "array"],
         ];
 
-
-        // Validate request fields
+        // Validate Fields
         $validate = Zippy_Request_Validation::validate_request($required_fields, $request);
-
         if (!empty($validate)) {
             return Zippy_Response_Handler::error($validate);
         }
 
+        $store_working_time = $request["store_working_time"];
 
         // Validate store_working_time
         $required_weekdays = Zippy_Request_Validation::get_weekdays();
-        $weekdays_provided = array_column($store_working_time, 'weekday');
+        $weekdays = array_keys($store_working_time);
 
-        if (array_diff(array_map('strtolower', $required_weekdays), array_map('strtolower', $weekdays_provided))) {
-            return Zippy_Response_Handler::error("store_working_time must include all days from Monday to Sunday.");
+        if (array_diff(array_map('strtolower', $required_weekdays), array_map('strtolower', $weekdays))) {
+            return Zippy_Response_Handler::error("store_working_time must include all days from 0 to 6.");
         }
+
+        $working_time_required_fields = [
+            "is_open" => ["required" => true, "data_type" => "boolean"],
+            "booking_type" => ["required" => true, "data_type" => "range", "allowed_values" => [ZIPPY_BOOKING_BOOKING_TYPE_SINGLE, ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE]],
+            "duration" => ["required" => true, "data_type" => "number"],
+            "allow_overlap" => ["required" => true, "data_type" => "boolean"],
+            "open_at" => ["data_type" => "time"],
+            "close_at" => ["data_type" => "time"],
+            "extra_time" => ["data_type" => "array"],
+        ];
 
         foreach ($store_working_time as $value) {
-            $weekday = $value['weekday'];
-            $is_open = $value['is_open'];
-            $open_at = $value['open_at'];
-            $close_at = $value['close_at'];
-
-            if (!in_array(strtolower($weekday), array_map('strtolower', $required_weekdays))) {
-                return Zippy_Response_Handler::error("Invalid weekday: $weekday");
+            // Validate working_time_required_fields
+            $validate = Zippy_Request_Validation::validate_request($working_time_required_fields, $value);
+            if (!empty($validate)) {
+                return Zippy_Response_Handler::error($validate);
             }
 
-            if ($is_open == 1) {
-                if (empty($open_at) || empty($close_at)) {
-                    return Zippy_Response_Handler::error("open_at and close_at are required when is_open is 1 for $weekday.");
-                }
-                if (!Zippy_Request_Validation::validate_time($open_at) || !Zippy_Request_Validation::validate_time($close_at)) {
-                    return Zippy_Response_Handler::error("open_at and close_at must be time in format H:i:s for $weekday.");
+            // validate extra_time
+            if (!empty($value["extra_time"])) {
+                $extra_time = $value["extra_time"];
+                foreach ($extra_time as $ext_time) {
+                    if (empty($ext_time["from"]) || empty($ext_time["to"])) {
+                        return Zippy_Response_Handler::error("extra_time must have both from and to");
+                    }
                 }
             }
-        }
 
-
-        // Duration Validate
-        if ($booking_type == ZIPPY_BOOKING_BOOKING_TYPE_SINGLE) {
-            if (empty($duration)) {
-                return Zippy_Response_Handler::error("duration is required when booking_type is " . ZIPPY_BOOKING_BOOKING_TYPE_SINGLE);
-            } elseif (!is_numeric($duration) || $duration <= 0) {
-                return Zippy_Response_Handler::error("duration must be a positive number.");
-            }
         }
 
         try {
-            /* Update */
             global $wpdb;
             $table_name = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
 
-            $result = $wpdb->get_results("SELECT * from $table_name WHERE id=$booking_id");
-            if (empty($result)) {
-                return Zippy_Response_Handler::error(ZIPPY_BOOKING_NOT_FOUND);
+
+            foreach ($store_working_time as $key => $value) {
+                $result = $wpdb->get_results("SELECT COUNT(ID) from $table_name WHERE 'weekday' = $key");
+                if (empty($result)) {
+                    return Zippy_Response_Handler::error("Config for weekday: $key not found!");
+                }
             }
 
-            $data = [
-                'booking_type' => $booking_type,
-                'duration'=> $duration,
-                'store_email' => $store_email,
-                'allow_overlap' => $allow_overlap,
-                'store_working_time' => json_encode($store_working_time),
+            /* Insert to config table */
+            foreach ($store_working_time as $key => $value) {        
+                $data = [
+                    'is_open' => sanitize_text_field($value['is_open']),
+                    'open_at' => sanitize_text_field($value['open_at']),
+                    'close_at' => sanitize_text_field($value['close_at']),
+                    'booking_type' => sanitize_text_field($value['booking_type']),
+                    'duration' => sanitize_text_field($value['duration']),
+                    'allow_overlap' => sanitize_text_field($value['allow_overlap']),
+                    'extra_time' => !empty($value['extra_time']) ? json_encode($value['extra_time']) : "",
+                    'updated_at' => current_time("mysql"),
+                ];
+                
+                $update = $wpdb->update($table_name, $data, ["weekday" => $key]);
+
+                if ($update == 0) {
+                    $message = 'Failed to update data';
+                    Zippy_Log_Action::log('update_booking_configs', json_encode($request), 'failure', $message);
+                    return Zippy_Response_Handler::error($message);
+                }
+            }
+
+
+            // insert store_email, default_booking_status to wp_option
+            $options = [
+                "store_email",
+                "default_booking_status",
             ];
 
-            $update = $wpdb->update($table_name, $data, ["id" => $booking_id]);
-            $log_status = $update ? 'Success' : 'failure';
-            $log_message = $update ? 'Success' : 'Failed to update data';
-
-            Zippy_Log_Action::log('update_booking_configs', json_encode($data), $log_status, $log_message);
-
-            if ($update == 0) {
-                return Zippy_Response_Handler::error("Failed to update data");
+            foreach ($options as $opt) {
+                $get = get_option($opt);
+                if($get !== sanitize_text_field($request[$opt])){
+                    $add = update_option($opt, sanitize_text_field($request[$opt]));
+                    if (!$add) {
+                        return Zippy_Response_Handler::error("Failed to update $opt");
+                    }
+                }
             }
 
-            return Zippy_Response_Handler::success($data);
+            Zippy_Log_Action::log('update_booking_configs', json_encode($request), 'Success', 'Success');
+            return Zippy_Response_Handler::success($request);
+
         } catch (\Throwable $th) {
             $message = $th->getMessage();
-            Zippy_Log_Action::log('update_booking_configs', json_encode($data), 'failure', $message);
+            Zippy_Log_Action::log('update_booking_configs', json_encode($request), 'failure', $message);
             return Zippy_Response_Handler::error($message);
         }
     }
@@ -255,22 +285,33 @@ class Zippy_Admin_Booking_Config_Controller
             $query = "SELECT * FROM $table_name WHERE 1=1";
             $results = $wpdb->get_results($query);
 
+            $response = [];
+
+            // insert store_email, default_booking_status to wp_option
+            $options = [
+                "store_email",
+                "default_booking_status",
+            ];
+
+            foreach ($options as $opt) {
+                $get = get_option($opt);
+                $response[$opt] = $get;
+            }
+
             if (empty($results)) {
                 $message = ZIPPY_BOOKING_NOT_FOUND;
                 Zippy_Log_Action::log('get_booking_configs', json_encode([]), 'failure', $message);
                 return Zippy_Response_Handler::success([], $message);
             }
 
-            $data = $results[0];
 
-            $data->allow_overlap = 0 ? "F" : "T";
-
-            if (!empty($data->store_working_time)) {
-                $data->store_working_time = json_decode($data->store_working_time);
+            foreach ($results as $key => $value) {
+                $value->extra_time = !empty($value->extra_time) ? json_decode($value->extra_time) : "";
+                $response["store_working_time"][$value->weekday][] = $value;
             }
 
-            Zippy_Log_Action::log('get_booking_configs', json_encode($data), 'Success', 'Success');
-            return Zippy_Response_Handler::success($data);
+            Zippy_Log_Action::log('get_booking_configs', json_encode($response), 'Success', 'Success');
+            return Zippy_Response_Handler::success($response);
         } catch (\Throwable $th) {
             $message = $th->getMessage();
             Zippy_Log_Action::log('get_booking_configs', json_encode([]), 'failure', $message);
