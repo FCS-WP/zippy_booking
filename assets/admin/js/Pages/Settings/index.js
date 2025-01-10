@@ -42,6 +42,9 @@ const Settings = () => {
   const [schedule, setSchedule] = useState(
     daysOfWeek.map((day) => ({ day, slots: [] }))
   );
+  const [extraTimeSlots, setExtraTimeSlots] = useState(
+    daysOfWeek.map((day) => ({ day, slots: [] }))
+  );
   const [duration, setDuration] = useState(5);
   const [storeEmail, setStoreEmail] = useState("");
   const [allowOverlap, setAllowOverlap] = useState(false);
@@ -125,18 +128,39 @@ const Settings = () => {
       ...prev,
       [day]: enabled,
     }));
+
+    if (enabled) {
+      setExtraTimeSlots((prev) =>
+        prev.map((item) =>
+          item.day === day
+            ? {
+                ...item,
+                slots:
+                  item.slots.length === 0 ? [{ from: "", to: "" }] : item.slots,
+              }
+            : item
+        )
+      );
+    } else {
+      setExtraTimeSlots((prev) =>
+        prev.map((item) => (item.day === day ? { ...item, slots: [] } : item))
+      );
+    }
   };
 
   const handleAddTimeSlot = (day) => {
     setSchedule((prev) =>
       prev.map((item) =>
         item.day === day
-          ? { ...item, slots: [...item.slots, { from: "", to: "", type: "regular" }] }
+          ? {
+              ...item,
+              slots: [...item.slots, { from: "", to: "", type: "regular" }],
+            }
           : item
       )
     );
   };
-  
+
   const handleRemoveTimeSlot = (day, slotIndex) => {
     setSchedule((prev) =>
       prev.map((item) =>
@@ -149,19 +173,22 @@ const Settings = () => {
       )
     );
   };
-  
+
   const handleAddExtraTimeSlot = (day) => {
-    setSchedule((prev) =>
+    setExtraTimeSlots((prev) =>
       prev.map((item) =>
         item.day === day
-          ? { ...item, slots: [...item.slots, { from: "", to: "", type: "extra" }] }
+          ? {
+              ...item,
+              slots: [...item.slots, { from: "", to: "" }],
+            }
           : item
       )
     );
   };
-  
+
   const handleRemoveExtraTimeSlot = (day, slotIndex) => {
-    setSchedule((prev) =>
+    setExtraTimeSlots((prev) =>
       prev.map((item) =>
         item.day === day
           ? {
@@ -172,7 +199,6 @@ const Settings = () => {
       )
     );
   };
-  
 
   const calculateCloseAt = (openAt, duration) => {
     if (!openAt) return "";
@@ -219,7 +245,7 @@ const Settings = () => {
           .padStart(2, "0")}:00`
       : "";
 
-    setSchedule((prev) =>
+    setExtraTimeSlots((prev) =>
       prev.map((item) =>
         item.day === day
           ? {
@@ -235,9 +261,9 @@ const Settings = () => {
       )
     );
   };
-
   const handleSaveChanges = async () => {
     setLoading(true);
+
     const storeWorkingTime = schedule.map((item) => {
       const isOpen = item.slots.length > 0;
       const openSlot = item.slots[0] || {};
@@ -248,6 +274,8 @@ const Settings = () => {
         weekday: weekdayIndex,
         open_at: isOpen ? String(openSlot.from) || "" : "",
         close_at: isOpen ? String(openSlot.to) || "" : "",
+        extra_slots:
+          extraTimeSlots.find((extra) => extra.day === item.day)?.slots || [],
       };
     });
 
@@ -280,6 +308,7 @@ const Settings = () => {
       setLoading(false);
     }
   };
+
   const title = "Settings";
   return (
     <Box p={4}>
@@ -501,67 +530,71 @@ const Settings = () => {
                               </TableCell>
                             </TableRow>
                           ))}
+                          {/* Render extra time slots if enabled */}
                           {extraTimeEnabled[item.day] &&
-                            item.slots.map((slot, extraIndex) => (
-                              <TableRow key={`extra-${extraIndex}`}>
-                                <TableCell>{item.day} (Extra Time)</TableCell>
-                                <TableCell width={"30%"}>
-                                  <Box sx={{ width: "200px" }}>
-                                    <TimePicker
-                                      selectedTime={parseTime(slot.from)}
-                                      onChange={(time) =>
-                                        handleExtraTimeChange(
-                                          item.day,
-                                          extraIndex,
-                                          "from",
-                                          time
-                                        )
-                                      }
-                                      duration={duration}
-                                    />
-                                  </Box>
-                                </TableCell>
-                                <TableCell width={"30%"}>
-                                  <Box sx={{ width: "200px" }}>
-                                    <TimePicker
-                                      selectedTime={parseTime(slot.to)}
-                                      onChange={(time) =>
-                                        handleExtraTimeChange(
-                                          item.day,
-                                          extraIndex,
-                                          "to",
-                                          time
-                                        )
-                                      }
-                                      duration={duration}
-                                    />
-                                  </Box>
-                                </TableCell>
-                                {extraTimeEnabled[item.day] && (
+                            extraTimeSlots
+                              .find((extra) => extra.day === item.day)
+                              ?.slots.map((slot, slotIndex) => (
+                                <TableRow
+                                  key={`extra-${dayIndex}-${slotIndex}`}
+                                >
+                                  <TableCell>{item.day} (Extra Time)</TableCell>
+                                  <TableCell width={"30%"}>
+                                    <Box sx={{ width: "200px" }}>
+                                      <TimePicker
+                                        selectedTime={parseTime(slot.from)}
+                                        onChange={(time) =>
+                                          handleExtraTimeChange(
+                                            item.day,
+                                            slotIndex,
+                                            "from",
+                                            time
+                                          )
+                                        }
+                                      />
+                                    </Box>
+                                  </TableCell>
+                                  <TableCell width={"30%"}>
+                                    <Box sx={{ width: "200px" }}>
+                                      <TimePicker
+                                        selectedTime={parseTime(slot.to)}
+                                        onChange={(time) =>
+                                          handleExtraTimeChange(
+                                            item.day,
+                                            slotIndex,
+                                            "to",
+                                            time
+                                          )
+                                        }
+                                      />
+                                    </Box>
+                                  </TableCell>
+                                  {extraTimeEnabled[item.day] && (
+                                    <TableCell>
+                                      <IconButton
+                                        color="primary"
+                                        onClick={() =>
+                                          handleAddExtraTimeSlot(item.day)
+                                        }
+                                      >
+                                        <AddCircleOutlineIcon color="primary" />
+                                      </IconButton>
+                                    </TableCell>
+                                  )}
                                   <TableCell>
                                     <IconButton
                                       onClick={() =>
-                                        handleAddExtraTimeSlot(item.day)
+                                        handleRemoveExtraTimeSlot(
+                                          item.day,
+                                          slotIndex
+                                        )
                                       }
                                     >
-                                      <AddCircleOutlineIcon color="primary" />
+                                      <RemoveCircleOutlineIcon color="error" />
                                     </IconButton>
                                   </TableCell>
-                                )}
-                                <TableCell>
-                                  <IconButton
-                                    onClick={() =>
-                                      handleRemoveExtraTimeSlot(
-                                        item.day,
-                                        extraIndex
-                                      )
-                                    }
-                                  >
-                                    <RemoveCircleOutlineIcon color="error" />
-                                  </IconButton>
-                                </TableCell>
-                              </TableRow>
-                            ))}
+                                </TableRow>
+                              ))}
                         </React.Fragment>
                       ))}
                     </TableBody>
