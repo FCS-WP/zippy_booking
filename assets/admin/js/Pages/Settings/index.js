@@ -48,6 +48,7 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [configId, setConfigId] = useState(null);
   const [isConfigExisting, setIsConfigExisting] = useState(false);
+  const [extraTimeEnabled, setExtraTimeEnabled] = useState(false);
 
   const parseTime = (timeString) => {
     if (!timeString) return null;
@@ -118,6 +119,12 @@ const Settings = () => {
 
     fetchSettings();
   }, []);
+  const handleExtraTimeToggle = (day, enabled) => {
+    setExtraTimeEnabled((prev) => ({
+      ...prev,
+      [day]: enabled,
+    }));
+  };
 
   const handleAddTimeSlot = (day) => {
     setSchedule((prev) =>
@@ -226,187 +233,252 @@ const Settings = () => {
 
   return (
     <Box p={4}>
-      <Typography variant="h5" gutterBottom>
-        Settings
-      </Typography>
+      {loading ? (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="100vh"
+        >
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Box>
+          <Typography variant="h5" gutterBottom>
+            Settings
+          </Typography>
 
-      <Grid container spacing={4}>
-        <Grid item xs={12} md={4}>
-          <Box>
-            <Typography variant="body1">Booking Type</Typography>
-            <RadioGroup
-              row
-              value={bookingType}
-              onChange={(e) => setBookingType(e.target.value)}
-            >
-              <FormControlLabel
-                value="single"
-                control={<Radio />}
-                label="Single"
-              />
-              <FormControlLabel
-                value="multiple"
-                control={<Radio />}
-                label="Multiple"
-              />
-            </RadioGroup>
-          </Box>
+          <Grid container spacing={4}>
+            <Grid item xs={12} md={4}>
+              <Box>
+                <Typography variant="body1">Booking Type</Typography>
+                <RadioGroup
+                  row
+                  value={bookingType}
+                  onChange={(e) => setBookingType(e.target.value)}
+                >
+                  <FormControlLabel
+                    value="single"
+                    control={<Radio />}
+                    label="Single"
+                  />
+                  <FormControlLabel
+                    value="multiple"
+                    control={<Radio />}
+                    label="Multiple"
+                  />
+                </RadioGroup>
+              </Box>
 
-          <Box mb={1}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={allowOverlap}
-                  onChange={(e) => setAllowOverlap(e.target.checked)}
+              <Box mb={1}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={allowOverlap}
+                      onChange={(e) => setAllowOverlap(e.target.checked)}
+                    />
+                  }
+                  label="Allow Overlap"
                 />
-              }
-              label="Allow Overlap"
-            />
-            <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-              Enable this if you want multiple bookings to overlap.
-            </Typography>
-          </Box>
+                <Typography
+                  variant="body2"
+                  color="textSecondary"
+                  sx={{ mt: 1 }}
+                >
+                  Enable this if you want multiple bookings to overlap.
+                </Typography>
+              </Box>
 
-          <Box mb={1}>
-            <Typography variant="body1">Duration</Typography>
-            <Select
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
-              fullWidth
-              size="small"
-              sx={{
-                border: "1px solid #ccc",
-                borderRadius: "4px",
-                padding: "5px",
-                backgroundColor: "#fff",
-              }}
-            >
-              {Array.from({ length: 36 }, (_, i) => (i + 1) * 5).map(
-                (option) => (
-                  <MenuItem key={option} value={option}>
-                    {option} minutes
-                  </MenuItem>
-                )
-              )}
-            </Select>
-            <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-              Set the duration of each booking session.
-            </Typography>
-          </Box>
+              <Box mb={1}>
+                <Typography variant="body1">Duration</Typography>
+                <Select
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                  fullWidth
+                  size="small"
+                  sx={{
+                    borderRadius: "4px",
+                    padding: "5px",
+                  }}
+                >
+                  {Array.from({ length: 36 }, (_, i) => (i + 1) * 5).map(
+                    (option) => (
+                      <MenuItem key={option} value={option}>
+                        {option} minutes
+                      </MenuItem>
+                    )
+                  )}
+                </Select>
+                <Typography
+                  variant="body2"
+                  color="textSecondary"
+                  sx={{ mt: 1 }}
+                >
+                  Set the duration of each booking session.
+                </Typography>
+              </Box>
 
-          <Box mb={1}>
-            <Typography variant="body1">Store Email</Typography>
-            <TextField
-              type="email"
-              value={storeEmail}
-              onChange={(e) => setStoreEmail(e.target.value)}
-              size="small"
-              fullWidth
-            />
-          </Box>
+              <Box mb={1}>
+                <Typography variant="body1">Store Email</Typography>
+                <TextField
+                  type="email"
+                  value={storeEmail}
+                  onChange={(e) => setStoreEmail(e.target.value)}
+                  size="small"
+                  fullWidth
+                />
+              </Box>
 
-          <Box mt={2}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleSaveChanges}
-              disabled={loading}
-              style={{
-                borderRadius: "8px",
-                padding: "13px 20px",
-                textTransform: "none",
-              }}
-            >
-              {loading ? "Saving..." : "Save Changes"}
-            </Button>
-          </Box>
-        </Grid>
+              <Box mt={2}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleSaveChanges}
+                  disabled={loading}
+                  style={{
+                    borderRadius: "8px",
+                    padding: "13px 20px",
+                    textTransform: "none",
+                  }}
+                >
+                  {loading ? "Saving..." : "Save Changes"}
+                </Button>
+              </Box>
+            </Grid>
 
-        <Grid item xs={12} md={8}>
-          {loading ? (
-            <Box
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
-              height="100%"
-            >
-              <CircularProgress />
-            </Box>
-          ) : (
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Day</TableCell>
-                    <TableCell>From</TableCell>
-                    <TableCell>To</TableCell>
-                    <TableCell>Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {schedule.map((item, dayIndex) => (
-                    <React.Fragment key={dayIndex}>
-                      {item.slots.length === 0 && (
-                        <TableRow>
-                          <TableCell>{item.day}</TableCell>
-                          <TableCell colSpan={2}></TableCell>
-                          <TableCell>
-                            <IconButton
-                              onClick={() => handleAddTimeSlot(item.day)}
-                            >
-                              <AddCircleOutlineIcon color="primary" />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                      )}
-                      {item.slots.map((slot, slotIndex) => (
-                        <TableRow key={slotIndex}>
-                          <TableCell>{item.day}</TableCell>
-                          <TableCell>
-                            <DatePicker
-                              selected={parseTime(slot.from)}
-                              onChange={(time) =>
-                                handleTimeChange(item.day, slotIndex, "from", time)
-                              }
-                              showTimeSelect
-                              showTimeSelectOnly
-                              timeCaption="From"
-                              dateFormat="HH:mm"
-                              timeIntervals={duration}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <DatePicker
-                              selected={parseTime(slot.to)}
-                              onChange={(time) =>
-                                handleTimeChange(item.day, slotIndex, "to", time)
-                              }
-                              showTimeSelect
-                              showTimeSelectOnly
-                              timeCaption="To"
-                              dateFormat="HH:mm"
-                              timeIntervals={duration}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <IconButton
-                              onClick={() =>
-                                handleRemoveTimeSlot(item.day, slotIndex)
-                              }
-                            >
-                              <RemoveCircleOutlineIcon color="error" />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
+            <Grid item xs={12} md={8}>
+              {loading ? (
+                <Box
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                  height="100%"
+                >
+                  <CircularProgress />
+                </Box>
+              ) : (
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Day</TableCell>
+                        <TableCell>From</TableCell>
+                        <TableCell>To</TableCell>
+                        {bookingType === "single" && (
+                          <TableCell>Extra Time</TableCell>
+                        )}{" "}
+                        {/* Conditionally add "Extra Time" column */}
+                        <TableCell>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {schedule.map((item, dayIndex) => (
+                        <React.Fragment key={dayIndex}>
+                          {item.slots.length === 0 && (
+                            <TableRow>
+                              <TableCell>{item.day}</TableCell>
+                              <TableCell width={"30%"}></TableCell>
+                              <TableCell width={"30%"}></TableCell>
+                              {bookingType === "single" && (
+                                <TableCell></TableCell>
+                              )}{" "}
+                              {/* Empty cell for "Extra Time" */}
+                              <TableCell>
+                                <IconButton
+                                  onClick={() => handleAddTimeSlot(item.day)}
+                                >
+                                  <AddCircleOutlineIcon color="primary" />
+                                </IconButton>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                          {item.slots.map((slot, slotIndex) => (
+                            <TableRow key={slotIndex}>
+                              <TableCell>{item.day}</TableCell>
+                              <TableCell width={"30%"}>
+                                <Box sx={{ width: "200px" }}>
+                                  <DatePicker
+                                    selected={parseTime(slot.from)}
+                                    onChange={(time) =>
+                                      handleTimeChange(
+                                        item.day,
+                                        slotIndex,
+                                        "from",
+                                        time
+                                      )
+                                    }
+                                    showTimeSelect
+                                    showTimeSelectOnly
+                                    timeCaption="From"
+                                    dateFormat="HH:mm"
+                                    timeIntervals={duration}
+                                    isClearable
+                                    placeholderText="Pick a time"
+                                  />
+                                </Box>
+                              </TableCell>
+                              <TableCell width={"30%"}>
+                                <Box sx={{ width: "200px" }}>
+                                  <DatePicker
+                                    selected={parseTime(slot.to)}
+                                    onChange={(time) =>
+                                      handleTimeChange(
+                                        item.day,
+                                        slotIndex,
+                                        "to",
+                                        time
+                                      )
+                                    }
+                                    showTimeSelect
+                                    showTimeSelectOnly
+                                    timeCaption="To"
+                                    dateFormat="HH:mm"
+                                    timeIntervals={duration}
+                                    isClearable
+                                    placeholderText="Pick a time"
+                                  />
+                                </Box>
+                              </TableCell>
+                              {bookingType === "single" && (
+                                <TableCell>
+                                  <FormControlLabel
+                                    control={
+                                      <Switch
+                                        checked={
+                                          extraTimeEnabled[item.day] || false
+                                        }
+                                        onChange={(e) =>
+                                          handleExtraTimeToggle(
+                                            item.day,
+                                            e.target.checked
+                                          )
+                                        }
+                                      />
+                                    }
+                                  />
+                                </TableCell>
+                              )}
+                              <TableCell>
+                                <IconButton
+                                  onClick={() =>
+                                    handleRemoveTimeSlot(item.day, slotIndex)
+                                  }
+                                >
+                                  <RemoveCircleOutlineIcon color="error" />
+                                </IconButton>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </React.Fragment>
                       ))}
-                    </React.Fragment>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-        </Grid>
-      </Grid>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </Grid>
+          </Grid>
+        </Box>
+      )}
       <ToastContainer />
     </Box>
   );

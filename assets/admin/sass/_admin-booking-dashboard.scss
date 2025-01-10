@@ -1,25 +1,37 @@
 #zippy-booking-root {
-  .react-datepicker-wrapper {
-    width: 350px;
-    .react-datepicker__input-container {
-      input {
-        max-width: 100% !important;
-        text-align: center;
+  #zippy_dashboard {
+    .react-datepicker-wrapper {
+      width: 350px;
+      .react-datepicker__input-container {
+        input {
+          max-width: 100% !important;
+          text-align: center;
+        }
+      }
+    }
+
+    .date-picker {
+      position: relative;
+      .MuiSvgIcon-root {
+        position: absolute;
+        top: 50%;
+        left: 10px;
+        transform: translateY(-50%);
+        z-index: 1;
+      }
+      .form-control {
+        padding-left: 40px;
       }
     }
   }
 
-  .date-picker {
-    position: relative;
-    .MuiSvgIcon-root {
-      position: absolute;
-      top: 50%;
-      left: 10px;
-      transform: translateY(-50%);
-      z-index: 1;
-    }
-    .form-control {
-      padding-left: 40px;
+  #zippy_settings {
+    input[type="email"] {
+      padding: 12px;
+      border: 0;
+      &:focus {
+        box-shadow: none;
+      }
     }
   }
 }
