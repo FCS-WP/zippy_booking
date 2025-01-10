@@ -74,10 +74,19 @@ class Zippy_Admin_Booking_Config_Controller
             // validate extra_time
             if (!empty($value["extra_time"])) {
                 $extra_time = $value["extra_time"];
-                foreach ($extra_time as $ext_time) {
-                    if (empty($ext_time["from"]) || empty($ext_time["to"])) {
-                        return Zippy_Response_Handler::error("extra_time must have both from and to");
-                    }
+
+
+                // check if is_active exist
+                if (empty($extra_time["is_active"])) {
+                    return Zippy_Response_Handler::error("is_active is required");
+                }
+
+
+                //check for extra_time has both from and to
+                $time_data = $extra_time["data"];
+                $validate_from_to = empty(array_filter($time_data, fn($item) => !isset($item["from"], $item["to"])));
+                if($validate_from_to == false){
+                    return Zippy_Response_Handler::error("extra_time data must have both from and to");
                 }
             }
 
@@ -197,10 +206,19 @@ class Zippy_Admin_Booking_Config_Controller
             // validate extra_time
             if (!empty($value["extra_time"])) {
                 $extra_time = $value["extra_time"];
-                foreach ($extra_time as $ext_time) {
-                    if (empty($ext_time["from"]) || empty($ext_time["to"])) {
-                        return Zippy_Response_Handler::error("extra_time must have both from and to");
-                    }
+
+
+                // check if is_active exist
+                if (empty($extra_time["is_active"])) {
+                    return Zippy_Response_Handler::error("is_active is required");
+                }
+
+
+                //check for extra_time has both from and to
+                $time_data = $extra_time["data"];
+                $validate_from_to = empty(array_filter($time_data, fn($item) => !isset($item["from"], $item["to"])));
+                if($validate_from_to == false){
+                    return Zippy_Response_Handler::error("extra_time data must have both from and to");
                 }
             }
 
@@ -307,7 +325,7 @@ class Zippy_Admin_Booking_Config_Controller
 
             foreach ($results as $key => $value) {
                 $value->extra_time = !empty($value->extra_time) ? json_decode($value->extra_time) : "";
-                $response["store_working_time"][$value->weekday][] = $value;
+                $response["store_working_time"][] = $value;
             }
 
             Zippy_Log_Action::log('get_booking_configs', json_encode($response), 'Success', 'Success');
