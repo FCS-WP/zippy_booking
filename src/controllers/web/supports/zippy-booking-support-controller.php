@@ -223,6 +223,7 @@ class Zippy_Booking_Support_Controller
                     if ($product) {
                         $item['item_name'] = $product->get_name();
                         $item['item_price'] = $product->get_price();
+                        $item['item_extra_price'] = get_post_meta($product->get_id(),'_extra_price', true);
                     }
                 } else {
 

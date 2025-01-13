@@ -34,28 +34,77 @@ export const getTimeFromBooking = (booking) => {
   return { start: format(startDate, "HH:mm"), end: format(endDate, "HH:mm") };
 };
 
-export const getAvailableTimeSlots = (configTime, duration, bookings = []) => {
+export const parseTime = (timeStr) => parse(timeStr, "HH:mm:ss", new Date());
+export const formatTime = (time) => format(time, "HH:mm:ss");
+
+export const getAvailableTimeSlots = (configTime, bookings = []) => {
   const { open_at, close_at } = configTime;
+  const duration = configTime.duration;
 
-  // Adjust parsing and formatting for HH:mm:ss format
-  const parseTime = (timeStr) => parse(timeStr, "HH:mm:ss", new Date());
-  const formatTime = (time) => format(time, "HH:mm:ss");
+  // Generate time slots
+  let timeSlots = handleTimeSlots(bookings, open_at, close_at, duration);
+  let extraSlots = [];
+  // Generate Extra time slot:
+  if (configTime.extra_time?.is_active == "T") {
+    const configExtra = configTime.extra_time.data;
+    configExtra.map((extraItem) => {
+      const slots = handleTimeSlots(
+        bookings,
+        extraItem.from,
+        extraItem.to,
+        duration,
+        true
+      );
+      extraSlots = [...extraSlots, ...slots];
+    });
+  }
 
+  const filteredSlots = filterExtraSlots(timeSlots, extraSlots);
+  return filteredSlots;
+};
+
+const sortSlots = (slots) => {
+  return slots.sort((a, b) => {
+    const aDate = parseTime(a.start);
+    const bDate = parseTime(b.start);
+    return aDate.getTime() - bDate.getTime();
+  });
+};
+
+const filterExtraSlots = (timeSlots, extraSlots) => {
+  const filteredSlots = timeSlots.filter((item) => {
+    return !extraSlots.find((eSlot) => item.start == eSlot.start);
+  });
+  const results = [...filteredSlots, ...extraSlots];
+  return sortSlots(results);
+};
+
+const handleTimeSlots = (
+  bookings,
+  open_at,
+  close_at,
+  duration,
+  isExtra = false
+) => {
+  const results = [];
   const startTime = parseTime(open_at);
-  const endTime = parseTime(close_at);
-  const timeSlots = [];
+  let endTime = parseTime(close_at);
+
+  if (endTime < startTime) {
+    endTime = new Date(endTime);
+    endTime.setDate(endTime.getDate() + 1);
+  }
 
   // Convert bookings to date objects
   const bookingIntervals = bookings.map((booking) => ({
     start: parseTime(booking.booking_start_time),
     end: parseTime(booking.booking_end_time),
   }));
-
-  // Generate time slots
   let currentTime = startTime;
+
   while (
-    isBefore(currentTime, endTime) &&
-    isBefore(addMinutes(currentTime, duration), endTime)
+    currentTime < endTime &&
+    addMinutes(currentTime, duration) <= endTime
   ) {
     const slotEnd = addMinutes(currentTime, duration);
 
@@ -68,16 +117,16 @@ export const getAvailableTimeSlots = (configTime, duration, bookings = []) => {
     );
 
     // Add the slot with isDisabled key
-    timeSlots.push({
+    results.push({
       start: formatTime(currentTime),
       end: formatTime(slotEnd),
       isDisabled: isExcluded,
+      isExtra: isExtra,
     });
 
-    currentTime = addMinutes(currentTime, duration);
+    currentTime = slotEnd;
   }
-
-  return timeSlots;
+  return results;
 };
 
 export const getBookingTime = (time) => {
@@ -116,5 +165,5 @@ export const isInFilterDates = (bookingStart, start, end) => {
 
 export const getCustomDayOfWeek = (date) => {
   const inputDate = new Date(date);
-  return  inputDate.getDay();
+  return inputDate.getDay();
 };

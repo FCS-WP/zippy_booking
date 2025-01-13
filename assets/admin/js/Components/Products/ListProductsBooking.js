@@ -22,7 +22,7 @@ const ListProductsBooking = ({ mappingData, updateListMapping }) => {
         Name: item.item_name,
         Type: item.mapping_type,
         "Regular Price": item.item_price,
-        "Extra Price": item.extra_price ?? null,
+        "Extra Price": item.item_extra_price ?? null,
       };
     });
 

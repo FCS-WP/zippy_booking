@@ -40,6 +40,7 @@ const ModalUpdatePrice = ({ data, onChangeData }) => {
     setOpen(false);
     const confirm = await alertConfirm(`Update Prices`, `Confirm update ${data.Name} prices?`, "Update");
     if (!confirm) {
+      setExtraPrice(data["Extra Price"]);
       return false;
     }
     const params = {

@@ -21,14 +21,34 @@ import { toast } from "react-toastify";
 import AdminLoader from "../AdminLoader";
 
 const SubTableHeader = (props) => {
-  const { cols, onChangeMasterCheckbox } = props;
+  const { cols, onChangeMasterCheckbox, selectedRows, maxRows } = props;
   const [isMasterChecked, setIsMasterChecked] = useState(false);
   const [isMasterIndeterminate, setIsMasterIndeterminate] = useState(false);
 
   const handleChangeMasterCheckbox = () => {
-    setIsMasterChecked(!isMasterChecked);
-    onChangeMasterCheckbox();
+    if (!isMasterIndeterminate) {
+      setIsMasterChecked(!isMasterChecked);
+    }
+    onChangeMasterCheckbox(!isMasterChecked);
   };
+
+  useEffect(()=>{
+    const selectedLength = selectedRows ? Object.keys(selectedRows).length : 0;
+    if (selectedLength > 0) {
+      const allTrue = Object.values(selectedRows).every((value) => value === true);
+      if (allTrue && selectedLength == maxRows) {
+        setIsMasterChecked(true);
+        setIsMasterIndeterminate(false);
+      } else {
+        setIsMasterChecked(false);
+        setIsMasterIndeterminate(true);
+      }
+    }
+    const allFalse = Object.values(selectedRows).every((value) => value === false);
+    if (allFalse) {
+      setIsMasterIndeterminate(false);
+    }
+  }, [selectedRows])
 
   return (
     <TableHead>
@@ -66,15 +86,20 @@ const SubTableHeader = (props) => {
 };
 
 const SubTableBody = (props) => {
-  const { rows, cols, onChangeData } = props;
+  const { rows, cols, onChangeData, UpdateSelectedRows, masterCheckedControl = {} } = props;
   const columnWidths = [];
-  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedRows, setSelectedRows] = useState(masterCheckedControl);
+
   const handleRowCheckboxChange = (rowIndex) => {
-    setSelectedRows((prevState) => ({
-      ...prevState,
-      [rowIndex]: !prevState[rowIndex],
+    setSelectedRows(({
+      ...masterCheckedControl,
+      [rowIndex]: !masterCheckedControl[rowIndex],
     }));
   };
+
+  useEffect(()=>{
+    UpdateSelectedRows(selectedRows);
+  }, [selectedRows])
 
   return (
     <TableBody sx={{ backgroundColor: "#fff" }}>
@@ -86,7 +111,7 @@ const SubTableBody = (props) => {
             row={row}
             cols={cols}
             columnWidths={columnWidths}
-            selectedRows={selectedRows}
+            selectedRows={masterCheckedControl}
             rowIndex={rowIndex}
             onChangeList={onChangeData}
             onChangeCheckbox={handleRowCheckboxChange}
@@ -102,9 +127,10 @@ const SubTable = (props) => {
   const [page, setPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [selectedRows, setSelectedRows] = useState([]);
 
-  const onChangeMasterCheckbox = () => {
-    console.log("Check all checkbox");
+  const UpdateSelectedRows = (rows) =>{
+    setSelectedRows(rows);
   };
   
   const closeLoading = async () => {
@@ -165,6 +191,17 @@ const SubTable = (props) => {
     page * rowsPerPage + rowsPerPage
   );
 
+  const handleChangeMasterCheckbox = (isChecked) => {
+    if (!paginatedData) {
+      return false;
+    }
+    const newSelection = {};
+    paginatedData.map((item, index)=>{
+      newSelection[index] = isChecked ? true : false;
+    })
+    setSelectedRows(newSelection);
+  };
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -188,13 +225,17 @@ const SubTable = (props) => {
             <TableContainer>
                 <Table>
                 <SubTableHeader
-                    onChangeMasterCheckbox={onChangeMasterCheckbox}
+                    maxRows={paginatedData.length}
+                    selectedRows={selectedRows}
+                    onChangeMasterCheckbox={handleChangeMasterCheckbox}
                     cols={cols}
                 />
                 <SubTableBody
                     rows={paginatedData}
                     cols={cols}
                     onChangeData={onChangeData}
+                    UpdateSelectedRows={UpdateSelectedRows}
+                    masterCheckedControl={selectedRows}
                 />
                 </Table>
                 <TablePaginationCustom

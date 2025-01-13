@@ -1,34 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { getCustomDayOfWeek, getAvailableTimeSlots } from "../helper/datetime";
 import Message from "./single-booking/Message";
-const BookingTimeSlot = ({
-  config,
-  bookingInfo,
-  selectedDate,
-  handleTimeSelected,
-}) => {
+const BookingTimeSlot = (props) => {
+  const {  config, bookingInfo, selectedDate, handleTimeSelected, selectedProduct} = props;
+
   const workingTimeByWeekday = config.store_working_time.reduce((acc, time) => {
     acc[time.weekday] = time;
     return acc;
   }, {});
 
-  const duration = config.duration;
 
   const [timeActive, setTimeActive] = useState(null);
   const [slots, setSlots] = useState([]);
 
   useEffect(() => {
-    if (selectedDate) {
+    if (selectedDate && bookingInfo) {
       const date = getCustomDayOfWeek(selectedDate);
       const configTime = workingTimeByWeekday[date];
       const timeSlots = getAvailableTimeSlots(
         configTime,
-        duration,
         bookingInfo
       );
+      
       setSlots(timeSlots);
     }
-  }, [selectedDate, duration, bookingInfo]);
+
+  }, [selectedDate, bookingInfo]);
 
   const handleTimeSelect = (slot, index) => {
     if (slot.isDisabled) return; // Prevent selecting disabled slots
@@ -36,25 +33,37 @@ const BookingTimeSlot = ({
     handleTimeSelected(slot);
   };
 
+  const SlotItem = ({ data, index, timeActive, product }) => {
+
+    return (
+      <div
+        role="button"
+        aria-disabled={data.isDisabled}
+        onClick={() => handleTimeSelect(data, index)}
+        className={`
+          slot-item
+          ${timeActive === index ? "active" : ""} 
+          ${data.isDisabled ? "disabled" : ""} 
+          ${data.isExtra ? "extra-slot" : ""}
+        `}
+      >
+        <p className="slot-title">
+          {data.start} - {data.end}
+        </p>
+        <span className="slot-price">
+          $ {data.isExtra ? (product.item_extra_price ? product.item_extra_price : product.item_price) : product.item_price} 
+        </span>
+      </div>
+    )
+  }
+
   return (
     <div>
       <h4>Time Slots</h4>
       <div className="slots-container">
         {slots.length > 0 ? (
           slots.map((slot, index) => (
-            <div
-              key={index}
-              role="button"
-              aria-disabled={slot.isDisabled}
-              onClick={() => handleTimeSelect(slot, index)}
-              className={`slot-item ${timeActive === index ? "active" : ""} ${
-                slot.isDisabled ? "disabled" : ""
-              }`}
-            >
-              <span>
-                {slot.start} - {slot.end}
-              </span>
-            </div>
+            <SlotItem data={slot} index={index} key={index} timeActive={timeActive} product={selectedProduct}/>
           ))
         ) : (
           <Message
