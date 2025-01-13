@@ -24,10 +24,7 @@ const Timepicker = ({ onStartTimeSelect, onEndTimeSelect, bookings, configs, con
     return roundedTime;
   };
 
-    const resultTime = calculateTimeWithDurationAndRound(configs.duration);
-    const [startTime, setStartTime] = useState(resultTime);
-    const [endTime, setEndTime] = useState(resultTime);
-    
+
     const formatDate = (dateString) => {
       const dateObject = new Date(dateString);
       const year = dateObject.getFullYear();
@@ -50,18 +47,24 @@ const Timepicker = ({ onStartTimeSelect, onEndTimeSelect, bookings, configs, con
 
     const TimeStoreManage =  configs.store_working_time[indexDate];
 
+    const resultTime = calculateTimeWithDurationAndRound(TimeStoreManage.duration);
+    const [startTime, setStartTime] = useState(resultTime);
+    const [endTime, setEndTime] = useState(resultTime);
+
     const currentTime = new Date();
     const hoursCurrent = currentTime.getHours();
-    let minTimeConfigTemp = 0;
-
+    let minTimeConfigTempHour = 0;
+    let minTimeConfigTempminutes = 0;
+    
     if( (hoursCurrent > parseTime(TimeStoreManage.open_at).hours) && (formatDate(currentTime) == formatDate(configsDate))  ){
-      minTimeConfigTemp = hoursCurrent;
+      minTimeConfigTempHour = startTime.getHours();
+      minTimeConfigTempminutes = startTime.getMinutes();
     }else{
-      minTimeConfigTemp = parseTime(TimeStoreManage.open_at).hours;
+      minTimeConfigTempHour = parseTime(TimeStoreManage.open_at).hours;
     }
 
     const minTime = new Date();
-    minTime.setHours(minTimeConfigTemp,parseTime(TimeStoreManage.open_at).minutes, 0); 
+    minTime.setHours(minTimeConfigTempHour,minTimeConfigTempminutes, 0); 
 
     const maxTime = new Date();
     maxTime.setHours(parseTime(TimeStoreManage.close_at).hours, parseTime(TimeStoreManage.close_at).minutes, 0);
