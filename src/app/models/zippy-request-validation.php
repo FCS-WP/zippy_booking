@@ -89,8 +89,8 @@ class Zippy_Request_Validation
 
             // Boolean
             if ($rules["data_type"] == "boolean" && !empty($request[$field])) {
-                if (!in_array($request[$field], [0, 1])) {
-                    return "$field must be 0 or 1";
+                if (!in_array(strtolower($request[$field]), ["t", "f"])) {
+                    return "$field must be T or F";
                 }
             }
         }
