@@ -12,47 +12,52 @@ import Loading from "../../Components/Loading";
 import BookingMainChart from "../../Components/Charts/BookingMainChart";
 import Header from "../../Components/Layouts/Header";
 import CustomeDatePicker from "../../Components/DatePicker/CustomeDatePicker";
-const getDateRange = (baseDate, startOffset, endOffset) => {
-  const start = new Date(baseDate);
-  start.setDate(start.getDate() + startOffset);
-
-  const end = new Date(baseDate);
-  end.setDate(end.getDate() + endOffset);
-
-  return { start, end };
-};
+import { addDays, startOfDay, endOfDay, format } from "date-fns";
 
 const Dashboard = () => {
-  const [startDate, setStartDate] = useState(() => {
-    const initialDateRange = getDateRange(new Date(), -7, 0);
-    return initialDateRange.start;
+  const [dateParams, setDateParams] = useState({
+    startDate: startOfDay(addDays(new Date(), -7)),
+    endDate: endOfDay(new Date()),
   });
-  const [endDate, setEndDate] = useState(() => {
-    const initialDateRange = getDateRange(new Date(), -7, 0);
-    return initialDateRange.end;
-  });
-  const [bookings, setBookings] = useState([]);
-  const [filteredBookings, setFilteredBookings] = useState([]);
+
+  const [chartBookings, setChartBookings] = useState([]);
+  const [overview, setOverview] = useState([]);
+  const [statusBreakdown, setStatusBreakdown] = useState([]);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchBookings();
-  }, []);
+    if (dateParams && dateParams.startDate && dateParams.endDate) {
+      const params = {
+        "start-date": format(dateParams?.startDate, "yyyy-MM-dd"),
+        "end-date": format(dateParams?.endDate, "yyyy-MM-dd"),
+      };
+      fetchBookings(params);
+    }
+  }, [dateParams]);
 
-  const fetchBookings = async () => {
+  const fetchBookings = async (params) => {
     setLoading(true);
-    try {
-      const response = await Bookings.getBookings();
 
-      if (response.data && response.data.status === "success") {
-        const bookingsData = response.data.data.bookings;
-        setBookings(bookingsData);
-        filterBookings(bookingsData, { start: startDate, end: endDate });
+    try {
+      const response = await Bookings.bookingReport(params);
+
+      if (response?.data?.status === "success") {
+        const bookings = response.data.data;
+        setChartBookings({
+          dataset: bookings.dataset,
+          labels: bookings.labels,
+        });
+        setOverview(bookings.overview);
+        setStatusBreakdown(bookings.status_breakdown);
       } else {
-        console.error("Error fetching bookings:", response.error);
+        console.error(
+          "Error fetching bookings: ",
+          response?.message || "Unknown error occurred."
+        );
       }
     } catch (error) {
-      console.error("Error fetching bookings:", error);
+      console.error("Error fetching bookings:", error.message || error);
     } finally {
       setLoading(false);
     }
@@ -60,69 +65,50 @@ const Dashboard = () => {
 
   const handleDateChange = (dates) => {
     const [start, end] = dates;
-    setStartDate(start);
-    setEndDate(end);
-
-    if (start && end) {
-      setLoading(true);
-      setTimeout(() => {
-        filterBookings(bookings, { start, end });
-        setLoading(false);
-      }, 500);
-    } else {
-      filterBookings(bookings, { start, end });
-    }
-  };
-
-  const filterBookings = (bookings, dateRange) => {
-    const { start, end } = dateRange;
-    const filtered = bookings.filter((booking) => {
-      const bookingStartDate = new Date(booking.booking_start_date);
-      return bookingStartDate >= start && bookingStartDate <= end;
+    setDateParams({
+      startDate: start,
+      endDate: end,
     });
-    setFilteredBookings(filtered);
   };
 
-  const getTotalBookings = () => filteredBookings.length;
-
-  const getCompletedBookings = () =>
-    filteredBookings.filter((booking) => booking.booking_status === "completed")
-      .length;
-
-  const getPendingBookings = () =>
-    filteredBookings.filter((booking) => booking.booking_status === "pending")
-      .length;
   const title = "Booking Dashboad";
+
   return (
     <Stack>
       <Header title={title}></Header>
       <Stack>
         <Box>
+          <Box display="flex" justifyContent="flex-end" mb={4}>
+            <CustomeDatePicker
+              isClearable={false}
+              startDate={dateParams.startDate}
+              handleDateChange={handleDateChange}
+              endDate={dateParams.endDate}
+            />
+          </Box>
           {loading ? (
             <Loading />
           ) : (
             <>
-              <Box display="flex" justifyContent="flex-end" mb={4}>
-                <CustomeDatePicker
-                  startDate={startDate}
-                  handleDateChange={handleDateChange}
-                  endDate={endDate}
-                />
-              </Box>
               <Grid2 container size={4} spacing={2}>
                 <DashboardCard
                   title="Total Bookings"
-                  value={getTotalBookings()}
+                  value={overview?.total_bookings || 0}
                 />
                 <DashboardCard
                   title="Completed Bookings"
-                  value={getCompletedBookings()}
-                  highlight="success.main"
+                  value={statusBreakdown?.completed?.booking_total || 0}
+                  highlight="primary.complete"
+                />
+                <DashboardCard
+                  title="Approved Bookings"
+                  value={statusBreakdown?.pending?.booking_total || 0}
+                  highlight="primary.approve"
                 />
                 <DashboardCard
                   title="Pending Bookings"
-                  value={getPendingBookings()}
-                  highlight="warning.main"
+                  value={statusBreakdown?.onHold?.booking_total || 0}
+                  highlight="primary.pending"
                 />
               </Grid2>
             </>
@@ -131,7 +117,7 @@ const Dashboard = () => {
         <Stack mt={2}>
           <Grid2 container>
             <Grid2 size={6}>
-              <BookingMainChart />
+              <BookingMainChart data={chartBookings} />
             </Grid2>
           </Grid2>
         </Stack>

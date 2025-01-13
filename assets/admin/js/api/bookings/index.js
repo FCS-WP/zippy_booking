@@ -8,4 +8,7 @@ export const Bookings = {
   async updateBooking(params) {
     return await makeRequest("/update-booking", params, "PUT");
   },
+  async bookingReport(params) {
+    return await makeRequest("/booking-report", params, "GET");
+  },
 };
