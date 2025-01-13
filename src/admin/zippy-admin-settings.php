@@ -131,13 +131,14 @@ class Zippy_Admin_Settings
   function create_product_booking_table()
   {
     global $wpdb;
-    $table_name = $wpdb->prefix . 'product_booking_mapping';
+    $table_name = $wpdb->prefix . 'products_booking';
 
     if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
       $sql = "CREATE TABLE $table_name (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
             items_id BIGINT(20) NOT NULL,
             mapping_type VARCHAR(255) NOT NULL,
+            mapping_status VARCHAR(255) NOT NULL,
             PRIMARY KEY  (id)
         );";
 
@@ -192,7 +193,7 @@ class Zippy_Admin_Settings
   {
     global $wpdb;
 
-    $table_name = $wpdb->prefix . 'product_booking_mapping';
+    $table_name = $wpdb->prefix . 'products_booking';
 
     $wpdb->query("DROP TABLE IF EXISTS $table_name");
   }

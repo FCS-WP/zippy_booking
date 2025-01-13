@@ -71,7 +71,7 @@ if (!defined('ZIPPY_BOOKING_CONFIG_TABLE_NAME')) {
 
 /* Booking Product Mapping table name */
 if (!defined('ZIPPY_BOOKING_PRODUCT_MAPPING_TABLE_NAME')) {
-  define('ZIPPY_BOOKING_PRODUCT_MAPPING_TABLE_NAME', 'fcs_data_product_booking_mapping');
+  define('ZIPPY_BOOKING_PRODUCT_MAPPING_TABLE_NAME', 'fcs_data_products_booking');
 }
 
 /* Booking Product Mapping table name */
