@@ -328,6 +328,12 @@ class Zippy_Admin_Booking_Config_Controller
                 $response["store_working_time"][] = $value;
             }
 
+
+            //Get booking holidays
+            $holiday = get_option("zippy_booking_holiday_config");
+
+            $response["holiday"] = !empty($holiday) ? maybe_unserialize($holiday) : [];
+
             Zippy_Log_Action::log('get_booking_configs', json_encode($response), 'Success', 'Success');
             return Zippy_Response_Handler::success($response);
         } catch (\Throwable $th) {
