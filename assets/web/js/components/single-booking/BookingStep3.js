@@ -86,7 +86,12 @@ const BookingStep3 = ({ selectedProduct, bookingData, handleNextStep }) => {
               <li>
                 <div className="summary-item">
                   <span>Price:</span>
-                  <h4>$ {selectedProduct.item_price}</h4>
+                  <h4>
+                    ${" "}
+                    {bookingData.price_type == "extra"
+                      ? selectedProduct.item_extra_price
+                      : selectedProduct.item_price}
+                  </h4>
                 </div>
               </li>
             </ul>

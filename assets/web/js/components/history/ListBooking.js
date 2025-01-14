@@ -57,46 +57,46 @@ const ListBooking = () => {
   const BOOKINGS_PER_PAGE = 9;
   const pageFocusRef = useRef(null);
 
-  const getProductsCat = async () => {
-    setIsLoading(true);
+  // const getProductsCat = async () => {
+  //   setIsLoading(true);
 
-    const spCategories = await webApi.getSupportCategories();
-    if (!spCategories) {
-      toast.error("No data: Categories.");
-      return 0;
-    }
-    const response = spCategories.data;
+  //   const spCategories = await webApi.getSupportCategories();
+  //   if (!spCategories) {
+  //     toast.error("No data: Categories.");
+  //     return 0;
+  //   }
+  //   const response = spCategories.data;
 
-    if (response.data.categories.length == 0) {
-      toast.error("No data: Categories.");
-    }
+  //   if (response.data.categories.length == 0) {
+  //     toast.error("No data: Categories.");
+  //   }
 
-    const cats = [...response.data.categories];
-    if (cats.length == 0) {
-      toast.error("No data: Categories.");
-      setIsLoading(false);
-      return 0;
-    }
+  //   const cats = [...response.data.categories];
+  //   if (cats.length == 0) {
+  //     toast.error("No data: Categories.");
+  //     setIsLoading(false);
+  //     return 0;
+  //   }
 
-    let dataProducts = [];
+  //   let dataProducts = [];
 
-    cats.map((category) => {
-      if (category.subcategories.length > 0) {
-        category.subcategories.map((subCategory) => {
-          dataProducts = [...dataProducts, ...subCategory.subcategory_products];
-        });
-      } else {
-        dataProducts = [...dataProducts, ...category.products_in_category];
-      }
-    });
-    dataProducts.length > 0
-      ? setProducts(dataProducts)
-      : toast.error("No data: Products");
+  //   cats.map((category) => {
+  //     if (category.subcategories.length > 0) {
+  //       category.subcategories.map((subCategory) => {
+  //         dataProducts = [...dataProducts, ...subCategory.subcategory_products];
+  //       });
+  //     } else {
+  //       dataProducts = [...dataProducts, ...category.products_in_category];
+  //     }
+  //   });
+  //   dataProducts.length > 0
+  //     ? setProducts(dataProducts)
+  //     : toast.error("No data: Products");
 
-    setTimeout(() => {
-      setIsLoading(false);
-    }, [1000]);
-  };
+  //   setTimeout(() => {
+  //     setIsLoading(false);
+  //   }, [1000]);
+  // };
 
   const getBookingsData = async () => {
     if (!adminData.user_email) {
@@ -118,6 +118,7 @@ const ListBooking = () => {
     }
 
     setBookings(dataBookings.data.data.bookings);
+    console.log("Bookings", dataBookings.data.data.bookings)
     handleFilterBooking(dataBookings.data.data.bookings);
   };
 
@@ -131,11 +132,11 @@ const ListBooking = () => {
     setSelectedBooking(null);
   };
 
-  const getProductByBooking = (bookingData) => {
-    return products.find(
-      (item) => item.product_id == parseInt(bookingData.product_id)
-    );
-  };
+  // const getProductByBooking = (bookingData) => {
+  //   return products.find(
+  //     (item) => item.product_id == parseInt(bookingData.product_id)
+  //   );
+  // };
 
   const handlePayment = () => {
     console.log(selectedBooking);
@@ -225,7 +226,7 @@ const ListBooking = () => {
 
   useEffect(() => {
     getBookingsData();
-    getProductsCat();
+    // getProductsCat();
   }, []);
 
   useEffect(() => {
@@ -278,10 +279,10 @@ const ListBooking = () => {
                       }}
                     >
                       <Typography variant="h6">
-                        {getProductByBooking(booking)?.product_name}
+                        {booking?.product?.name}
                       </Typography>
                       <Typography variant="h6">
-                        $ {getProductByBooking(booking)?.product_price}
+                        $ {booking?.order?.order_total}
                       </Typography>
                     </Box>
                     <Typography color="textSecondary" gutterBottom>
@@ -341,7 +342,7 @@ const ListBooking = () => {
                   <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
                     <Box>
                       <Typography variant="h5">
-                        {getProductByBooking(selectedBooking)?.product_name}
+                        {selectedBooking?.product?.name}
                       </Typography>
                       <Chip
                         label={selectedBooking.booking_status}
@@ -354,7 +355,7 @@ const ListBooking = () => {
                     <Grid item xs={12} sm={6}>
                       <Typography>Price:</Typography>
                       <Typography variant="h6">
-                        $ {getProductByBooking(selectedBooking)?.product_price}
+                        $ {selectedBooking?.order?.order_total}
                       </Typography>
                     </Grid>
                     <Grid item xs={12} sm={6}>

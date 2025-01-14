@@ -21,7 +21,7 @@ const BookingStep2 = ({
   const [isloading, setIsloading] = useState(false);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const adminData = window.admin_data ? window.admin_data : null;
-  const hardConfig = hardDataConfigs.data;
+
   const getBookings = async (date = new Date()) => {
     const bookings = await getBookingsByDate(selectedProduct.items_id, date);
     setCreatedBookings(bookings);
@@ -68,7 +68,9 @@ const BookingStep2 = ({
       return false;
     }
     toast.success("Booking has been created");
-    handleNextStep(2, createBooking.data.data);
+    const bookingData = createBooking.data.data;
+    bookingData.price_type = selectedTimes.isExtra ? "extra" : "regular";
+    handleNextStep(2, bookingData);
     setIsSubmitLoading(false);
     return true;
   };
@@ -97,20 +99,20 @@ const BookingStep2 = ({
             <div className="booking-calendar">
               <div className="date-box">
                 <BookingDatePicker
-                  config={hardConfig}
+                  config={configs}
                   handleSelectDate={(date) => handleSelectDate(date)}
                 />
               </div>
             </div>
             {/* Time Slots */}
-            {hardConfig ? (
+            {configs ? (
               <div className="time-slots">
                 {isloading ? (
                   <CustomLoader />
                 ) : (
                   <BookingTimeSlot
                     selectedProduct={selectedProduct}
-                    config={hardConfig}
+                    config={configs}
                     bookingInfo={createdBookings}
                     selectedDate={selectedDate}
                     handleTimeSelected={handleTimeSelected}

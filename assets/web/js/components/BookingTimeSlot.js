@@ -2,13 +2,18 @@ import React, { useState, useEffect } from "react";
 import { getCustomDayOfWeek, getAvailableTimeSlots } from "../helper/datetime";
 import Message from "./single-booking/Message";
 const BookingTimeSlot = (props) => {
-  const {  config, bookingInfo, selectedDate, handleTimeSelected, selectedProduct} = props;
+  const {
+    config,
+    bookingInfo,
+    selectedDate,
+    handleTimeSelected,
+    selectedProduct,
+  } = props;
 
   const workingTimeByWeekday = config.store_working_time.reduce((acc, time) => {
     acc[time.weekday] = time;
     return acc;
   }, {});
-
 
   const [timeActive, setTimeActive] = useState(null);
   const [slots, setSlots] = useState([]);
@@ -19,12 +24,12 @@ const BookingTimeSlot = (props) => {
       const configTime = workingTimeByWeekday[date];
       const timeSlots = getAvailableTimeSlots(
         configTime,
-        bookingInfo
+        bookingInfo,
+        selectedDate
       );
-      
+
       setSlots(timeSlots);
     }
-
   }, [selectedDate, bookingInfo]);
 
   const handleTimeSelect = (slot, index) => {
@@ -34,7 +39,6 @@ const BookingTimeSlot = (props) => {
   };
 
   const SlotItem = ({ data, index, timeActive, product }) => {
-
     return (
       <div
         role="button"
@@ -51,11 +55,16 @@ const BookingTimeSlot = (props) => {
           {data.start} - {data.end}
         </p>
         <span className="slot-price">
-          $ {data.isExtra ? (product.item_extra_price ? product.item_extra_price : product.item_price) : product.item_price} 
+          ${" "}
+          {data.isExtra
+            ? product.item_extra_price
+              ? product.item_extra_price
+              : product.item_price
+            : product.item_price}
         </span>
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <div>
@@ -63,7 +72,13 @@ const BookingTimeSlot = (props) => {
       <div className="slots-container">
         {slots.length > 0 ? (
           slots.map((slot, index) => (
-            <SlotItem data={slot} index={index} key={index} timeActive={timeActive} product={selectedProduct}/>
+            <SlotItem
+              data={slot}
+              index={index}
+              key={index}
+              timeActive={timeActive}
+              product={selectedProduct}
+            />
           ))
         ) : (
           <Message
