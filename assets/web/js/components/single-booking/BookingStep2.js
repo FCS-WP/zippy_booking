@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { webApi } from "../../api";
 import { format } from "date-fns";
-import { getBookingsByDate } from "../../helper/booking";
+import { getBookingsByDate, hardDataConfigs } from "../../helper/booking";
 import { toast } from "react-toastify";
 import { alertInputEmail } from "../../helper/showAlert";
 import CustomLoader from "../CustomLoader";
@@ -21,7 +21,7 @@ const BookingStep2 = ({
   const [isloading, setIsloading] = useState(false);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const adminData = window.admin_data ? window.admin_data : null;
-
+  const hardConfig = hardDataConfigs.data;
   const getBookings = async (date = new Date()) => {
     const bookings = await getBookingsByDate(selectedProduct.items_id, date);
     setCreatedBookings(bookings);
@@ -92,27 +92,25 @@ const BookingStep2 = ({
               <h4>Field</h4>
               <span> {selectedProduct.item_name}</span>
             </div>
-            <div>
-              <h4>Price</h4>
-              <span> ${selectedProduct.item_price}</span>
-            </div>
           </div>
           <div className="booking-section">
             <div className="booking-calendar">
               <div className="date-box">
                 <BookingDatePicker
-                  config={configs}
+                  config={hardConfig}
                   handleSelectDate={(date) => handleSelectDate(date)}
                 />
               </div>
             </div>
-            {configs ? (
+            {/* Time Slots */}
+            {hardConfig ? (
               <div className="time-slots">
                 {isloading ? (
                   <CustomLoader />
                 ) : (
                   <BookingTimeSlot
-                    config={configs}
+                    selectedProduct={selectedProduct}
+                    config={hardConfig}
                     bookingInfo={createdBookings}
                     selectedDate={selectedDate}
                     handleTimeSelected={handleTimeSelected}
