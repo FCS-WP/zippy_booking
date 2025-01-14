@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getCustomDayOfWeek, getAvailableTimeSlots } from "../helper/datetime";
 import Message from "./single-booking/Message";
+import { duration } from "@mui/material";
 const BookingTimeSlot = (props) => {
   const {
     config,
@@ -10,11 +11,11 @@ const BookingTimeSlot = (props) => {
     selectedProduct,
   } = props;
 
+
   const workingTimeByWeekday = config.store_working_time.reduce((acc, time) => {
     acc[time.weekday] = time;
     return acc;
   }, {});
-
   const [timeActive, setTimeActive] = useState(null);
   const [slots, setSlots] = useState([]);
 
@@ -22,12 +23,13 @@ const BookingTimeSlot = (props) => {
     if (selectedDate && bookingInfo) {
       const date = getCustomDayOfWeek(selectedDate);
       const configTime = workingTimeByWeekday[date];
+      const duration = config.duration;
       const timeSlots = getAvailableTimeSlots(
         configTime,
         bookingInfo,
-        selectedDate
+        selectedDate,
+        duration,
       );
-
       setSlots(timeSlots);
     }
   }, [selectedDate, bookingInfo]);

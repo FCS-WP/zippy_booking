@@ -336,7 +336,7 @@ class Zippy_Booking_Support_Controller
                         'mapping_type' => 'product',
                         'item_name' => $product_name,
                         'item_price' => $product_price,
-                        'extra_price' => $extra_price,
+                        'item_extra_price' => $extra_price,
                     );
                 }
                 wp_reset_postdata();

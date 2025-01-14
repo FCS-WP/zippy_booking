@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { webApi } from "../../api";
 import { format } from "date-fns";
-import { getBookingsByDate, hardDataConfigs } from "../../helper/booking";
+import { getBookingsByDate } from "../../helper/booking";
 import { toast } from "react-toastify";
 import { alertInputEmail } from "../../helper/showAlert";
 import CustomLoader from "../CustomLoader";
@@ -21,7 +21,6 @@ const BookingStep2 = ({
   const [isloading, setIsloading] = useState(false);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const adminData = window.admin_data ? window.admin_data : null;
-
   const getBookings = async (date = new Date()) => {
     const bookings = await getBookingsByDate(selectedProduct.items_id, date);
     setCreatedBookings(bookings);

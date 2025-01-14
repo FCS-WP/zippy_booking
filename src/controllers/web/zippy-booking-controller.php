@@ -42,15 +42,15 @@ class Zippy_Booking_Controller
 
 
         // Check if product is ready for booking
-        $table_mapping = ZIPPY_BOOKING_PRODUCT_MAPPING_TABLE_NAME;
+        // $table_mapping = ZIPPY_BOOKING_PRODUCT_MAPPING_TABLE_NAME;
 
-        $product_mapping_query = "SELECT id FROM $table_mapping WHERE items_id = $product_id AND mapping_type = 'product'";
+        // $product_mapping_query = "SELECT id FROM $table_mapping WHERE items_id = $product_id AND mapping_type = 'product'";
 
-        $product_mapping = count($wpdb->get_results($product_mapping_query));
+        // $product_mapping = count($wpdb->get_results($product_mapping_query));
 
-        if ($product_mapping < 1) {
-            return Zippy_Response_Handler::error('This product is not set for booking yet');
-        }
+        // if ($product_mapping < 1) {
+        //     return Zippy_Response_Handler::error('This product is not set for booking yet');
+        // }
 
 
 
