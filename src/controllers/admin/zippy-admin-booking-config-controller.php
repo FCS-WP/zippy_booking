@@ -38,6 +38,7 @@ class Zippy_Admin_Booking_Config_Controller
             "allow_overlap" => ["required" => true, "data_type" => "boolean"],
             "booking_type" => ["required" => true, "data_type" => "range", "allowed_values" => [ZIPPY_BOOKING_BOOKING_TYPE_SINGLE, ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE]],
             "store_working_time" => ["required" => true, "data_type" => "array"],
+            "duration" => ["required" => true, "data_type" => "number"],
         ];
 
         // Validate Fields
@@ -58,7 +59,6 @@ class Zippy_Admin_Booking_Config_Controller
 
         $working_time_required_fields = [
             "is_open" => ["required" => true, "data_type" => "boolean"],
-            "duration" => ["required" => true, "data_type" => "number"],
             "open_at" => ["data_type" => "time"],
             "close_at" => ["data_type" => "time"],
             "extra_time" => ["data_type" => "array"],
@@ -111,7 +111,6 @@ class Zippy_Admin_Booking_Config_Controller
                 $data = [
                     'weekday' => $key,
                     'is_open' => sanitize_text_field($value['is_open']),
-                    'duration' => sanitize_text_field($value['duration']),
                     'open_at' => sanitize_text_field($value['open_at']),
                     'close_at' => sanitize_text_field($value['close_at']),
                     'extra_time' => !empty($value['extra_time']) ? json_encode($value['extra_time']) : "",
@@ -134,6 +133,7 @@ class Zippy_Admin_Booking_Config_Controller
                 "default_booking_status",
                 "booking_type",
                 "allow_overlap",
+                "duration",
             ];
 
             foreach ($options as $opt) {
@@ -170,6 +170,7 @@ class Zippy_Admin_Booking_Config_Controller
             "allow_overlap" => ["required" => true, "data_type" => "boolean"],
             "booking_type" => ["required" => true, "data_type" => "range", "allowed_values" => [ZIPPY_BOOKING_BOOKING_TYPE_SINGLE, ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE]],
             "store_working_time" => ["required" => true, "data_type" => "array"],
+            "duration" => ["required" => true, "data_type" => "number"],
         ];
 
         // Validate Fields
@@ -190,7 +191,6 @@ class Zippy_Admin_Booking_Config_Controller
 
         $working_time_required_fields = [
             "is_open" => ["required" => true, "data_type" => "boolean"],
-            "duration" => ["required" => true, "data_type" => "number"],
             "open_at" => ["data_type" => "time"],
             "close_at" => ["data_type" => "time"],
             "extra_time" => ["data_type" => "array"],
@@ -242,7 +242,6 @@ class Zippy_Admin_Booking_Config_Controller
                     'is_open' => sanitize_text_field($value['is_open']),
                     'open_at' => sanitize_text_field($value['open_at']),
                     'close_at' => sanitize_text_field($value['close_at']),
-                    'duration' => sanitize_text_field($value['duration']),
                     'extra_time' => !empty($value['extra_time']) ? json_encode($value['extra_time']) : "",
                     'updated_at' => current_time("mysql"),
                 ];
@@ -263,6 +262,7 @@ class Zippy_Admin_Booking_Config_Controller
                 "default_booking_status",
                 "allow_overlap",
                 "booking_type",
+                "duration"
             ];
 
             foreach ($options as $opt) {
@@ -311,6 +311,7 @@ class Zippy_Admin_Booking_Config_Controller
                 "default_booking_status",
                 "booking_type",
                 "allow_overlap",
+                "duration",
             ];
 
             foreach ($options as $opt) {

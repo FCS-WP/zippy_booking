@@ -157,7 +157,6 @@ class Zippy_Admin_Settings
             is_open VARCHAR(255) NOT NULL,
             open_at TIME NULL,
             close_at TIME NULL,
-            duration INT NOT NULL,
             extra_time LONGTEXT NULL,
             created_at DATETIME NULL,
             updated_at DATETIME NULL,

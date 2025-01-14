@@ -76,7 +76,7 @@ class Zippy_Booking_Support_Controller
             'product_price' => $product_price
         );
 
-        $update_meta = update_post_meta($items_id, $meta_key, $meta_value);
+        $update_meta = update_post_meta($items_id, $meta_key, maybe_serialize($meta_value));
 
         if (!$update_meta) {
             return Zippy_Response_Handler::error('Failed to add meta to the product.');
