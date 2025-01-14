@@ -37,9 +37,8 @@ export const getTimeFromBooking = (booking) => {
 export const parseTime = (timeStr) => parse(timeStr, "HH:mm:ss", new Date());
 export const formatTime = (time) => format(time, "HH:mm:ss");
 
-export const getAvailableTimeSlots = (configTime, bookings = [], selectedDate = new Date()) => {
+export const getAvailableTimeSlots = (configTime, bookings = [], selectedDate = new Date(), duration) => {
   const { open_at, close_at } = configTime;
-  const duration = configTime.duration;
 
   // Generate time slots
   let timeSlots = handleTimeSlots(bookings, open_at, close_at, duration);
