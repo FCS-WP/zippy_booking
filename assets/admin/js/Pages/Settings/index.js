@@ -52,13 +52,13 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [configId, setConfigId] = useState(null);
   const [isConfigExisting, setIsConfigExisting] = useState(false);
-  const [extraTimeEnabled, setExtraTimeEnabled] = useState(false);
+  const [extraTimeEnabled, setExtraTimeEnabled] = useState({});
 
   const parseTime = (timeString) => {
     if (!timeString) return null;
-    const [hours, minutes, seconds] = timeString.split(":").map(Number);
+    const [hours, minutes] = timeString.split(":").map(Number);
     const now = new Date();
-    now.setHours(hours, minutes, seconds || 0);
+    now.setHours(hours, minutes, 0);
     return now;
   };
 
@@ -66,10 +66,10 @@ const Settings = () => {
     if (!date) return "";
     const hours = date.getHours().toString().padStart(2, "0");
     const minutes = date.getMinutes().toString().padStart(2, "0");
-    const seconds = date.getSeconds().toString().padStart(2, "0");
-    return `${hours}:${minutes}:${seconds}`;
+    return `${hours}:${minutes}`;
   };
 
+  // Update the fetchSettings function
   useEffect(() => {
     const fetchSettings = async () => {
       setLoading(true);
@@ -89,7 +89,8 @@ const Settings = () => {
               (time) => parseInt(time.weekday) === index
             );
 
-            if (daySchedule && daySchedule.is_open === "1") {
+            const extraTimeEnabled = daySchedule?.extra_time?.is_active === "T";
+            if (daySchedule && daySchedule.is_open === "T") {
               return {
                 day,
                 slots: [
@@ -98,16 +99,41 @@ const Settings = () => {
                     to: daySchedule.close_at || "00:00",
                   },
                 ],
+                duration: parseInt(daySchedule.duration) || 5,
+                extraTime: daySchedule.extra_time || {
+                  is_active: "F",
+                  data: [],
+                },
               };
             } else {
-              return { day, slots: [] };
+              return {
+                day,
+                slots: [],
+                duration: 5,
+                extraTime: { is_active: "F", data: [] },
+              };
             }
           });
 
           setSchedule(fetchedSchedule);
-          setDuration(Number.parseInt(data.duration) || 5);
+          setExtraTimeEnabled(
+            fetchedSchedule.reduce(
+              (acc, item) => ({
+                ...acc,
+                [item.day]: item.extraTime.is_active === "T",
+              }),
+              {}
+            )
+          );
+          setExtraTimeSlots(
+            fetchedSchedule.map((item) => ({
+              day: item.day,
+              slots: item.extraTime.data || [],
+            }))
+          );
+          setDuration(Number.parseInt(data.store_working_time.duration) || 5);
           setStoreEmail(data.store_email || "");
-          setAllowOverlap(data.allow_overlap === "1");
+          setAllowOverlap(data.allow_overlap === "T");
           setBookingType(data.booking_type || "single");
         } else {
           setIsConfigExisting(false);
@@ -123,29 +149,28 @@ const Settings = () => {
 
     fetchSettings();
   }, []);
+
+  // Update handleExtraTimeToggle function
   const handleExtraTimeToggle = (day, enabled) => {
     setExtraTimeEnabled((prev) => ({
       ...prev,
       [day]: enabled,
     }));
 
-    if (enabled) {
-      setExtraTimeSlots((prev) =>
-        prev.map((item) =>
-          item.day === day
-            ? {
-                ...item,
-                slots:
-                  item.slots.length === 0 ? [{ from: "", to: "" }] : item.slots,
-              }
-            : item
-        )
-      );
-    } else {
-      setExtraTimeSlots((prev) =>
-        prev.map((item) => (item.day === day ? { ...item, slots: [] } : item))
-      );
-    }
+    setExtraTimeSlots((prev) =>
+      prev.map((item) =>
+        item.day === day
+          ? {
+              ...item,
+              slots: enabled
+                ? item.slots.length === 0
+                  ? [{ from: "", to: "" }]
+                  : item.slots
+                : [],
+            }
+          : item
+      )
+    );
   };
 
   const handleAddTimeSlot = (day) => {
@@ -188,16 +213,27 @@ const Settings = () => {
   };
 
   const handleRemoveExtraTimeSlot = (day, slotIndex) => {
-    setExtraTimeSlots((prev) =>
-      prev.map((item) =>
-        item.day === day
-          ? {
-              ...item,
-              slots: item.slots.filter((_, index) => index !== slotIndex),
-            }
-          : item
-      )
-    );
+    setExtraTimeSlots((prev) => {
+      const updatedExtraTimeSlots = prev.map((item) => {
+        if (item.day === day) {
+          const updatedSlots = item.slots.filter(
+            (_, index) => index !== slotIndex
+          );
+          if (updatedSlots.length === 0) {
+            setExtraTimeEnabled((prevEnabled) => ({
+              ...prevEnabled,
+              [day]: false,
+            }));
+          }
+          return {
+            ...item,
+            slots: updatedSlots,
+          };
+        }
+        return item;
+      });
+      return updatedExtraTimeSlots;
+    });
   };
 
   const calculateCloseAt = (openAt, duration) => {
@@ -261,6 +297,24 @@ const Settings = () => {
       )
     );
   };
+  const handleBookingTypeChange = (type) => {
+    setBookingType(type);
+    if (type === "multiple") {
+      setExtraTimeEnabled((prev) =>
+        Object.keys(prev).reduce((acc, day) => {
+          acc[day] = false;
+          return acc;
+        }, {})
+      );
+      setExtraTimeSlots((prev) =>
+        prev.map((item) => ({
+          ...item,
+          slots: [],
+        }))
+      );
+    }
+  };
+
   const handleSaveChanges = async () => {
     setLoading(true);
 
@@ -270,7 +324,7 @@ const Settings = () => {
       const weekdayIndex = daysOfWeek.indexOf(item.day);
 
       return {
-        is_open: isOpen ? 1 : 0,
+        is_open: isOpen ? "T" : "F",
         weekday: weekdayIndex,
         open_at: isOpen ? String(openSlot.from) || "" : "",
         close_at: isOpen ? String(openSlot.to) || "" : "",
@@ -283,7 +337,7 @@ const Settings = () => {
       booking_type: bookingType,
       duration: duration,
       store_email: storeEmail,
-      allow_overlap: allowOverlap ? 1 : 0,
+      allow_overlap: allowOverlap ? "T" : "F",
       store_working_time: storeWorkingTime,
     };
 
@@ -309,7 +363,6 @@ const Settings = () => {
     }
   };
 
-  const title = "Settings";
   return (
     <Box p={4}>
       {loading ? (
@@ -334,7 +387,7 @@ const Settings = () => {
                 <RadioGroup
                   row
                   value={bookingType}
-                  onChange={(e) => setBookingType(e.target.value)}
+                  onChange={(e) => handleBookingTypeChange(e.target.value)}
                 >
                   <FormControlLabel
                     value="single"
@@ -366,6 +419,23 @@ const Settings = () => {
                 >
                   Enable this if you want multiple bookings to overlap.
                 </Typography>
+              </Box>
+              <Box mb={1}>
+                <Typography variant="body1">Default status</Typography>
+                <Select
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                  fullWidth
+                  size="small"
+                >
+                  {Array.from({ length: 36 }, (_, i) => (i + 1) * 5).map(
+                    (option) => (
+                      <MenuItem key={option} value={option}>
+                        {option} minutes
+                      </MenuItem>
+                    )
+                  )}
+                </Select>
               </Box>
 
               <Box mb={1}>
@@ -469,7 +539,13 @@ const Settings = () => {
                             <TableRow key={slotIndex}>
                               <TableCell>{item.day}</TableCell>
                               <TableCell width={"30%"}>
-                                <Box sx={{ width: "200px" }}>
+                                <Box
+                                  sx={{
+                                    width: "200px",
+                                    border: "1px solid #ccc",
+                                    borderRadius: "5px",
+                                  }}
+                                >
                                   <TimePicker
                                     selectedTime={parseTime(slot.from)}
                                     onChange={(time) =>
@@ -485,7 +561,13 @@ const Settings = () => {
                                 </Box>
                               </TableCell>
                               <TableCell width={"30%"}>
-                                <Box sx={{ width: "200px" }}>
+                                <Box
+                                  sx={{
+                                    width: "200px",
+                                    border: "1px solid #ccc",
+                                    borderRadius: "5px",
+                                  }}
+                                >
                                   <TimePicker
                                     selectedTime={parseTime(slot.to)}
                                     onChange={(time) =>
@@ -514,11 +596,14 @@ const Settings = () => {
                                             e.target.checked
                                           )
                                         }
+                                        disabled={bookingType === "multiple"}
                                       />
                                     }
+                                    label="Extra Time"
                                   />
                                 </TableCell>
                               )}
+
                               <TableCell>
                                 <IconButton
                                   onClick={() =>
@@ -531,16 +616,24 @@ const Settings = () => {
                             </TableRow>
                           ))}
                           {/* Render extra time slots if enabled */}
+
                           {extraTimeEnabled[item.day] &&
                             extraTimeSlots
                               .find((extra) => extra.day === item.day)
                               ?.slots.map((slot, slotIndex) => (
                                 <TableRow
                                   key={`extra-${dayIndex}-${slotIndex}`}
+                                  style={{ backgroundColor: "#f9f9f9" }}
                                 >
-                                  <TableCell>{item.day} (Extra Time)</TableCell>
+                                  <TableCell></TableCell>
                                   <TableCell width={"30%"}>
-                                    <Box sx={{ width: "200px" }}>
+                                    <Box
+                                      sx={{
+                                        width: "200px",
+                                        border: "1px solid #ccc",
+                                        borderRadius: "5px",
+                                      }}
+                                    >
                                       <TimePicker
                                         selectedTime={parseTime(slot.from)}
                                         onChange={(time) =>
@@ -555,7 +648,13 @@ const Settings = () => {
                                     </Box>
                                   </TableCell>
                                   <TableCell width={"30%"}>
-                                    <Box sx={{ width: "200px" }}>
+                                    <Box
+                                      sx={{
+                                        width: "200px",
+                                        border: "1px solid #ccc",
+                                        borderRadius: "5px",
+                                      }}
+                                    >
                                       <TimePicker
                                         selectedTime={parseTime(slot.to)}
                                         onChange={(time) =>
@@ -569,18 +668,15 @@ const Settings = () => {
                                       />
                                     </Box>
                                   </TableCell>
-                                  {extraTimeEnabled[item.day] && (
-                                    <TableCell>
-                                      <IconButton
-                                        color="primary"
-                                        onClick={() =>
-                                          handleAddExtraTimeSlot(item.day)
-                                        }
-                                      >
-                                        <AddCircleOutlineIcon color="primary" />
-                                      </IconButton>
-                                    </TableCell>
-                                  )}
+                                  <TableCell>
+                                    <IconButton
+                                      onClick={() =>
+                                        handleAddExtraTimeSlot(item.day)
+                                      }
+                                    >
+                                      <AddCircleOutlineIcon color="primary" />
+                                    </IconButton>
+                                  </TableCell>
                                   <TableCell>
                                     <IconButton
                                       onClick={() =>
