@@ -5,10 +5,14 @@ const theme = createTheme({
     primary: {
       main: "#40a944",
       contrastText: "#ffffff",
+      pending: "#feb600",
+      approve: "#009588",
+      complete: "#007c00",
     },
     secondary: {
       main: "#216ba5",
     },
+
     background: {
       default: "#f5f5f5",
       paper: "#ffffff",
@@ -61,6 +65,26 @@ const theme = createTheme({
           // Styles for the input field
           padding: "10px",
           color: "#333",
+        },
+      },
+    },
+    MuiTypography: {
+      styleOverrides: {
+        h1: {
+          fontWeight: "bold",
+          fontSize: "1.5rem",
+        },
+        h2: {
+          fontWeight: "bold",
+          fontSize: "1.2rem",
+        },
+      },
+      defaultProps: {
+        variantMapping: {
+          subtitle1: "h2",
+          subtitle2: "h2",
+          body1: "span",
+          body2: "span",
         },
       },
     },

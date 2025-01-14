@@ -89,7 +89,7 @@ if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_COMPLETED')) {
 }
 
 if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD')) {
-  define('ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD', 'onhold');
+  define('ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD', 'on-hold');
 }
 
 if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_CANCELLED')) {
@@ -98,6 +98,10 @@ if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_CANCELLED')) {
 
 if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_PROCESSING')) {
   define('ZIPPY_BOOKING_BOOKING_STATUS_PROCESSING', 'processing');
+}
+
+if (!defined('ZIPPY_BOOKING_BOOKING_STATUS_APPROVE')) {
+  define('ZIPPY_BOOKING_BOOKING_STATUS_APPROVE', 'approved');
 }
 
 
@@ -129,6 +133,12 @@ if (!defined('ZIPPY_BOOKING_API_TOKEN_NAME')) {
 if (!defined('ZIPPY_BOOKING_API_TOKEN')) {
   define('ZIPPY_BOOKING_API_TOKEN', 'FEhI30q7ySHtMfzvSDo6RkxZUDVaQ1BBU3lBcGhYS3BrQStIUT09');
 }
+
+/* Default Timezone */
+
+date_default_timezone_set("Asia/Singapore");
+
+
 
 // ini_set('display_errors', 1);
 // ini_set('display_startup_errors', 1);
