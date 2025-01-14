@@ -5,7 +5,7 @@ const Message = ({ message, className = "" }) => {
   return (
     <Stack
       direction={"row"}
-      sx={{ justifyContent: "center", alignItems: "center", py: 4 }}
+      sx={{ justifyContent: "center", alignItems: "center", py: 4, gridColumn: "span 12" }}
     >
       <div className={className}>
         <h4>{message}</h4>

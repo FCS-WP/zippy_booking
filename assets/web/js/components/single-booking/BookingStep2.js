@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { webApi } from "../../api";
 import { format } from "date-fns";
-import { getBookingsByDate } from "../../helper/booking";
+import { getBookingsByDate, hardDataConfigs } from "../../helper/booking";
 import { toast } from "react-toastify";
 import { alertInputEmail } from "../../helper/showAlert";
 import CustomLoader from "../CustomLoader";
@@ -68,7 +68,9 @@ const BookingStep2 = ({
       return false;
     }
     toast.success("Booking has been created");
-    handleNextStep(2, createBooking.data.data);
+    const bookingData = createBooking.data.data;
+    bookingData.price_type = selectedTimes.isExtra ? "extra" : "regular";
+    handleNextStep(2, bookingData);
     setIsSubmitLoading(false);
     return true;
   };
@@ -92,10 +94,6 @@ const BookingStep2 = ({
               <h4>Field</h4>
               <span> {selectedProduct.item_name}</span>
             </div>
-            <div>
-              <h4>Price</h4>
-              <span> ${selectedProduct.item_price}</span>
-            </div>
           </div>
           <div className="booking-section">
             <div className="booking-calendar">
@@ -106,12 +104,14 @@ const BookingStep2 = ({
                 />
               </div>
             </div>
+            {/* Time Slots */}
             {configs ? (
               <div className="time-slots">
                 {isloading ? (
                   <CustomLoader />
                 ) : (
                   <BookingTimeSlot
+                    selectedProduct={selectedProduct}
                     config={configs}
                     bookingInfo={createdBookings}
                     selectedDate={selectedDate}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 const BookingDatePicker = ({ handleSelectDate , config }) => {
 
@@ -7,16 +7,13 @@ const BookingDatePicker = ({ handleSelectDate , config }) => {
   // Parse working time configuration
   const workingTime = config.store_working_time;
 
-  // Adjust the weekday mapping: 0 (Monday) to 6 (Sunday)
-  const remapWeekday = (day) => (day === 6 ? 0 : day + 1);
-
   // Get valid days of the week
   const allowedDays = workingTime
-    .filter((day) => day.is_open === 1)
-    .map((day) => remapWeekday(day.weekday));
-  // Disable unavailable days
+    .filter((day) => day.is_open == 'T')
+    .map((day) => parseInt(day.weekday));
+    
   const isDayDisabled = (date) => {
-    const dayOfWeek = remapWeekday(date.getDay());
+    const dayOfWeek = date.getDay();
     return !allowedDays.includes(dayOfWeek);
   };
 
@@ -24,6 +21,7 @@ const BookingDatePicker = ({ handleSelectDate , config }) => {
     setSelectedDate(date);
     handleSelectDate(date);
   };
+
   return (
     <div>
       <h4>Choose Booking Date and Time</h4>
