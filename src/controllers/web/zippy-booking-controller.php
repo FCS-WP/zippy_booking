@@ -105,7 +105,7 @@ class Zippy_Booking_Controller
                 }
             }
         }
-        
+                $default_status_query = get_option("default_booking_status");   
 
         $booking_type = get_option("booking_type");
 
