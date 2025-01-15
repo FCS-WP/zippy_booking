@@ -152,8 +152,11 @@ class Zippy_Booking_Controller
             }
         }
 
+
+
         $default_status_query = get_option("default_booking_status");   
 
+        
         // Create order
         $order = wc_create_order();
         $order->add_product($product, $quantity, [
