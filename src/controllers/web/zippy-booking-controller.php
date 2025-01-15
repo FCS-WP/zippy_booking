@@ -82,14 +82,14 @@ class Zippy_Booking_Controller
 
         $overlap_check = get_option("allow_overlap");
 
-        if(empty($overlap_check)){
+        if (empty($overlap_check)) {
             return Zippy_Response_Handler::error('Failed to get booking config.');
         }
 
         $start_datetime = strtotime($booking_start_date . ' ' . $booking_start_time);
         $end_datetime = strtotime($booking_end_date . ' ' . $booking_end_time);
 
-        if($overlap_check == "F"){
+        if ($overlap_check == "F") {
             $query = "SELECT booking_start_date, booking_start_time, booking_end_date, booking_end_time FROM $table_name WHERE product_id = $product_id";
             $results = $wpdb->get_results($query);
             if (!empty($results)) {
@@ -97,53 +97,56 @@ class Zippy_Booking_Controller
                     $result_start_timestamp = strtotime($result->booking_start_date . ' ' . $result->booking_start_time);
                     $result_end_timestamp = strtotime($result->booking_end_date . ' ' . $result->booking_end_time);
 
-                    if (($start_datetime >= $result_start_timestamp && $start_datetime <= $result_end_timestamp) || 
-                        ($end_datetime >= $result_start_timestamp && $end_datetime <= $result_end_timestamp) || 
-                        ($start_datetime <= $result_start_timestamp && $end_datetime >= $result_end_timestamp)) {
+                    if (($start_datetime >= $result_start_timestamp && $start_datetime <= $result_end_timestamp) ||
+                        ($end_datetime >= $result_start_timestamp && $end_datetime <= $result_end_timestamp) ||
+                        ($start_datetime <= $result_start_timestamp && $end_datetime >= $result_end_timestamp)
+                    ) {
                         return Zippy_Response_Handler::error('This range of time is already booked for this product.');
                     }
                 }
             }
         }
-                $default_status_query = get_option("default_booking_status");   
+        $default_status_query = get_option("default_booking_status");
 
         $booking_type = get_option("booking_type");
 
-        if($booking_type == ZIPPY_BOOKING_BOOKING_TYPE_SINGLE){
+        if ($booking_type == ZIPPY_BOOKING_BOOKING_TYPE_SINGLE) {
             $date_string = $booking_end_date;
             $timestamp = strtotime(str_replace('/', '-', $date_string));
             $weekday = date('N', $timestamp);
-            
-            if(!$weekday){
+
+            if (!$weekday) {
                 return Zippy_Response_Handler::error('Invalid date');
             }
 
-
             /* check if time is extra or not. If is extra, use extra_price */
-
-            // Get extra time confid for $weekday
             $table_config = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
-
             $query = "SELECT extra_time FROM $table_config WHERE weekday = $weekday";
             $config_results = $wpdb->get_results($query);
-            
-            if(empty($config_results)){
+
+            if (empty($config_results)) {
                 return Zippy_Response_Handler::error("Missing config for $booking_end_date");
             }
-            
+
             $config_extra_time = json_decode($config_results[0]->extra_time, true);
-
-
             // check if $booking_start_time and $booking_end_time is extra_time or not
-            if(!empty($config_extra_time)){
+            if (!empty($config_extra_time)) {
+                $convert_start_time = new DateTime($booking_start_time);
+                $convert_end_time = new DateTime($booking_end_time);
                 $extra_time_data = $config_extra_time["data"];
-                if(!empty($extra_time_data)){
-                    foreach ($extra_time_data as $ext_time) {
-                        if($booking_start_time >= $ext_time["from"] && $booking_end_time <= $ext_time["to"]){
 
-                            // get extra price
-                            $product_price = get_post_meta($product_id, '_extra_price', true);
-                            if(empty($product_price)){
+                if (!empty($extra_time_data)) {
+                    foreach ($extra_time_data as $ext_time) {
+                        $ext_from = new DateTime($ext_time['from']);
+                        $ext_to = new DateTime($ext_time['to']);
+                        if ($ext_to < $ext_from) {
+                            $ext_to->modify('+1 day');
+                        }
+
+                        if ($convert_start_time >= $ext_from && $convert_end_time <= $ext_to) {
+                            // Set new product price
+                            $product_price = get_post_meta($product_id, '_extra_price', true) ?? $product_price;
+                            if (empty($product_price)) {
                                 return Zippy_Response_Handler::error("This product does not have Extra Price yet");
                             }
                         }
@@ -153,10 +156,9 @@ class Zippy_Booking_Controller
         }
 
 
+        $default_status_query = get_option("default_booking_status");
 
-        $default_status_query = get_option("default_booking_status");   
 
-        
         // Create order
         $order = wc_create_order();
         $order->add_product($product, $quantity, [
@@ -195,16 +197,16 @@ class Zippy_Booking_Controller
         $order->update_meta_data('booking_end_time', $booking_end_time);
         $order->save();
 
-        if (  $default_status_query === 'pending') {
+        if ($default_status_query === 'pending') {
             $order->update_status(ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD);
-        } elseif (  $default_status_query === 'approved') {
+        } elseif ($default_status_query === 'approved') {
             $order->update_status(ZIPPY_BOOKING_BOOKING_STATUS_PENDING);
         }
         $order_payment_url = null;
-    if ($order->get_status() === 'pending') {
-        $order_payment_url = $order->get_checkout_payment_url();
-    }
-        
+        if ($order->get_status() === 'pending') {
+            $order_payment_url = $order->get_checkout_payment_url();
+        }
+
         return Zippy_Response_Handler::success(
             array(
                 'booking_id' => $booking_id,
@@ -335,11 +337,11 @@ class Zippy_Booking_Controller
 
         $overlap_check = get_option("allow_overlap");
 
-        if(empty($overlap_check)){
+        if (empty($overlap_check)) {
             return Zippy_Response_Handler::error('Failed to get booking config.');
         }
 
-        if($overlap_check == "F"){
+        if ($overlap_check == "F") {
             $query = "SELECT booking_start_date, booking_start_time, booking_end_date, booking_end_time FROM $table_name WHERE product_id = $product_id AND ID != $booking_id";
             $results = $wpdb->get_results($query);
             if (!empty($results)) {
@@ -350,9 +352,10 @@ class Zippy_Booking_Controller
                     $start_datetime = strtotime($booking_start_date . ' ' . $booking_start_time);
                     $end_datetime = strtotime($booking_end_date . ' ' . $booking_end_time);
 
-                    if (($start_datetime >= $result_start_timestamp && $start_datetime <= $result_end_timestamp) || 
-                        ($end_datetime >= $result_start_timestamp && $end_datetime <= $result_end_timestamp) || 
-                        ($start_datetime <= $result_start_timestamp && $end_datetime >= $result_end_timestamp)) {
+                    if (($start_datetime >= $result_start_timestamp && $start_datetime <= $result_end_timestamp) ||
+                        ($end_datetime >= $result_start_timestamp && $end_datetime <= $result_end_timestamp) ||
+                        ($start_datetime <= $result_start_timestamp && $end_datetime >= $result_end_timestamp)
+                    ) {
                         return Zippy_Response_Handler::error('This range of time is already booked for this product.');
                     }
                 }
