@@ -152,6 +152,7 @@ class Zippy_Booking_Controller
             }
         }
 
+        $default_status_query = get_option("default_booking_status");   
 
         // Create order
         $order = wc_create_order();
@@ -171,7 +172,7 @@ class Zippy_Booking_Controller
             'booking_end_date' => $booking_end_date,
             'booking_start_time' => $booking_start_time,
             'booking_end_time' => $booking_end_time,
-            'booking_status' => ZIPPY_BOOKING_BOOKING_STATUS_PENDING,
+            'booking_status' => $default_status_query,
             'order_id' => $order_id,
         ));
 
@@ -191,7 +192,15 @@ class Zippy_Booking_Controller
         $order->update_meta_data('booking_end_time', $booking_end_time);
         $order->save();
 
-        $order->update_status(ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD);
+        if (  $default_status_query === 'pending') {
+            $order->update_status(ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD);
+        } elseif (  $default_status_query === 'approved') {
+            $order->update_status(ZIPPY_BOOKING_BOOKING_STATUS_PENDING);
+        }
+        $order_payment_url = null;
+    if ($order->get_status() === 'pending') {
+        $order_payment_url = $order->get_checkout_payment_url();
+    }
         
         return Zippy_Response_Handler::success(
             array(
@@ -203,9 +212,10 @@ class Zippy_Booking_Controller
                 'booking_end_date' => $booking_end_date,
                 'booking_start_time' => $booking_start_time,
                 'booking_end_time' => $booking_end_time,
-                'booking_status' => ZIPPY_BOOKING_BOOKING_STATUS_PENDING,
+                'booking_status' => $default_status_query,
                 'order_id' => $order_id,
                 'order_name' => $custom_order_name,
+                'order_payment_url' => $order_payment_url
             ),
             'Booking and order created successfully.'
         );
