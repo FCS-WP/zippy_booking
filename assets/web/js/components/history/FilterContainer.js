@@ -43,7 +43,7 @@ const FilterContainer = ({ handleFilterDate, handleFilterStatus }) => {
         flexWrap={"wrap"}
         gap={2}
       >
-        <Box className="status-filter" sx={{ minWidth: 250, width: { xs: "100%", sm: "48%" } }}>
+        <Box className="status-filter" sx={{ minWidth: 330, width: { xs: "100%", sm: "48%" } }}>
           <Select
             color="success"
             value={status}
@@ -63,7 +63,7 @@ const FilterContainer = ({ handleFilterDate, handleFilterStatus }) => {
             ))}
           </Select>
         </Box>
-        <Box className="date-filter" sx={{ minWidth: 250, width: { xs: "100%", sm: "48%" } }}>
+        <Box className="date-filter" sx={{ minWidth: 330, width: { xs: "100%", sm: "48%" } }}>
           <DatePicker
             width={"100%"}
             selected={startDate}

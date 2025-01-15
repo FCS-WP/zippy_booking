@@ -15,3 +15,9 @@
     width: 50px;
   }
 }
+.loader-wrapper {
+  grid-column: span 12;
+  position: relative;
+  padding: 50px;
+}
+

@@ -35,10 +35,26 @@ class Zippy_Booking_Controller
         }
 
         $product = wc_get_product($product_id);
+
         if (!$product) {
             return Zippy_Response_Handler::error('Product does not exist.');
         }
 
+
+        // Check if product is ready for booking
+        // $table_mapping = ZIPPY_BOOKING_PRODUCT_MAPPING_TABLE_NAME;
+
+        // $product_mapping_query = "SELECT id FROM $table_mapping WHERE items_id = $product_id AND mapping_type = 'product'";
+
+        // $product_mapping = count($wpdb->get_results($product_mapping_query));
+
+        // if ($product_mapping < 1) {
+        //     return Zippy_Response_Handler::error('This product is not set for booking yet');
+        // }
+
+
+
+        // Check if user exist or not. If not, create user
         if (empty($user_id)) {
             $user = get_user_by('email', $email);
 
@@ -69,19 +85,13 @@ class Zippy_Booking_Controller
          * 
          */
 
-        
-        $options_table_name = ZIPPY_BOOKING_OPTIONS_TABLE_NAME;
+        $overlap_check = get_option("allow_overlap");
 
-        $config_query = "SELECT option_value FROM $options_table_name WHERE option_name = 'allow_overlap'";;
-
-          
-        $config_results = $wpdb->get_results($config_query);
-
-        if(empty($config_results)){
+        if(empty($overlap_check)){
             return Zippy_Response_Handler::error('Failed to get booking config.');
         }
 
-        if($config_results->allow_overlap == 'F'){
+        if($overlap_check == "F"){
             $query = "SELECT booking_start_date, booking_start_time, booking_end_date, booking_end_time FROM $table_name WHERE product_id = $product_id";
             $results = $wpdb->get_results($query);
             if (!empty($results)) {
@@ -100,9 +110,7 @@ class Zippy_Booking_Controller
                 }
             }
         }
-        $default_status_query = "SELECT option_value FROM  $options_table_name WHERE option_name = 'default_booking_status'";
-        $default_status_result = $wpdb->get_var($default_status_query);
-        $default_booking_status = sanitize_text_field($default_status_result);
+        $default_status_query = get_option("default_booking_status");   
 
         $order = wc_create_order();
         $order->add_product($product, 1);
@@ -119,7 +127,7 @@ class Zippy_Booking_Controller
             'booking_end_date' => $booking_end_date,
             'booking_start_time' => $booking_start_time,
             'booking_end_time' => $booking_end_time,
-            'booking_status' => $default_booking_status,
+            'booking_status' => $default_status_query,
             'order_id' => $order_id,
         ));
 
@@ -139,9 +147,9 @@ class Zippy_Booking_Controller
         $order->update_meta_data('booking_end_time', $booking_end_time);
         $order->save();
 
-        if ($default_booking_status === 'pending') {
+        if (  $default_status_query === 'pending') {
             $order->update_status(ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD);
-        } elseif ($default_booking_status === 'approved') {
+        } elseif (  $default_status_query === 'approved') {
             $order->update_status(ZIPPY_BOOKING_BOOKING_STATUS_PENDING);
         }
         $order_payment_url = null;
@@ -159,7 +167,7 @@ class Zippy_Booking_Controller
                 'booking_end_date' => $booking_end_date,
                 'booking_start_time' => $booking_start_time,
                 'booking_end_time' => $booking_end_time,
-                'booking_status' => $default_booking_status,
+                'booking_status' => $default_status_query,
                 'order_id' => $order_id,
                 'order_name' => $custom_order_name,
                 'order_payment_url' => $order_payment_url
@@ -277,18 +285,13 @@ class Zippy_Booking_Controller
          * 
          */
 
-        $config_table_name = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
+        $overlap_check = get_option("allow_overlap");
 
-        $config_query = "SELECT allow_overlap FROM $config_table_name";
-
-
-        $config_results = $wpdb->get_results($config_query);
-
-        if(empty($config_results)){
+        if(empty($overlap_check)){
             return Zippy_Response_Handler::error('Failed to get booking config.');
         }
 
-        if($config_results->allow_overlap == 0){
+        if($overlap_check == "F"){
             $query = "SELECT booking_start_date, booking_start_time, booking_end_date, booking_end_time FROM $table_name WHERE product_id = $product_id AND ID != $booking_id";
             $results = $wpdb->get_results($query);
             if (!empty($results)) {
