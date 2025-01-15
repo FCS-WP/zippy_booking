@@ -25,8 +25,9 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import { Api } from "../../api";
 import { toast, ToastContainer } from "react-toastify";
-import Header from "../../Components/Layouts/Header";
 import TimePicker from "../../Components/DatePicker/TimePicker";
+import CustomeDatePicker from "../../Components/DatePicker/CustomeDatePicker";
+import DefaultStatusSelect from "../../Components/DefaultStatusSelect";
 
 const daysOfWeek = [
   "Sunday",
@@ -49,10 +50,14 @@ const Settings = () => {
   const [storeEmail, setStoreEmail] = useState("");
   const [allowOverlap, setAllowOverlap] = useState(false);
   const [bookingType, setBookingType] = useState("single");
+  const [defaultStatus, setDefaultStatus] = useState("pending");
   const [loading, setLoading] = useState(true);
   const [configId, setConfigId] = useState(null);
   const [isConfigExisting, setIsConfigExisting] = useState(false);
   const [extraTimeEnabled, setExtraTimeEnabled] = useState({});
+  const [holidayEnabled, setHolidayEnabled] = useState(false);
+  const [holidays, setHolidays] = useState([]);
+  
 
   const parseTime = (timeString) => {
     if (!timeString) return null;
@@ -69,7 +74,6 @@ const Settings = () => {
     return `${hours}:${minutes}`;
   };
 
-  // Update the fetchSettings function
   useEffect(() => {
     const fetchSettings = async () => {
       setLoading(true);
@@ -84,35 +88,30 @@ const Settings = () => {
         ) {
           setIsConfigExisting(true);
           setConfigId(data.id);
+
           const fetchedSchedule = daysOfWeek.map((day, index) => {
             const daySchedule = data.store_working_time.find(
               (time) => parseInt(time.weekday) === index
             );
 
             const extraTimeEnabled = daySchedule?.extra_time?.is_active === "T";
-            if (daySchedule && daySchedule.is_open === "T") {
-              return {
-                day,
-                slots: [
-                  {
-                    from: daySchedule.open_at || "00:00",
-                    to: daySchedule.close_at || "00:00",
-                  },
-                ],
-                duration: parseInt(daySchedule.duration) || 5,
-                extraTime: daySchedule.extra_time || {
-                  is_active: "F",
-                  data: [],
-                },
-              };
-            } else {
-              return {
-                day,
-                slots: [],
-                duration: 5,
-                extraTime: { is_active: "F", data: [] },
-              };
-            }
+            return {
+              day,
+              slots:
+                daySchedule && daySchedule.is_open === "T"
+                  ? [
+                      {
+                        from: daySchedule.open_at || "00:00",
+                        to: daySchedule.close_at || "00:00",
+                      },
+                    ]
+                  : [],
+              duration: parseInt(daySchedule?.duration) || 5,
+              extraTime: daySchedule?.extra_time || {
+                is_active: "F",
+                data: [],
+              },
+            };
           });
 
           setSchedule(fetchedSchedule);
@@ -131,10 +130,11 @@ const Settings = () => {
               slots: item.extraTime.data || [],
             }))
           );
-          setDuration(Number.parseInt(data.store_working_time.duration) || 5);
+          setDuration(parseInt(data.store_working_time[0]?.duration) || 5);
           setStoreEmail(data.store_email || "");
           setAllowOverlap(data.allow_overlap === "T");
           setBookingType(data.booking_type || "single");
+          setDefaultStatus(data.default_booking_status || "pending");
         } else {
           setIsConfigExisting(false);
         }
@@ -150,7 +150,6 @@ const Settings = () => {
     fetchSettings();
   }, []);
 
-  // Update handleExtraTimeToggle function
   const handleExtraTimeToggle = (day, enabled) => {
     setExtraTimeEnabled((prev) => ({
       ...prev,
@@ -236,13 +235,19 @@ const Settings = () => {
     });
   };
 
-  const calculateCloseAt = (openAt, duration) => {
-    if (!openAt) return "";
-    const openTime = new Date(openAt);
-    openTime.setMinutes(openTime.getMinutes() + duration);
-    return formatTime(openTime);
+  const calculateCloseAt = (startTime, duration) => {
+    if (!startTime) return "";
+    const closeTime = new Date(startTime);
+    closeTime.setMinutes(closeTime.getMinutes() + duration);
+  
+    const formattedCloseAt = `${closeTime.getHours().toString().padStart(2, "0")}:${closeTime
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")}:00`;
+  
+    return formattedCloseAt;
   };
-
+  
   const handleTimeChange = (day, slotIndex, field, value) => {
     const formattedValue = value
       ? `${value.getHours().toString().padStart(2, "0")}:${value
@@ -250,7 +255,7 @@ const Settings = () => {
           .toString()
           .padStart(2, "0")}:00`
       : "";
-
+  
     setSchedule((prev) =>
       prev.map((item) =>
         item.day === day
@@ -260,6 +265,8 @@ const Settings = () => {
                 if (index === slotIndex) {
                   if (field === "from") {
                     const newCloseAt = calculateCloseAt(value, duration);
+                    console.log(newCloseAt);
+  
                     return { ...slot, from: formattedValue, to: newCloseAt };
                   } else {
                     return { ...slot, [field]: formattedValue };
@@ -272,6 +279,7 @@ const Settings = () => {
       )
     );
   };
+  
 
   const handleExtraTimeChange = (day, slotIndex, field, value) => {
     const formattedValue = value
@@ -314,6 +322,27 @@ const Settings = () => {
       );
     }
   };
+  const handleAddHoliday = () => {
+    setHolidays([...holidays, { label: "", date: null }]);
+  };
+  
+  const handleRemoveHoliday = (index) => {
+    const updatedHolidays = holidays.filter((_, i) => i !== index);
+    setHolidays(updatedHolidays);
+  };
+  
+  const handleHolidayChange = (index, key, value) => {
+    const formattedValue = key === "date" && value ? new Date(value) : value;
+    const updatedHolidays = holidays.map((holiday, i) =>
+      i === index ? { ...holiday, [key]: formattedValue } : holiday
+    );
+    setHolidays(updatedHolidays);
+  };
+  
+  
+  const handleDefaultStatusChange = (newStatus) => {
+    setDefaultStatus(newStatus);
+  };
 
   const handleSaveChanges = async () => {
     setLoading(true);
@@ -324,20 +353,26 @@ const Settings = () => {
       const weekdayIndex = daysOfWeek.indexOf(item.day);
 
       return {
+        id: item.id || null,
         is_open: isOpen ? "T" : "F",
-        weekday: weekdayIndex,
+        weekday: weekdayIndex.toString(),
         open_at: isOpen ? String(openSlot.from) || "" : "",
         close_at: isOpen ? String(openSlot.to) || "" : "",
-        extra_slots:
-          extraTimeSlots.find((extra) => extra.day === item.day)?.slots || [],
+        duration: item.duration || 5,
+        extra_time: {
+          is_active: extraTimeEnabled[item.day] ? "T" : "F",
+          data:
+            extraTimeSlots.find((extra) => extra.day === item.day)?.slots || [],
+        },
       };
     });
 
     const params = {
       booking_type: bookingType,
-      duration: duration,
       store_email: storeEmail,
       allow_overlap: allowOverlap ? "T" : "F",
+      duration: duration,
+      default_booking_status: defaultStatus,
       store_working_time: storeWorkingTime,
     };
 
@@ -421,21 +456,10 @@ const Settings = () => {
                 </Typography>
               </Box>
               <Box mb={1}>
-                <Typography variant="body1">Default status</Typography>
-                <Select
-                  value={duration}
-                  onChange={(e) => setDuration(e.target.value)}
-                  fullWidth
-                  size="small"
-                >
-                  {Array.from({ length: 36 }, (_, i) => (i + 1) * 5).map(
-                    (option) => (
-                      <MenuItem key={option} value={option}>
-                        {option} minutes
-                      </MenuItem>
-                    )
-                  )}
-                </Select>
+                <DefaultStatusSelect
+                  status={defaultStatus}
+                  onChange={handleDefaultStatusChange}
+                />
               </Box>
 
               <Box mb={1}>
@@ -473,7 +497,21 @@ const Settings = () => {
                   fullWidth
                 />
               </Box>
-
+              {/* Holiday Switch */}
+              <Box mt={2} mb={2}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={holidayEnabled}
+                      onChange={(e) => setHolidayEnabled(e.target.checked)}
+                    />
+                  }
+                  label="Enable Holidays"
+                />
+                <Typography variant="body2" color="textSecondary">
+                  Toggle to enable or disable holiday settings.
+                </Typography>
+              </Box>
               <Box mt={2}>
                 <Button
                   variant="contained"
@@ -502,200 +540,281 @@ const Settings = () => {
                   <CircularProgress />
                 </Box>
               ) : (
-                <TableContainer component={Paper}>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Day</TableCell>
-                        <TableCell>From</TableCell>
-                        <TableCell>To</TableCell>
-                        {bookingType === "single" && (
-                          <TableCell>Extra Time</TableCell>
-                        )}
-                        <TableCell>Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {schedule.map((item, dayIndex) => (
-                        <React.Fragment key={dayIndex}>
-                          {item.slots.length === 0 && (
-                            <TableRow>
-                              <TableCell>{item.day}</TableCell>
-                              <TableCell width={"30%"}></TableCell>
-                              <TableCell width={"30%"}></TableCell>
-                              {bookingType === "single" && (
-                                <TableCell></TableCell>
-                              )}
-                              <TableCell>
-                                <IconButton
-                                  onClick={() => handleAddTimeSlot(item.day)}
-                                >
-                                  <AddCircleOutlineIcon color="primary" />
-                                </IconButton>
-                              </TableCell>
-                            </TableRow>
+                <>
+                  <TableContainer component={Paper}>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Day</TableCell>
+                          <TableCell>From</TableCell>
+                          <TableCell>To</TableCell>
+                          {bookingType === "single" && (
+                            <TableCell>Extra Time</TableCell>
                           )}
-                          {item.slots.map((slot, slotIndex) => (
-                            <TableRow key={slotIndex}>
-                              <TableCell>{item.day}</TableCell>
-                              <TableCell width={"30%"}>
-                                <Box
-                                  sx={{
-                                    width: "200px",
-                                    border: "1px solid #ccc",
-                                    borderRadius: "5px",
-                                  }}
-                                >
-                                  <TimePicker
-                                    selectedTime={parseTime(slot.from)}
-                                    onChange={(time) =>
-                                      handleTimeChange(
-                                        item.day,
-                                        slotIndex,
-                                        "from",
-                                        time
-                                      )
-                                    }
-                                    duration={duration}
-                                  />
-                                </Box>
-                              </TableCell>
-                              <TableCell width={"30%"}>
-                                <Box
-                                  sx={{
-                                    width: "200px",
-                                    border: "1px solid #ccc",
-                                    borderRadius: "5px",
-                                  }}
-                                >
-                                  <TimePicker
-                                    selectedTime={parseTime(slot.to)}
-                                    onChange={(time) =>
-                                      handleTimeChange(
-                                        item.day,
-                                        slotIndex,
-                                        "to",
-                                        time
-                                      )
-                                    }
-                                    duration={duration}
-                                  />
-                                </Box>
-                              </TableCell>
-                              {bookingType === "single" && (
+                          <TableCell></TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {schedule.map((item, dayIndex) => (
+                          <React.Fragment key={dayIndex}>
+                            {item.slots.length === 0 && (
+                              <TableRow>
+                                <TableCell>{item.day}</TableCell>
+                                <TableCell width={"30%"}></TableCell>
+                                <TableCell width={"30%"}></TableCell>
+                                {bookingType === "single" && (
+                                  <TableCell></TableCell>
+                                )}
                                 <TableCell>
-                                  <FormControlLabel
-                                    control={
-                                      <Switch
-                                        checked={
-                                          extraTimeEnabled[item.day] || false
+                                  <IconButton
+                                    onClick={() => handleAddTimeSlot(item.day)}
+                                  >
+                                    <AddCircleOutlineIcon color="primary" />
+                                  </IconButton>
+                                </TableCell>
+                              </TableRow>
+                            )}
+                            {item.slots.map((slot, slotIndex) => (
+                              <TableRow key={slotIndex}>
+                                <TableCell>{item.day}</TableCell>
+                                <TableCell width={"30%"}>
+                                  <Box
+                                    sx={{
+                                      width: "200px",
+                                      border: "1px solid #ccc",
+                                      borderRadius: "5px",
+                                    }}
+                                  >
+                                    <TimePicker
+                                      selectedTime={parseTime(slot.from)}
+                                      onChange={(time) =>
+                                        handleTimeChange(
+                                          item.day,
+                                          slotIndex,
+                                          "from",
+                                          time
+                                        )
+                                      }
+                                      duration={duration}
+                                    />
+                                  </Box>
+                                </TableCell>
+                                <TableCell width={"30%"}>
+                                  <Box
+                                    sx={{
+                                      width: "200px",
+                                      border: "1px solid #ccc",
+                                      borderRadius: "5px",
+                                    }}
+                                  >
+                                    <TimePicker
+                                      selectedTime={parseTime(slot.to)}
+                                      onChange={(time) =>
+                                        handleTimeChange(
+                                          item.day,
+                                          slotIndex,
+                                          "to",
+                                          time
+                                        )
+                                      }
+                                      duration={duration}
+                                    />
+                                  </Box>
+                                </TableCell>
+                                {bookingType === "single" && (
+                                  <TableCell>
+                                    <FormControlLabel
+                                      control={
+                                        <Switch
+                                          checked={
+                                            extraTimeEnabled[item.day] || false
+                                          }
+                                          onChange={(e) =>
+                                            handleExtraTimeToggle(
+                                              item.day,
+                                              e.target.checked
+                                            )
+                                          }
+                                          disabled={bookingType === "multiple"}
+                                        />
+                                      }
+                                      label="Extra Time"
+                                    />
+                                  </TableCell>
+                                )}
+
+                                <TableCell>
+                                  <IconButton
+                                    onClick={() =>
+                                      handleRemoveTimeSlot(item.day, slotIndex)
+                                    }
+                                  >
+                                    <RemoveCircleOutlineIcon color="error" />
+                                  </IconButton>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                            {/* Render extra time slots if enabled */}
+
+                            {extraTimeEnabled[item.day] &&
+                              extraTimeSlots
+                                .find((extra) => extra.day === item.day)
+                                ?.slots.map((slot, slotIndex) => (
+                                  <TableRow
+                                    key={`extra-${dayIndex}-${slotIndex}`}
+                                    style={{ backgroundColor: "#f9f9f9" }}
+                                  >
+                                    <TableCell></TableCell>
+                                    <TableCell width={"30%"}>
+                                      <Box
+                                        sx={{
+                                          width: "200px",
+                                          border: "1px solid #ccc",
+                                          borderRadius: "5px",
+                                        }}
+                                      >
+                                        <TimePicker
+                                          selectedTime={parseTime(slot.from)}
+                                          onChange={(time) =>
+                                            handleExtraTimeChange(
+                                              item.day,
+                                              slotIndex,
+                                              "from",
+                                              time
+                                            )
+                                          }
+                                        />
+                                      </Box>
+                                    </TableCell>
+                                    <TableCell width={"30%"}>
+                                      <Box
+                                        sx={{
+                                          width: "200px",
+                                          border: "1px solid #ccc",
+                                          borderRadius: "5px",
+                                        }}
+                                      >
+                                        <TimePicker
+                                          selectedTime={parseTime(slot.to)}
+                                          onChange={(time) =>
+                                            handleExtraTimeChange(
+                                              item.day,
+                                              slotIndex,
+                                              "to",
+                                              time
+                                            )
+                                          }
+                                        />
+                                      </Box>
+                                    </TableCell>
+                                    <TableCell>
+                                      <IconButton
+                                        onClick={() =>
+                                          handleAddExtraTimeSlot(item.day)
                                         }
-                                        onChange={(e) =>
-                                          handleExtraTimeToggle(
+                                      >
+                                        <AddCircleOutlineIcon color="primary" />
+                                      </IconButton>
+                                    </TableCell>
+                                    <TableCell>
+                                      <IconButton
+                                        onClick={() =>
+                                          handleRemoveExtraTimeSlot(
                                             item.day,
-                                            e.target.checked
+                                            slotIndex
                                           )
                                         }
-                                        disabled={bookingType === "multiple"}
-                                      />
-                                    }
-                                    label="Extra Time"
-                                  />
-                                </TableCell>
-                              )}
-
+                                      >
+                                        <RemoveCircleOutlineIcon color="error" />
+                                      </IconButton>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                          </React.Fragment>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                  {/* Holiday Table */}
+                  {holidayEnabled && (
+                    <TableContainer component={Paper}  style={{ marginTop: "20px" }}>
+                      <Typography
+                        variant="h6"
+                        gutterBottom
+                        style={{ padding: "16px" }}
+                      >
+                        Holiday Settings
+                      </Typography>
+                      <Table>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>Label</TableCell>
+                            <TableCell>Date</TableCell>
+                            <TableCell></TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {holidays.map((holiday, index) => (
+                            <TableRow key={index}>
+                              <TableCell>
+                                <TextField
+                                  value={holiday.label}
+                                  onChange={(e) =>
+                                    handleHolidayChange(
+                                      index,
+                                      "label",
+                                      e.target.value
+                                    )
+                                  }
+                                  size="small"
+                                  fullWidth
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <CustomeDatePicker
+                                  value={holiday.date}
+                                  onChange={(date) =>
+                                    handleHolidayChange(index, "date", date)
+                                  }
+                                  renderInput={(params) => (
+                                    <TextField
+                                      {...params}
+                                      size="small"
+                                      fullWidth
+                                    />
+                                  )}
+                                />
+                              </TableCell>
                               <TableCell>
                                 <IconButton
-                                  onClick={() =>
-                                    handleRemoveTimeSlot(item.day, slotIndex)
-                                  }
+                                  color="error"
+                                  onClick={() => handleRemoveHoliday(index)}
                                 >
-                                  <RemoveCircleOutlineIcon color="error" />
+                                  <RemoveCircleOutlineIcon />
                                 </IconButton>
                               </TableCell>
                             </TableRow>
                           ))}
-                          {/* Render extra time slots if enabled */}
-
-                          {extraTimeEnabled[item.day] &&
-                            extraTimeSlots
-                              .find((extra) => extra.day === item.day)
-                              ?.slots.map((slot, slotIndex) => (
-                                <TableRow
-                                  key={`extra-${dayIndex}-${slotIndex}`}
-                                  style={{ backgroundColor: "#f9f9f9" }}
-                                >
-                                  <TableCell></TableCell>
-                                  <TableCell width={"30%"}>
-                                    <Box
-                                      sx={{
-                                        width: "200px",
-                                        border: "1px solid #ccc",
-                                        borderRadius: "5px",
-                                      }}
-                                    >
-                                      <TimePicker
-                                        selectedTime={parseTime(slot.from)}
-                                        onChange={(time) =>
-                                          handleExtraTimeChange(
-                                            item.day,
-                                            slotIndex,
-                                            "from",
-                                            time
-                                          )
-                                        }
-                                      />
-                                    </Box>
-                                  </TableCell>
-                                  <TableCell width={"30%"}>
-                                    <Box
-                                      sx={{
-                                        width: "200px",
-                                        border: "1px solid #ccc",
-                                        borderRadius: "5px",
-                                      }}
-                                    >
-                                      <TimePicker
-                                        selectedTime={parseTime(slot.to)}
-                                        onChange={(time) =>
-                                          handleExtraTimeChange(
-                                            item.day,
-                                            slotIndex,
-                                            "to",
-                                            time
-                                          )
-                                        }
-                                      />
-                                    </Box>
-                                  </TableCell>
-                                  <TableCell>
-                                    <IconButton
-                                      onClick={() =>
-                                        handleAddExtraTimeSlot(item.day)
-                                      }
-                                    >
-                                      <AddCircleOutlineIcon color="primary" />
-                                    </IconButton>
-                                  </TableCell>
-                                  <TableCell>
-                                    <IconButton
-                                      onClick={() =>
-                                        handleRemoveExtraTimeSlot(
-                                          item.day,
-                                          slotIndex
-                                        )
-                                      }
-                                    >
-                                      <RemoveCircleOutlineIcon color="error" />
-                                    </IconButton>
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                        </React.Fragment>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                          <TableRow>
+                            <TableCell colSpan={3} align="center">
+                              <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={handleAddHoliday}
+                                style={{
+                                  borderRadius: "8px",
+                                  textTransform: "none",
+                                }}
+                              >
+                                Add Holiday
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  )}
+                </>
               )}
             </Grid>
           </Grid>
