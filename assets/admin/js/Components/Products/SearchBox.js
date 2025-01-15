@@ -268,7 +268,7 @@ const SearchBox = ({ updateListMapping }) => {
                   onKeyDown={handleCategoryKeyDown}
                   label="Search Categories"
                   variant="outlined"
-                  placeholder="Enter category name..."
+                  placeholder="Type to search..."
                   value={categorySearch}
                   onChange={(e) => setCategorySearch(e.target.value)}
                   slotProps={{
@@ -353,7 +353,7 @@ const SearchBox = ({ updateListMapping }) => {
                   fullWidth
                   label="Search Products"
                   variant="outlined"
-                  placeholder="Enter product name..."
+                  placeholder="Type to search..."
                   value={productSearch}
                   onChange={(e) => setProductSearch(e.target.value)}
                   onKeyDown={handleProductKeyDown}
