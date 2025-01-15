@@ -22,9 +22,140 @@ function BookingPopUp() {
   const [configsDate, setConfigsDate] = useState([new Date()]);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+
+  const [emailRegister, setEmailRegister] = useState("");
+  const [passwordRegister, setPasswordRegister] = useState("");
+  const [ConfirmPasswordRegister, setConfirmPasswordRegister] = useState("");
+
   const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const [openLogin, setOpenLogin] = useState(false);
+  const [openRegister, setOpenRegister] = useState(false);
+  
+  const handleOpen = () => {
+    
+    if(admin_data.userID == 0){
+      setOpenLogin(true);
+    }else{
+      setOpen(true);
+    }
+    
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    let usernameValue = username;
+    let passwordValue = password;
+
+    // Prepare sign in parameters
+    const params = {
+      username: usernameValue,
+      password: passwordValue,
+    };
+    
+    const response = await webApi.signIn(params);
+
+    window.admin_data.userID = response.data.data.data.ID;
+    window.admin_data.user_email = response.data.data.data.email;
+    
+    if(response.data.status == "success"){
+      showAlert(
+        "success",
+        "Login Success",
+        "Continute booking"
+      );
+      setOpen(true);
+      setOpenLogin(false);
+      
+    }else{
+      showAlert(
+        "warning",
+        "Login Fails",
+        "Wrong username or password"
+      );
+    }
+    return;
+  };
+
+  const handleOpenRegister = async (e) =>{
+    e.preventDefault();
+    setOpen(false);
+    setOpenLogin(false);
+    setOpenRegister(true);
+
+  };
+
+  const handleRegister = async (e) =>{
+    e.preventDefault();
+
+    let emailRegisterValue = emailRegister;
+    let passwordRegisterValue = passwordRegister;
+    let ConfirmPasswordRegisterValue = ConfirmPasswordRegister;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailRegisterValue)) {
+        showAlert(
+          "warning",
+          "Invalid email",
+          "Please enter the correct email format."
+        );
+        return;
+    }
+
+    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(passwordRegisterValue)) {
+        showAlert(
+          "warning",
+          "Invalid password",
+          "Password must have at least 8 characters, including letters, numbers and special characters."
+        );
+        return;
+    }
+
+    if (passwordRegisterValue !== ConfirmPasswordRegisterValue) {
+        showAlert(
+          "warning",
+          "Invalid confirm password",
+          "Confirm passwords do not match. Please check again."
+        );
+        return;
+    }
+    
+    // Prepare register parameters
+    const params = {
+      email: emailRegisterValue,
+      password: passwordRegisterValue,
+    };
+
+    const response = await webApi.registerAccount(params);
+
+    if(response.data.status == "success"){
+      showAlert(
+        "success",
+        "Register Success",
+        "Continute Sign In"
+      );
+      setOpenRegister(false);
+      setOpenLogin(true);
+      
+    }else{
+      showAlert(
+        "warning",
+        "Register Fails",
+        "Please register again"
+      );
+    }
+    return;
+
+  };
+  
+  const handleClose = () => {
+    setOpen(false);
+    setOpenLogin(false);
+  };
 
   const handleSelectDate = (date) => {
     setSelectedDate(date);
@@ -162,13 +293,107 @@ function BookingPopUp() {
       getAllBooking();
     }
   }, [selectedDate, productId]);
-
+  
   return (
     <>
       <button className="booking_popup_form" onClick={handleOpen}>
         Booking
       </button>
-
+      <Modal className="zippy-booking-popup" open={openRegister} onClose={handleClose}>
+        <Box>
+          <div className="booking_login_page">
+            <form onSubmit={handleRegister}>
+              <h2 className="login100-form-title">
+                Register
+              </h2>
+              <div className="box_input">
+                <input
+                  type="text"
+                  id="emailRegister"
+                  name="emailRegister"
+                  required
+                  value={emailRegister}
+                  onChange={(e) => setEmailRegister(e.target.value)}
+                  placeholder="Email"
+                />
+                <input
+                  type="password"
+                  id="passwordRegister"
+                  name="passwordRegister"
+                  required
+                  value={passwordRegister}
+                  onChange={(e) => setPasswordRegister(e.target.value)}
+                  placeholder="Password"
+                />
+                <input
+                  type="password"
+                  id="ConfirmPasswordRegister"
+                  name="ConfirmPasswordRegister"
+                  required
+                  value={ConfirmPasswordRegister}
+                  onChange={(e) => setConfirmPasswordRegister(e.target.value)}
+                  placeholder="Confirm Password"
+                />
+                <div className="button_submit_login">
+                  <input type="submit" value="Register Account" />
+                </div>
+              </div>
+              <div className="register_label">
+                <span className="register_label_span">
+                  You already have an account?
+                </span>
+                <a href="#" className="register_label_link" onClick={handleOpen}>
+                  Sign in now
+                </a>
+              </div>
+            </form>
+            {message && <p>{message}</p>}
+          </div>
+        </Box>
+      </Modal>
+      <Modal className="zippy-booking-popup" open={openLogin} onClose={handleClose}>
+        <Box>
+          <div className="booking_login_page">
+            <form onSubmit={handleSubmit}>
+              <h2 className="login100-form-title">
+                Sign In
+              </h2>
+              <div className="box_input">
+                <input
+                  type="text"
+                  id="username"
+                  name="username"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Username"
+                />
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Password"
+                />
+                <div className="button_submit_login">
+                  <input type="submit" value="Sign In" />
+                </div>
+              </div>
+              <div className="register_label">
+                <span className="register_label_span">
+                  Don’t have an account?
+                </span>
+                <a href="#" className="register_label_link" onClick={handleOpenRegister}>
+                  Sign up now
+                </a>
+              </div>
+            </form>
+            {message && <p>{message}</p>}
+          </div>
+        </Box>
+      </Modal>
       <Modal className="zippy-booking-popup" open={open} onClose={handleClose}>
         <Box>
           <div className="box_pop_up">

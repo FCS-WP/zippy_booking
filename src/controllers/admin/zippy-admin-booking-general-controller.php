@@ -100,4 +100,89 @@ class Zippy_Admin_Booking_General_Controller
 
     return Zippy_Response_Handler::success($response);
   }
+
+  public static function signin(WP_REST_Request $request)
+  {
+      $username = $request->get_param('username');
+      $password = $request->get_param('password');
+
+      if (empty($username) || empty($password)) {
+          return new Zippy_Response_Handler('Thiếu tên người dùng hoặc mật khẩu.', 400);
+      }
+
+      $creds = array(
+          'user_login'    => $username,
+          'user_password' => $password,
+          'remember'      => true,
+      );
+
+      $user = wp_signon($creds, false);
+
+      $status = true;
+
+      if (is_wp_error($user)) {
+          $status = false;
+
+          $response = [
+              'status' => $status,
+              'data'   => $user->get_error_message() 
+          ];
+
+          return Zippy_Response_Handler::success($response);
+      }
+
+      $response = [
+          'status' => $status,
+          'data'   => [
+              'ID'        => $user->ID,
+              'email'     => $user->user_email,
+          ]
+      ];
+
+      return Zippy_Response_Handler::success($response);
+  }
+
+  public static function register(WP_REST_Request $request)
+  {
+      $user_email = $request->get_param('email');
+      $user_password = $request->get_param('password');
+
+      if (empty($user_email) || empty($user_password)) {
+          return Zippy_Response_Handler::error('Email or password cannot be blank.', 400);
+      }
+
+      if (!is_email($user_email)) {
+          return Zippy_Response_Handler::error('Invalid email.', 400);
+      }
+
+      if (email_exists($user_email)) {
+          return Zippy_Response_Handler::error('Email already exists.', 400);
+      }
+
+      try {
+          $user_login = $user_email;
+
+          $user_id = wp_create_user($user_login, $user_password, $user_email);
+
+          if (is_wp_error($user_id)) {
+              return Zippy_Response_Handler::error($user_id->get_error_message(), 400);
+          }
+
+          $user = get_userdata($user_id);
+
+          $response = [
+              'status' => true,
+              'data'   => [
+                  'email' => $user->user_email,
+                  'id'    => $user->ID,
+              ],
+          ];
+
+          return Zippy_Response_Handler::success($response);
+      } catch (Exception $e) {
+          return Zippy_Response_Handler::error('An error occurred while registering: ' . $e->getMessage(), 500);
+      }
+  }
+
+
 }

@@ -53,5 +53,21 @@ class Zippy_Booking_General_Router
       'permission_callback' => array(Zippy_Booking_Permission::class, 'zippy_permission_callback'),
 
     ));
+
+    register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/zippy-signin', array(
+      'methods' => 'POST',
+      'callback' => [Zippy_Admin_Booking_General_Controller::class, 'signin'],
+      'args' => Zippy_Api_Booking_Model::signin_args(),
+      'permission_callback' => "__return_true",
+
+    ));
+
+    register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/zippy-register', array(
+      'methods' => 'POST',
+      'callback' => [Zippy_Admin_Booking_General_Controller::class, 'register'],
+      'args' => Zippy_Api_Booking_Model::register_args(),
+      'permission_callback' => "__return_true",
+
+    ));
   }
 }
