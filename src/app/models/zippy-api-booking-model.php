@@ -300,6 +300,24 @@ class Zippy_Api_Booking_Model
           return is_string($param);
         },
       ),
+    
+    );
+  }
+  public static function booking_report_args()
+  {
+    return array(
+      'start-date' => array(
+        'required' => true,
+        'validate_callback' => function ($param, $request, $key) {
+          return is_string($param);
+        },
+      ),
+      'end-date' => array(
+        'required' => true,
+        'validate_callback' => function ($param, $request, $key) {
+          return is_string($param);
+        },
+      ),
     );
   }
 
@@ -318,6 +336,7 @@ class Zippy_Api_Booking_Model
           return is_string($param);
         },
       ),
+      
     );
   }
 }

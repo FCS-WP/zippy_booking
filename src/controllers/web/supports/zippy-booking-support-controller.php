@@ -76,7 +76,7 @@ class Zippy_Booking_Support_Controller
             'product_price' => $product_price
         );
 
-        $update_meta = update_post_meta($items_id, $meta_key, $meta_value);
+        $update_meta = update_post_meta($items_id, $meta_key, maybe_serialize($meta_value));
 
         if (!$update_meta) {
             return Zippy_Response_Handler::error('Failed to add meta to the product.');
@@ -223,6 +223,7 @@ class Zippy_Booking_Support_Controller
                     if ($product) {
                         $item['item_name'] = $product->get_name();
                         $item['item_price'] = $product->get_price();
+                        $item['item_extra_price'] = get_post_meta($product->get_id(),'_extra_price', true);
                     }
                 } else {
 
@@ -335,7 +336,7 @@ class Zippy_Booking_Support_Controller
                         'mapping_type' => 'product',
                         'item_name' => $product_name,
                         'item_price' => $product_price,
-                        'extra_price' => $extra_price,
+                        'item_extra_price' => $extra_price,
                     );
                 }
                 wp_reset_postdata();
@@ -882,10 +883,10 @@ class Zippy_Booking_Support_Controller
     public static function update_product_price(WP_REST_Request $request)
     {
         $product_id = $request->get_param('product_id');
-        $regular_price = $request->get_param('regular_price');
-        $extra_price = $request->get_param('extra_price');
+        $regular_price = $request->has_param('regular_price') ? $request->get_param('regular_price') : null;
+        $extra_price = $request->has_param('extra_price') ? $request->get_param('extra_price') : null;
 
-        if (!$product_id || !$regular_price || !$extra_price) {
+        if (!$product_id || $regular_price === null || $extra_price === null) {
             return Zippy_Response_Handler::error('Missing required parameters: product_id, regular_price, or extra_price.');
         }
 

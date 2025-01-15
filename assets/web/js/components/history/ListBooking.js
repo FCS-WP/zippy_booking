@@ -41,7 +41,6 @@ const StyledCard = styled(Card)(({ theme }) => ({
 }));
 
 const ListBooking = () => {
-
   const adminData = window.admin_data ? window.admin_data : null;
   const [bookings, setBookings] = useState([]);
   const [products, setProducts] = useState([]);
@@ -58,47 +57,6 @@ const ListBooking = () => {
   const BOOKINGS_PER_PAGE = 9;
   const pageFocusRef = useRef(null);
 
-  const getProductsCat = async () => {
-    setIsLoading(true);
-
-    const spCategories = await webApi.getSupportCategories();
-    if (!spCategories) {
-        toast.error("No data: Categories.");
-        return 0;
-    }
-    const response = spCategories.data;
-
-    if (response.data.categories.length == 0) {
-      toast.error("No data: Categories.");
-    }
-
-    const cats = [...response.data.categories];
-    if (cats.length == 0) {
-      toast.error("No data: Categories.");
-      setIsLoading(false);
-      return 0;
-    }
-
-    let dataProducts = [];
-
-    cats.map((category) => {
-      if (category.subcategories.length > 0) {
-        category.subcategories.map((subCategory) => {
-          dataProducts = [...dataProducts, ...subCategory.subcategory_products];
-        });
-      } else {
-        dataProducts = [...dataProducts, ...category.products_in_category];
-      }
-    });
-    dataProducts.length > 0
-      ? setProducts(dataProducts)
-      : toast.error("No data: Products");
-
-    setTimeout(() => {
-      setIsLoading(false);
-    }, [1000]);
-  };
-
   const getBookingsData = async () => {
     if (!adminData.user_email) {
       setIsLoading(false);
@@ -109,13 +67,17 @@ const ListBooking = () => {
       email: adminData.user_email,
     });
 
-    if (dataBookings.data.status != "success" || dataBookings.data.data.length == 0) {
-     toast.error("No Data: Booking");
+    if (
+      dataBookings.data.status != "success" ||
+      dataBookings.data.data.length == 0
+    ) {
+      toast.error("No Data: Booking");
       setIsLoading(false);
       return false;
     }
 
     setBookings(dataBookings.data.data.bookings);
+
     handleFilterBooking(dataBookings.data.data.bookings);
   };
 
@@ -129,10 +91,13 @@ const ListBooking = () => {
     setSelectedBooking(null);
   };
 
-  const getProductByBooking = (bookingData) => {
-    return products.find(
-      (item) => item.product_id == parseInt(bookingData.product_id)
-    );
+  const handlePayment = () => {
+    if (selectedBooking.order.payment_link) {
+      window.location.href = selectedBooking.order.payment_link;
+      return true;
+    }
+    toast.error("Can not get payment link!");
+    return false;
   };
 
   const handleFilterBooking = (data) => {
@@ -202,6 +167,10 @@ const ListBooking = () => {
         return "success";
       case "pending":
         return "warning";
+      case "approved":
+        return "primary";
+      case "cancelled":
+        return "error";
       default:
         return "default";
     }
@@ -209,7 +178,7 @@ const ListBooking = () => {
 
   useEffect(() => {
     getBookingsData();
-    getProductsCat();
+    // getProductsCat();
   }, []);
 
   useEffect(() => {
@@ -228,10 +197,10 @@ const ListBooking = () => {
   }, [page]);
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }} ref={pageFocusRef}>
+    <Container maxWidth="xxl" sx={{ padding: 0 }} ref={pageFocusRef}>
       <Box sx={{ mb: 4 }}>
         <Stack
-          direction={"row"}
+          direction={{ md: "row", sm: "column" }}
           justifyContent={"space-between"}
           alignContent={"center"}
         >
@@ -262,10 +231,10 @@ const ListBooking = () => {
                       }}
                     >
                       <Typography variant="h6">
-                        {getProductByBooking(booking)?.product_name}
+                        {booking?.product?.name}
                       </Typography>
                       <Typography variant="h6">
-                        $ {getProductByBooking(booking)?.product_price}
+                        $ {booking?.order?.order_total}
                       </Typography>
                     </Box>
                     <Typography color="textSecondary" gutterBottom>
@@ -325,7 +294,7 @@ const ListBooking = () => {
                   <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
                     <Box>
                       <Typography variant="h5">
-                        {getProductByBooking(selectedBooking)?.product_name}
+                        {selectedBooking?.product?.name}
                       </Typography>
                       <Chip
                         label={selectedBooking.booking_status}
@@ -338,7 +307,7 @@ const ListBooking = () => {
                     <Grid item xs={12} sm={6}>
                       <Typography>Price:</Typography>
                       <Typography variant="h6">
-                        $ {getProductByBooking(selectedBooking)?.product_price}
+                        $ {selectedBooking?.order?.order_total}
                       </Typography>
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -367,15 +336,34 @@ const ListBooking = () => {
                   <Button
                     onClick={handleClose}
                     variant="outlined"
+                    color="success"
                     sx={{
                       m: 1.5,
-                      background: "#4A8875",
-                      color: "#FFF",
-                      ":hover": { background: "#333", color: "#FFF" },
+                      px: 3,
+                      color: "#4A8875",
+                      borderColor: "#4A8875",
+                      ":hover": { background: "#4A8875", color: "#FFF" },
                     }}
                   >
                     Close
                   </Button>
+                  {selectedBooking.booking_status == "approved" && (
+                    <Button
+                      variant="text"
+                      color="success"
+                      sx={{
+                        px: 3,
+                        m: 1.5,
+                        background: "#4A8875",
+                        borderColor: "#4A8875",
+                        color: "#FFF",
+                        ":hover": { background: "#333", color: "#FFF" },
+                      }}
+                      onClick={handlePayment}
+                    >
+                      Payment
+                    </Button>
+                  )}
                 </DialogActions>
               </>
             )}

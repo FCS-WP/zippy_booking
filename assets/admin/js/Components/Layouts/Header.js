@@ -1,10 +1,11 @@
+import { Typography } from "@mui/material";
 import React from "react";
-
+Typography;
 const Header = ({ title, ...props }) => {
   return (
-    <div className="booking-page-title">
-      <h1>{title}</h1>
-    </div>
+    <Typography variant="h1" className="booking-page-title">
+   {title}
+    </Typography>
   );
 };
 export default Header;

@@ -21,9 +21,9 @@ const BookingStep2 = ({
   const [isloading, setIsloading] = useState(false);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const adminData = window.admin_data ? window.admin_data : null;
-
+  
   const getBookings = async (date = new Date()) => {
-    const bookings = await getBookingsByDate(selectedProduct.items_id, date);
+    const bookings = await getBookingsByDate(selectedProduct.items_id, date, ['pending', 'approved']);
     setCreatedBookings(bookings);
   };
 
@@ -68,7 +68,9 @@ const BookingStep2 = ({
       return false;
     }
     toast.success("Booking has been created");
-    handleNextStep(2, createBooking.data.data);
+    const bookingData = createBooking.data.data;
+    bookingData.price_type = selectedTimes.isExtra ? "extra" : "regular";
+    handleNextStep(2, bookingData);
     setIsSubmitLoading(false);
     return true;
   };
@@ -92,10 +94,6 @@ const BookingStep2 = ({
               <h4>Field</h4>
               <span> {selectedProduct.item_name}</span>
             </div>
-            <div>
-              <h4>Price</h4>
-              <span> ${selectedProduct.item_price}</span>
-            </div>
           </div>
           <div className="booking-section">
             <div className="booking-calendar">
@@ -106,12 +104,14 @@ const BookingStep2 = ({
                 />
               </div>
             </div>
+            {/* Time Slots */}
             {configs ? (
               <div className="time-slots">
                 {isloading ? (
                   <CustomLoader />
                 ) : (
                   <BookingTimeSlot
+                    selectedProduct={selectedProduct}
                     config={configs}
                     bookingInfo={createdBookings}
                     selectedDate={selectedDate}
