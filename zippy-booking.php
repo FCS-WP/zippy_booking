@@ -68,6 +68,10 @@ if (!defined('ZIPPY_BOOKING_TABLE_NAME')) {
 if (!defined('ZIPPY_BOOKING_CONFIG_TABLE_NAME')) {
   define('ZIPPY_BOOKING_CONFIG_TABLE_NAME', 'fcs_data_booking_configs');
 }
+/* Booking Options table name */
+if (!defined('ZIPPY_BOOKING_OPTIONS_TABLE_NAME')) {
+  define('ZIPPY_BOOKING_OPTIONS_TABLE_NAME', 'fcs_data_options');
+}
 
 /* Booking Product Mapping table name */
 if (!defined('ZIPPY_BOOKING_PRODUCT_MAPPING_TABLE_NAME')) {

@@ -3,6 +3,7 @@ import TableView from "../TableView";
 import TablePaginationCustom from "../TablePagination";
 
 import { callDeleteMappingItems, deleteConfirm } from "../../utils/bookingHelper";
+import { Container, Typography } from "@mui/material";
 
 const ListProductsBooking = ({ mappingData, updateListMapping }) => {
   const [data, setData] = useState([]);
@@ -80,30 +81,45 @@ const ListProductsBooking = ({ mappingData, updateListMapping }) => {
     updateListMapping();
   };
 
+  const AddSupportMessage = () => {
+    return (
+      <Container sx={{ textAlign: 'center', pb: 3 }}>
+        <Typography fontWeight={'bold'}>No data. Please add new catgeory or product</Typography>
+      </Container>
+    )
+  }
+
   useEffect(() => {
     fetchData(page, rowsPerPage);
   }, [page, rowsPerPage, mappingData]);
 
   return (
     <div>
-      <TableView
-        cols={columns}
-        columnWidths={columnWidths}
-        rows={paginatedData.map((row) => ({
-          ...row,
+      {data.length == 0 ? (
+        <AddSupportMessage/>
+      ) : (
+        <>
+          <TableView
+            cols={columns}
+            columnWidths={columnWidths}
+            rows={paginatedData.map((row) => ({
+              ...row,
 
-        }))}
-        canBeDeleted={true}
-        onDeleteRows={handleDeleteMappingItems}
-        onChangeList={updateListMapping}
-      />
-      <TablePaginationCustom
-        count={data.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      />
+            }))}
+            canBeDeleted={true}
+            onDeleteRows={handleDeleteMappingItems}
+            onChangeList={updateListMapping}
+          />
+          <TablePaginationCustom
+            count={data.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </>
+      ) }
+      
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import {
   Box,
   Checkbox,
+  Container,
   Fade,
   FormControlLabel,
   Paper,
@@ -160,6 +161,11 @@ const SubTable = (props) => {
     }
 
     const products = parseProducts(response.data);
+    if (products.length == 0) {
+      toast.error("No product found!.");
+      closeLoading();
+      return false;
+    }
     const formattedData = products.map((item) => {
       return {
         ID: item.product_id,
@@ -206,6 +212,14 @@ const SubTable = (props) => {
     setPage(newPage);
   };
 
+  const ProductMessage = () => {
+    return (
+      <Container sx={{ textAlign: 'center', pb: 3 }}>
+        <Typography fontWeight={'bold'}>No Product Found!</Typography>
+      </Container>
+    )
+  }
+
   useEffect(() => {
     getProductsInCategory();
   }, []);
@@ -222,29 +236,35 @@ const SubTable = (props) => {
                 Products in {category.Name}
                 </Typography>
             </Stack>
-            <TableContainer>
-                <Table>
-                <SubTableHeader
-                    maxRows={paginatedData.length}
-                    selectedRows={selectedRows}
-                    onChangeMasterCheckbox={handleChangeMasterCheckbox}
-                    cols={cols}
-                />
-                <SubTableBody
-                    rows={paginatedData}
-                    cols={cols}
-                    onChangeData={onChangeData}
-                    UpdateSelectedRows={UpdateSelectedRows}
-                    masterCheckedControl={selectedRows}
-                />
-                </Table>
-                <TablePaginationCustom
-                count={data.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                />
-            </TableContainer>
+            {data.length == 0 ? (
+              <>
+                <ProductMessage />
+              </>
+            ) : (
+              <TableContainer>
+                  <Table>
+                  <SubTableHeader
+                      maxRows={paginatedData.length}
+                      selectedRows={selectedRows}
+                      onChangeMasterCheckbox={handleChangeMasterCheckbox}
+                      cols={cols}
+                  />
+                  <SubTableBody
+                      rows={paginatedData}
+                      cols={cols}
+                      onChangeData={onChangeData}
+                      UpdateSelectedRows={UpdateSelectedRows}
+                      masterCheckedControl={selectedRows}
+                  />
+                  </Table>
+                  <TablePaginationCustom
+                  count={data.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  />
+              </TableContainer>
+            )}
             </Paper>
         </Fade>
       )}

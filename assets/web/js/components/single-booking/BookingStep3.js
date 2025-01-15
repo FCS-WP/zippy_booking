@@ -11,13 +11,18 @@ const BookingStep3 = ({ selectedProduct, bookingData, handleNextStep }) => {
     handleNextStep(3, null);
   };
 
+  const goPayment = () => {
+    if (bookingData?.order_payment_url) {
+      window.location.href = bookingData.order_payment_url;
+    }
+  };
+
   const showBookingTimes = (bookingData) => {
     if (bookingData) {
       const startDateString =
         bookingData.booking_start_date + "T" + bookingData.booking_start_time;
       const endDateString =
         bookingData.booking_end_date + "T" + bookingData.booking_end_time;
-
       const startDate = new Date(startDateString);
       const endDate = new Date(endDateString);
       const result =
@@ -86,7 +91,12 @@ const BookingStep3 = ({ selectedProduct, bookingData, handleNextStep }) => {
               <li>
                 <div className="summary-item">
                   <span>Price:</span>
-                  <h4>$ {selectedProduct.item_price}</h4>
+                  <h4>
+                    ${" "}
+                    {bookingData.price_type == "extra"
+                      ? selectedProduct.item_extra_price
+                      : selectedProduct.item_price}
+                  </h4>
                 </div>
               </li>
             </ul>
@@ -99,14 +109,25 @@ const BookingStep3 = ({ selectedProduct, bookingData, handleNextStep }) => {
             >
               Back To Home
             </span>
-            <span
-              role="button"
-              onClick={() => newAppointment()}
-              className="next-step-btn"
-              id="next-step-btn"
-            >
-              Make New Appointment
-            </span>
+            {bookingData?.order_payment_url ? (
+              <span
+                role="button"
+                onClick={() => goPayment()}
+                className="next-step-btn"
+                id="next-step-btn"
+              >
+                Payment
+              </span>
+            ) : (
+              <span
+                role="button"
+                onClick={() => newAppointment()}
+                className="next-step-btn"
+                id="next-step-btn"
+              >
+                Make New Appointment
+              </span>
+            )}
           </div>
         </div>
       )}
