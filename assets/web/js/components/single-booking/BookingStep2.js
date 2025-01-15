@@ -21,8 +21,9 @@ const BookingStep2 = ({
   const [isloading, setIsloading] = useState(false);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const adminData = window.admin_data ? window.admin_data : null;
+  
   const getBookings = async (date = new Date()) => {
-    const bookings = await getBookingsByDate(selectedProduct.items_id, date);
+    const bookings = await getBookingsByDate(selectedProduct.items_id, date, ['pending', 'approved']);
     setCreatedBookings(bookings);
   };
 
