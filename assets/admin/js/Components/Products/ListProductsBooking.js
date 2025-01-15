@@ -1,11 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
 import TableView from "../TableView";
 import TablePaginationCustom from "../TablePagination";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { Button } from "@mui/material";
-import { Api } from "../../api";
-import { toast } from "react-toastify";
-import Swal from "sweetalert2";
+
+import { callDeleteMappingItems, deleteConfirm } from "../../utils/bookingHelper";
+import { Container, Typography } from "@mui/material";
 
 const ListProductsBooking = ({ mappingData, updateListMapping }) => {
   const [data, setData] = useState([]);
@@ -24,6 +22,8 @@ const ListProductsBooking = ({ mappingData, updateListMapping }) => {
         ID: item.items_id,
         Name: item.item_name,
         Type: item.mapping_type,
+        "Regular Price": item.item_price,
+        "Extra Price": item.item_extra_price ?? null,
       };
     });
 
@@ -31,12 +31,21 @@ const ListProductsBooking = ({ mappingData, updateListMapping }) => {
     setLoadingState((prev) => ({ ...prev, global: false }));
   };
 
-  const columns = ["ID", "Name", "Type", "Actions"];
+  const columns = [
+    "ID",
+    "Name",
+    "Regular Price",
+    "Extra Price",
+    "Type",
+    "Actions",
+  ];
 
   const columnWidths = {
     ID: "auto",
     Name: "auto",
     Type: "auto",
+    "Regular Price": "auto",
+    "Extra Price": "auto",
     Actions: "10%",
   };
 
@@ -54,19 +63,6 @@ const ListProductsBooking = ({ mappingData, updateListMapping }) => {
     setPage(0);
   };
 
-  const handleDeleteMappingItem = async (data) => {
-    const confirm = await deleteConfirm();
-    if (!confirm) {
-      return false;
-    }
-    const deletedData = {
-      items_id: data.ID,
-      type: data.Type,
-    };
-    const del = await deleteMappingItems([deletedData]);
-    updateListMapping();
-  };
-
   const handleDeleteMappingItems = async (rows) => {
     const confirm = await deleteConfirm();
     if (!confirm) {
@@ -81,38 +77,17 @@ const ListProductsBooking = ({ mappingData, updateListMapping }) => {
           })
         : null;
     });
-    const del = await deleteMappingItems(deletedMappingIds);
+    const del = await callDeleteMappingItems(deletedMappingIds);
     updateListMapping();
   };
 
-  const deleteConfirm = async () => {
-    const confirm = await Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!",
-    });
-    return confirm.isConfirmed;
-  };
-
-  const deleteMappingItems = async (ids) => {
-    try {
-      const params = {
-        request: ids,
-      };
-      const { data } = await Api.deleteMappingItems(params);
-      if (!data || data.status != "success") {
-        toast.error("Delete failed!");
-      } else {
-        toast.success("Delete Successfully!");
-      }
-    } catch (error) {
-      toast.error("Delete failed!");
-    }
-  };
+  const AddSupportMessage = () => {
+    return (
+      <Container sx={{ textAlign: 'center', pb: 3 }}>
+        <Typography fontWeight={'bold'}>No data. Please add new catgeory or product</Typography>
+      </Container>
+    )
+  }
 
   useEffect(() => {
     fetchData(page, rowsPerPage);
@@ -120,31 +95,31 @@ const ListProductsBooking = ({ mappingData, updateListMapping }) => {
 
   return (
     <div>
-      <TableView
-        cols={columns}
-        columnWidths={columnWidths}
-        rows={paginatedData.map((row) => ({
-          ...row,
-          Actions: (
-            <Button
-              variant="outlined"
-              startIcon={<DeleteIcon />}
-              onClick={(e) => handleDeleteMappingItem(row)}
-            >
-              Delete
-            </Button>
-          ),
-        }))}
-        canBeDeleted={true}
-        onDeleteRows={handleDeleteMappingItems}
-      />
-      <TablePaginationCustom
-        count={data.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      />
+      {data.length == 0 ? (
+        <AddSupportMessage/>
+      ) : (
+        <>
+          <TableView
+            cols={columns}
+            columnWidths={columnWidths}
+            rows={paginatedData.map((row) => ({
+              ...row,
+
+            }))}
+            canBeDeleted={true}
+            onDeleteRows={handleDeleteMappingItems}
+            onChangeList={updateListMapping}
+          />
+          <TablePaginationCustom
+            count={data.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </>
+      ) }
+      
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React from "react";
 
-const CustomLoader = () => {
+const AdminLoader = () => {
   return (
     <div className="loader-wrapper">
       <div className="loader-container">
@@ -71,4 +71,4 @@ const CustomLoader = () => {
   );
 };
 
-export default CustomLoader;
+export default AdminLoader;
