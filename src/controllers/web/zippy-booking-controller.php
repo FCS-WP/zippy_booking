@@ -70,18 +70,18 @@ class Zippy_Booking_Controller
          */
 
         
-        $config_table_name = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
+        $options_table_name = ZIPPY_BOOKING_OPTIONS_TABLE_NAME;
 
-        $config_query = "SELECT allow_overlap FROM $config_table_name";
+        $config_query = "SELECT option_value FROM $options_table_name WHERE option_name = 'allow_overlap'";;
 
-
+          
         $config_results = $wpdb->get_results($config_query);
 
         if(empty($config_results)){
             return Zippy_Response_Handler::error('Failed to get booking config.');
         }
 
-        if($config_results->allow_overlap == 0){
+        if($config_results->allow_overlap == 'F'){
             $query = "SELECT booking_start_date, booking_start_time, booking_end_date, booking_end_time FROM $table_name WHERE product_id = $product_id";
             $results = $wpdb->get_results($query);
             if (!empty($results)) {
@@ -100,7 +100,9 @@ class Zippy_Booking_Controller
                 }
             }
         }
-
+        $default_status_query = "SELECT option_value FROM  $options_table_name WHERE option_name = 'default_booking_status'";
+        $default_status_result = $wpdb->get_var($default_status_query);
+        $default_booking_status = sanitize_text_field($default_status_result);
 
         $order = wc_create_order();
         $order->add_product($product, 1);
@@ -117,7 +119,7 @@ class Zippy_Booking_Controller
             'booking_end_date' => $booking_end_date,
             'booking_start_time' => $booking_start_time,
             'booking_end_time' => $booking_end_time,
-            'booking_status' => ZIPPY_BOOKING_BOOKING_STATUS_PENDING,
+            'booking_status' => $default_booking_status,
             'order_id' => $order_id,
         ));
 
@@ -137,7 +139,15 @@ class Zippy_Booking_Controller
         $order->update_meta_data('booking_end_time', $booking_end_time);
         $order->save();
 
-        $order->update_status(ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD);
+        if ($default_booking_status === 'pending') {
+            $order->update_status(ZIPPY_BOOKING_BOOKING_STATUS_ONHOLD);
+        } elseif ($default_booking_status === 'approved') {
+            $order->update_status(ZIPPY_BOOKING_BOOKING_STATUS_PENDING);
+        }
+        $order_payment_url = null;
+    if ($order->get_status() === 'pending') {
+        $order_payment_url = $order->get_checkout_payment_url();
+    }
         
         return Zippy_Response_Handler::success(
             array(
@@ -149,9 +159,10 @@ class Zippy_Booking_Controller
                 'booking_end_date' => $booking_end_date,
                 'booking_start_time' => $booking_start_time,
                 'booking_end_time' => $booking_end_time,
-                'booking_status' => ZIPPY_BOOKING_BOOKING_STATUS_PENDING,
+                'booking_status' => $default_booking_status,
                 'order_id' => $order_id,
                 'order_name' => $custom_order_name,
+                'order_payment_url' => $order_payment_url
             ),
             'Booking and order created successfully.'
         );
