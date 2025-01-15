@@ -26,7 +26,7 @@ class Zippy_Admin_Booking_Booking_Controller
             "email" => ["data_type" => "email"],
             "user_id" => ["data_type" => "number"],
             "order_id" => ["data_type" => "number"],
-            "booking_status" => ["data_type" => "string"],
+            "booking_status" => ["data_type" => "array"],
             "booking_start_date" => ["data_type" => "date"],
             "booking_start_time" => ["data_type" => "time"],
             "booking_end_date" => ["data_type" => "date"],
@@ -52,7 +52,7 @@ class Zippy_Admin_Booking_Booking_Controller
             "email" => sanitize_text_field($request->get_param('email')),
             "user_id" => sanitize_text_field($request->get_param('user_id')),
             "order_id" => sanitize_text_field($request->get_param('order_id')),
-            "booking_status" => sanitize_text_field($request->get_param('booking_status')),
+            "booking_status" => $request->get_param('booking_status'),
         ];
 
         $limit = intval($request->get_param('limit'));
@@ -65,11 +65,19 @@ class Zippy_Admin_Booking_Booking_Controller
         // Query on params
         $query = "SELECT * FROM $table_name WHERE 1=1";
         foreach ($query_param as $key => $value) {
-            if ($value !== "" && $value !== null) {
+            if ($value !== "" && $value !== null && $value !== 'booking_status') {
                 $query .= $wpdb->prepare(" AND $key = %s ", $value);
             }
         }
-
+        if (!empty($query_param["booking_status"])) {
+            $arr_status = array();
+            foreach ($query_param["booking_status"] as $key => $value) {
+               $arr_status[] = sanitize_text_field($value);
+            }
+            // Convert array into a string suitable for the IN clause
+            $placeholders = implode(',', array_fill(0, count($arr_status), '%s'));
+            $query .= $wpdb->prepare("AND booking_status IN ($placeholders)", ...$arr_status);
+        }
         $booking_start_date = sanitize_text_field($request->get_param('booking_start_date'));
         $booking_start_time = sanitize_text_field($request->get_param('booking_start_time'));
         $booking_end_date = sanitize_text_field($request->get_param('booking_end_date'));
