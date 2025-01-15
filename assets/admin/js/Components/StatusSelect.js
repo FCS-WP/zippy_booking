@@ -7,8 +7,6 @@ import { blue, orange, green, red } from "@mui/material/colors";
 const StatusSelect = ({ currentStatus, onStatusChange, isLoading }) => {
   const handleChange = (event) => {
     const newStatus = event.target.value;
-    console.log(newStatus,"ss");
-    
     onStatusChange(newStatus);
   };
 

@@ -57,47 +57,6 @@ const ListBooking = () => {
   const BOOKINGS_PER_PAGE = 9;
   const pageFocusRef = useRef(null);
 
-  // const getProductsCat = async () => {
-  //   setIsLoading(true);
-
-  //   const spCategories = await webApi.getSupportCategories();
-  //   if (!spCategories) {
-  //     toast.error("No data: Categories.");
-  //     return 0;
-  //   }
-  //   const response = spCategories.data;
-
-  //   if (response.data.categories.length == 0) {
-  //     toast.error("No data: Categories.");
-  //   }
-
-  //   const cats = [...response.data.categories];
-  //   if (cats.length == 0) {
-  //     toast.error("No data: Categories.");
-  //     setIsLoading(false);
-  //     return 0;
-  //   }
-
-  //   let dataProducts = [];
-
-  //   cats.map((category) => {
-  //     if (category.subcategories.length > 0) {
-  //       category.subcategories.map((subCategory) => {
-  //         dataProducts = [...dataProducts, ...subCategory.subcategory_products];
-  //       });
-  //     } else {
-  //       dataProducts = [...dataProducts, ...category.products_in_category];
-  //     }
-  //   });
-  //   dataProducts.length > 0
-  //     ? setProducts(dataProducts)
-  //     : toast.error("No data: Products");
-
-  //   setTimeout(() => {
-  //     setIsLoading(false);
-  //   }, [1000]);
-  // };
-
   const getBookingsData = async () => {
     if (!adminData.user_email) {
       setIsLoading(false);
@@ -118,7 +77,7 @@ const ListBooking = () => {
     }
 
     setBookings(dataBookings.data.data.bookings);
-    console.log("Bookings", dataBookings.data.data.bookings)
+
     handleFilterBooking(dataBookings.data.data.bookings);
   };
 
@@ -132,21 +91,14 @@ const ListBooking = () => {
     setSelectedBooking(null);
   };
 
-  // const getProductByBooking = (bookingData) => {
-  //   return products.find(
-  //     (item) => item.product_id == parseInt(bookingData.product_id)
-  //   );
-  // };
-
   const handlePayment = () => {
-    console.log(selectedBooking);
     if (selectedBooking.order.payment_link) {
       window.location.href = selectedBooking.order.payment_link;
       return true;
     }
     toast.error("Can not get payment link!");
     return false;
-  }
+  };
 
   const handleFilterBooking = (data) => {
     const filtered = data.filter((booking) => {
