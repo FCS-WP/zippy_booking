@@ -33,10 +33,12 @@ const SubTableHeader = (props) => {
     onChangeMasterCheckbox(!isMasterChecked);
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     const selectedLength = selectedRows ? Object.keys(selectedRows).length : 0;
     if (selectedLength > 0) {
-      const allTrue = Object.values(selectedRows).every((value) => value === true);
+      const allTrue = Object.values(selectedRows).every(
+        (value) => value === true
+      );
       if (allTrue && selectedLength == maxRows) {
         setIsMasterChecked(true);
         setIsMasterIndeterminate(false);
@@ -45,11 +47,13 @@ const SubTableHeader = (props) => {
         setIsMasterIndeterminate(true);
       }
     }
-    const allFalse = Object.values(selectedRows).every((value) => value === false);
+    const allFalse = Object.values(selectedRows).every(
+      (value) => value === false
+    );
     if (allFalse) {
       setIsMasterIndeterminate(false);
     }
-  }, [selectedRows])
+  }, [selectedRows]);
 
   return (
     <TableHead>
@@ -87,26 +91,33 @@ const SubTableHeader = (props) => {
 };
 
 const SubTableBody = (props) => {
-  const { rows, cols, onChangeData, UpdateSelectedRows, masterCheckedControl = {} } = props;
+  const {
+    rows,
+    cols,
+    onChangeData,
+    UpdateSelectedRows,
+    masterCheckedControl = {},
+  } = props;
   const columnWidths = [];
   const [selectedRows, setSelectedRows] = useState(masterCheckedControl);
 
   const handleRowCheckboxChange = (rowIndex) => {
-    setSelectedRows(({
+    setSelectedRows({
       ...masterCheckedControl,
       [rowIndex]: !masterCheckedControl[rowIndex],
-    }));
+    });
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     UpdateSelectedRows(selectedRows);
-  }, [selectedRows])
+  }, [selectedRows]);
 
   return (
     <TableBody sx={{ backgroundColor: "#fff" }}>
       {rows &&
         rows.map((row, rowIndex) => (
           <CustomTableRow
+            isSubtableRow={true}
             hover={true}
             key={rowIndex}
             row={row}
@@ -130,15 +141,15 @@ const SubTable = (props) => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [selectedRows, setSelectedRows] = useState([]);
 
-  const UpdateSelectedRows = (rows) =>{
+  const UpdateSelectedRows = (rows) => {
     setSelectedRows(rows);
   };
-  
+
   const closeLoading = async () => {
-    setTimeout(()=>{
-        setIsLoading(false);
+    setTimeout(() => {
+      setIsLoading(false);
     }, 1000);
-  }
+  };
 
   const getProductsInCategory = async () => {
     setIsLoading(true);
@@ -202,9 +213,9 @@ const SubTable = (props) => {
       return false;
     }
     const newSelection = {};
-    paginatedData.map((item, index)=>{
+    paginatedData.map((item, index) => {
       newSelection[index] = isChecked ? true : false;
-    })
+    });
     setSelectedRows(newSelection);
   };
 
@@ -214,27 +225,27 @@ const SubTable = (props) => {
 
   const ProductMessage = () => {
     return (
-      <Container sx={{ textAlign: 'center', pb: 3 }}>
-        <Typography fontWeight={'bold'}>No Product Found!</Typography>
+      <Container sx={{ textAlign: "center", pb: 3 }}>
+        <Typography fontWeight={"bold"}>No Product Found!</Typography>
       </Container>
-    )
-  }
+    );
+  };
 
   useEffect(() => {
     getProductsInCategory();
   }, []);
 
   return (
-    <Box sx={{ width: "100%", position: 'relative' }}>
+    <Box sx={{ width: "100%", position: "relative" }}>
       {isLoading ? (
         <AdminLoader />
       ) : (
-        <Fade in={true} unmountOnExit >
-            <Paper variant="outlined" sx={{ p: 3, pb: 1 }}>
+        <Fade in={true} unmountOnExit>
+          <Paper variant="outlined" sx={{ p: 3, pb: 1 }}>
             <Stack>
-                <Typography fontWeight={"600"}>
+              <Typography fontWeight={"600"}>
                 Products in {category.Name}
-                </Typography>
+              </Typography>
             </Stack>
             {data.length == 0 ? (
               <>
@@ -242,30 +253,30 @@ const SubTable = (props) => {
               </>
             ) : (
               <TableContainer>
-                  <Table>
+                <Table>
                   <SubTableHeader
-                      maxRows={paginatedData.length}
-                      selectedRows={selectedRows}
-                      onChangeMasterCheckbox={handleChangeMasterCheckbox}
-                      cols={cols}
+                    maxRows={paginatedData.length}
+                    selectedRows={selectedRows}
+                    onChangeMasterCheckbox={handleChangeMasterCheckbox}
+                    cols={cols}
                   />
                   <SubTableBody
-                      rows={paginatedData}
-                      cols={cols}
-                      onChangeData={onChangeData}
-                      UpdateSelectedRows={UpdateSelectedRows}
-                      masterCheckedControl={selectedRows}
+                    rows={paginatedData}
+                    cols={cols}
+                    onChangeData={onChangeData}
+                    UpdateSelectedRows={UpdateSelectedRows}
+                    masterCheckedControl={selectedRows}
                   />
-                  </Table>
-                  <TablePaginationCustom
+                </Table>
+                <TablePaginationCustom
                   count={data.length}
                   rowsPerPage={rowsPerPage}
                   page={page}
                   onPageChange={handleChangePage}
-                  />
+                />
               </TableContainer>
             )}
-            </Paper>
+          </Paper>
         </Fade>
       )}
     </Box>
