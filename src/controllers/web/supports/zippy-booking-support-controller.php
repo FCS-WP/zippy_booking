@@ -27,17 +27,17 @@ class Zippy_Booking_Support_Controller
 
 
         $items_id = $request->get_param('items_id');
-        $mapping_type = $request->get_param('mapping_type');
-
+        $mapping_type = $request["request"]['mapping_type'];
         if (empty($items_id)) {
             return Zippy_Response_Handler::error('Items ID is required.');
         }
 
-        $table_name = $wpdb->prefix . 'product_booking_mapping';
+        $table_name = $wpdb->prefix . 'products_booking';
 
         $exists = $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(*) FROM {$table_name} WHERE items_id = %d",
-            $items_id
+            "SELECT COUNT(*) FROM {$table_name} WHERE items_id = %d AND mapping_status = %s",
+            $items_id,
+            'include'
         ));
 
         if ($exists > 0) {
@@ -45,6 +45,7 @@ class Zippy_Booking_Support_Controller
         }
 
         $product = wc_get_product($items_id);
+
         if (!$product) {
             return Zippy_Response_Handler::error('Product not found.');
         }
@@ -57,9 +58,11 @@ class Zippy_Booking_Support_Controller
             array(
                 'items_id' => $items_id,
                 'mapping_type' => $mapping_type,
+                'mapping_status' => 'include',
             ),
             array(
                 '%d',
+                '%s',
                 '%s',
             )
         );
@@ -68,30 +71,31 @@ class Zippy_Booking_Support_Controller
             return Zippy_Response_Handler::error('Error inserting data into the database.');
         }
 
-        $meta_key = 'product_booking_mapping';
-        $meta_value = array(
-            'items_id' => $items_id,
-            'mapping_type' => $mapping_type,
-            'product_name' => $product_name,
-            'product_price' => $product_price
-        );
+        // $meta_key = 'product_booking_mapping';
+        // $meta_value = array(
+        //     'items_id' => $items_id,
+        //     'mapping_type' => $mapping_type,
+        //     'product_name' => $product_name,
+        //     'product_price' => $product_price
+        // );
 
-        $update_meta = update_post_meta($items_id, $meta_key, maybe_serialize($meta_value));
+        // $update_meta = update_post_meta($items_id, $meta_key, $meta_value);
 
-        if (!$update_meta) {
-            return Zippy_Response_Handler::error('Failed to add meta to the product.');
-        }
+        // if (!$update_meta) {
+        //     return Zippy_Response_Handler::error('Failed to add meta to the product.');
+        // }
 
         $added_item = array(
             'items_id' => $items_id,
             'mapping_type' => $mapping_type,
             'product_name' => $product_name,
             'product_price' => $product_price,
-            'meta_key' => $meta_key,
+            // 'meta_key' => $meta_key,
         );
 
         return Zippy_Response_Handler::success($added_item, 'Product booking mapping created successfully.');
     }
+
 
     public static function handle_support_booking_products(WP_REST_Request $request)
     {
@@ -103,25 +107,29 @@ class Zippy_Booking_Support_Controller
             return Zippy_Response_Handler::error('Products array is required and must be an array.');
         }
 
-        $table_name = $wpdb->prefix . 'product_booking_mapping';
+        $table_name = $wpdb->prefix . 'products_booking';
 
         $added_items = [];
         $duplicate_items = [];
+        $invalid_items = [];
 
         foreach ($products as $product) {
             $items_id = isset($product['items_id']) ? intval($product['items_id']) : null;
             $mapping_type = isset($product['mapping_type']) ? sanitize_text_field($product['mapping_type']) : null;
 
+            // Validate individual product
             if (!$items_id || !$mapping_type) {
+                $invalid_items[] = $product;
                 continue;
             }
 
-            $exists = $wpdb->get_var($wpdb->prepare(
-                "SELECT COUNT(*) FROM {$table_name} WHERE items_id = %d",
+            // Check existence in one query
+            $existing_data = $wpdb->get_row($wpdb->prepare(
+                "SELECT id, mapping_status FROM {$table_name} WHERE items_id = %d",
                 $items_id
             ));
 
-            if ($exists > 0) {
+            if ($existing_data && $existing_data->mapping_status === 'include') {
                 $duplicate_items[] = array(
                     'items_id' => $items_id,
                     'mapping_type' => $mapping_type,
@@ -129,59 +137,78 @@ class Zippy_Booking_Support_Controller
                 continue;
             }
 
+            // Fetch product details
             $product_data = wc_get_product($items_id);
             if (!$product_data) {
-                continue; // Skip if product is not found
+                $invalid_items[] = $product; // Skip invalid WooCommerce products
+                continue;
             }
 
             $product_name = $product_data->get_name();
             $product_price = $product_data->get_price();
 
-
-            $result = $wpdb->insert(
-                $table_name,
-                array(
-                    'items_id' => $items_id,
-                    'mapping_type' => $mapping_type,
-                ),
-                array(
-                    '%d',
-                    '%s',
-                )
-            );
-
-            if ($result !== false) {
-                $added_items[] = array(
-                    'items_id' => $items_id,
-                    'mapping_type' => $mapping_type,
-                    'product_name' => $product_name,
-                    'product_price' => $product_price,
+            // Insert or update database entry
+            if ($existing_data && $existing_data->mapping_status === 'exclude') {
+                $result = $wpdb->update(
+                    $table_name,
+                    array(
+                        'mapping_type' => $mapping_type,
+                        'mapping_status' => 'include'
+                    ),
+                    array('id' => $existing_data->id),
+                    array('%s', '%s'),
+                    array('%d')
+                );
+            } else {
+                $result = $wpdb->insert(
+                    $table_name,
+                    array(
+                        'items_id' => $items_id,
+                        'mapping_type' => $mapping_type,
+                        'mapping_status' => 'include'
+                    ),
+                    array('%d', '%s', '%s')
                 );
             }
+
+            if ($result === false) {
+                error_log("Database error: {$wpdb->last_error}");
+                continue; // Skip on database errors
+            }
+
+            $added_items[] = array(
+                'items_id' => $items_id,
+                'mapping_type' => $mapping_type,
+                'product_name' => $product_name,
+                'product_price' => $product_price,
+            );
         }
 
+        // Build response
         if (empty($added_items) && !empty($duplicate_items)) {
             return Zippy_Response_Handler::error('All provided items already exist in the database.', $duplicate_items);
         }
 
-        if (empty($added_items)) {
-            return Zippy_Response_Handler::error('No valid items were added to the database.');
+        if (empty($added_items) && empty($duplicate_items) && !empty($invalid_items)) {
+            return Zippy_Response_Handler::error('No valid items were added to the database. Some items were invalid.', $invalid_items);
         }
 
         return Zippy_Response_Handler::success(
             array(
                 'added_items' => $added_items,
                 'duplicate_items' => $duplicate_items,
+                'invalid_items' => $invalid_items,
             ),
             'Items booking mappings processed successfully.'
         );
     }
 
+
     public static function get_all_support_booking_items(WP_REST_Request $request)
     {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'product_booking_mapping';
+        $table_name = $wpdb->prefix . 'products_booking';
 
         try {
             // Rules
@@ -205,7 +232,7 @@ class Zippy_Booking_Support_Controller
 
             $items = $wpdb->get_results(
                 $wpdb->prepare(
-                    "SELECT items_id, mapping_type FROM {$table_name} ORDER BY CASE WHEN mapping_type = 'category' THEN 1 ELSE 2 END",
+                    "SELECT items_id, mapping_type FROM {$table_name} WHERE mapping_status = 'include' ORDER BY CASE WHEN mapping_type = 'category' THEN 1 ELSE 2 END",
                 ),
                 ARRAY_A
             );
@@ -223,7 +250,7 @@ class Zippy_Booking_Support_Controller
                     if ($product) {
                         $item['item_name'] = $product->get_name();
                         $item['item_price'] = $product->get_price();
-                        $item['item_extra_price'] = get_post_meta($product->get_id(),'_extra_price', true);
+                        $item['item_extra_price'] = get_post_meta($product->get_id(), '_extra_price', true);
                     }
                 } else {
 
@@ -355,18 +382,19 @@ class Zippy_Booking_Support_Controller
         global $wpdb;
 
         $items_id = $request->get_param('items_id');
-        $mapping_type = $request->get_param('mapping_type');
+        $mapping_type = $request["request"]['mapping_type'];
 
         if (empty($items_id) || $mapping_type !== 'category') {
             return Zippy_Response_Handler::error('Items ID is required and mapping type must be "category".');
         }
 
-        $table_name = $wpdb->prefix . 'product_booking_mapping';
+        $table_name = $wpdb->prefix . 'products_booking';
 
         $exists = $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(*) FROM {$table_name} WHERE items_id = %d AND mapping_type = %s",
+            "SELECT COUNT(*) FROM {$table_name} WHERE items_id = %d AND mapping_type = %s AND mapping_status = %s",
             $items_id,
-            $mapping_type
+            $mapping_type,
+            'include'
         ));
 
         if ($exists > 0) {
@@ -378,9 +406,11 @@ class Zippy_Booking_Support_Controller
             array(
                 'items_id' => $items_id,
                 'mapping_type' => $mapping_type,
+                'mapping_status' => 'include'
             ),
             array(
                 '%d',
+                '%s',
                 '%s',
             )
         );
@@ -510,7 +540,7 @@ class Zippy_Booking_Support_Controller
             return Zippy_Response_Handler::error('Categories array is required and must be an array.');
         }
 
-        $table_name = $wpdb->prefix . 'product_booking_mapping';
+        $table_name = $wpdb->prefix . 'products_booking';
 
         $added_items = [];
         $duplicate_items = [];
@@ -524,9 +554,10 @@ class Zippy_Booking_Support_Controller
             }
 
             $exists = $wpdb->get_var($wpdb->prepare(
-                "SELECT COUNT(*) FROM {$table_name} WHERE items_id = %d AND mapping_type = %s",
+                "SELECT COUNT(*) FROM {$table_name} WHERE items_id = %d AND mapping_type = %s AND mapping_status =%s",
                 $items_id,
-                $mapping_type
+                $mapping_type,
+                'include'
             ));
 
             if ($exists > 0) {
@@ -542,9 +573,11 @@ class Zippy_Booking_Support_Controller
                 array(
                     'items_id' => $items_id,
                     'mapping_type' => $mapping_type,
+                    'mapping_status' => 'include'
                 ),
                 array(
                     '%d',
+                    '%s',
                     '%s',
                 )
             );
@@ -668,16 +701,17 @@ class Zippy_Booking_Support_Controller
     {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'product_booking_mapping';
+        $table_name = $wpdb->prefix . 'products_booking';
         $requested_id = $request->get_param('category_id');
 
         if ($requested_id) {
             // Query data for a specific ID
             $items = $wpdb->get_results(
                 $wpdb->prepare(
-                    "SELECT items_id, mapping_type FROM {$table_name} WHERE mapping_type = %s AND items_id = %d",
+                    "SELECT items_id, mapping_type FROM {$table_name} WHERE mapping_type = %s AND items_id = %d AND mapping_status = %s",
                     'category',
-                    $requested_id
+                    $requested_id,
+                    'include'
                 ),
                 ARRAY_A
             );
@@ -685,8 +719,9 @@ class Zippy_Booking_Support_Controller
             // Query data for all categories
             $items = $wpdb->get_results(
                 $wpdb->prepare(
-                    "SELECT items_id, mapping_type FROM {$table_name} WHERE mapping_type = %s",
-                    'category'
+                    "SELECT items_id, mapping_type FROM {$table_name} WHERE mapping_type = %s AND mapping_status = %s",
+                    'category',
+                    'include'
                 ),
                 ARRAY_A
             );
@@ -798,17 +833,54 @@ class Zippy_Booking_Support_Controller
 
             $categories_data[] = $category_data;
         }
+        //Get product lists in category
+        foreach ($categories_data[0]['products_in_category'] as $product) {
+            $ids[] = $product['product_id'];
+        }
+
+        if (is_array($ids) && !empty($ids)) {
+            $placeholders = implode(',', array_fill(0, count($ids), '%d'));
+
+            $query = $wpdb->prepare(
+                "SELECT items_id
+                FROM {$table_name}
+                WHERE mapping_type = %s
+                AND items_id IN ($placeholders)
+                AND mapping_status = %s",
+                array_merge(['product'], $ids, ['exclude'])
+            );
+
+            // Execute the query
+
+            $product_exclude =  json_decode(json_encode($wpdb->get_results($query)));
+        } else {
+
+            $product_exclude = [];
+        }
+
+        $exclude_ids = array_column($product_exclude, 'items_id');
+
+        if (isset($categories_data[0]['products_in_category'])) {
+            $categories_data[0]['products_in_category'] = array_filter(
+                $categories_data[0]['products_in_category'],
+                function ($product) use ($exclude_ids) {
+                    return !in_array($product['product_id'], $exclude_ids);
+                }
+            );
+        }
 
         return Zippy_Response_Handler::success(
             array('categories' => $categories_data),
             $requested_id ? 'Category retrieved successfully.' : 'Categories retrieved successfully.'
         );
     }
+
     public static function delete_support_booking(WP_REST_Request $request)
     {
         $required_fields = [
             'items_id' => ['required' => true, 'data_type' => 'number'],
             'type' => ['required' => true, 'data_type' => 'range', 'allowed_values' => ['product', 'category']],
+            'mapping_type' => ['required' => false, 'data_type' => 'string'],
         ];
 
         // Validate Request Fields
@@ -824,11 +896,50 @@ class Zippy_Booking_Support_Controller
                 return Zippy_Response_Handler::error($validate);
             }
         }
+        global $wpdb;
+
+        $table_name = ZIPPY_BOOKING_PRODUCT_MAPPING_TABLE_NAME;
+        if (!empty($request["request"][0]['is_product_in_sub'])) {
+
+            try {
+                $items_id = sanitize_text_field($request["request"][0]['items_id']);
+
+                $type = sanitize_text_field($request["request"][0]['type']);
+
+                $result = $wpdb->insert(
+                    $table_name,
+                    array(
+                        'items_id' => $items_id,
+                        "mapping_type" => $type,
+                        'mapping_status' => 'exclude',
+                    ),
+                    array(
+                        '%d',
+                        '%s',
+                        '%s',
+                    )
+                );
+
+                $data = array(
+                    "items_id" => $items_id,
+                    "type" => $type,
+                    "mapping_status" => 'exclude'
+                );
+                if ($result) {
+
+                    return Zippy_Response_Handler::success($data);
+                } else {
+                    return Zippy_Response_Handler::error($data);
+                }
+            } catch (\Throwable $th) {
+                $message = $th->getMessage();
+                Zippy_Log_Action::log('delete_support_booking', json_encode($request), 'failure', $message);
+                return Zippy_Response_Handler::error($message);
+            }
+        }
 
         try {
-            global $wpdb;
 
-            $table_name = ZIPPY_BOOKING_PRODUCT_MAPPING_TABLE_NAME;
 
             $deleted_items = [];
 
@@ -839,9 +950,10 @@ class Zippy_Booking_Support_Controller
                 $item_type = $body["type"];
 
                 $sql = $wpdb->prepare(
-                    "SELECT * FROM {$table_name} WHERE items_id = %d AND mapping_type = %s",
+                    "SELECT * FROM {$table_name} WHERE items_id = %d AND mapping_type = %s AND mapping_status = %s",
                     $body["items_id"],
                     $body["type"],
+                    'include'
                 );
 
                 $count = count($wpdb->get_results($sql));
@@ -872,6 +984,7 @@ class Zippy_Booking_Support_Controller
 
                 $deleted_items[] = $body;
             }
+
             Zippy_Log_Action::log('delete_support_booking', json_encode($deleted_items), 'Success', 'Success');
             return Zippy_Response_Handler::success($deleted_items);
         } catch (\Throwable $th) {
@@ -880,6 +993,7 @@ class Zippy_Booking_Support_Controller
             return Zippy_Response_Handler::error($message);
         }
     }
+
     public static function update_product_price(WP_REST_Request $request)
     {
         $product_id = $request->get_param('product_id');

@@ -28,6 +28,7 @@ const CustomTableRow = memo(
     columnWidths,
     onChangeList = () => {},
     onChangeCheckbox,
+    isSubtableRow = false,
   }) => {
     const [showCollapse, setShowCollapse] = useState(false);
 
@@ -48,6 +49,10 @@ const CustomTableRow = memo(
         items_id: data.ID,
         type: data.Type,
       };
+
+      if (isSubtableRow) {
+        deletedData.is_product_in_sub = "true";
+      }
       const del = await callDeleteMappingItems([deletedData]);
       onChangeList();
     };
@@ -56,10 +61,7 @@ const CustomTableRow = memo(
       return (
         <Stack direction={"row"} gap={2}>
           {row.Type == "category" ? (
-            <IconButton
-              size="small"
-              onClick={(e) => handleListProduct(row)}
-            >
+            <IconButton size="small" onClick={(e) => handleListProduct(row)}>
               {showCollapse ? (
                 <KeyboardArrowUp fontSize={"20px"} />
               ) : (
@@ -93,7 +95,9 @@ const CustomTableRow = memo(
         <TableRow
           hover={hover}
           key={rowIndex}
-          sx={{ backgroundColor: (rowIndex % 2 === 0 && !hover) ? "#fafafa" : "#fff" }}
+          sx={{
+            backgroundColor: rowIndex % 2 === 0 && !hover ? "#fafafa" : "#fff",
+          }}
         >
           <TableCell padding="checkbox" style={{ textAlign: "center" }}>
             <FormControlLabel
@@ -126,9 +130,9 @@ const CustomTableRow = memo(
           <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
             <Collapse in={showCollapse} timeout="auto" unmountOnExit>
               <Box mt={4} mb={5}>
-                <SubTable 
+                <SubTable
                   category={row}
-                  cols={subTableColumns} 
+                  cols={subTableColumns}
                   onChangeData={onChangeList}
                 />
               </Box>
