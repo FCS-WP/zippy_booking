@@ -57,7 +57,6 @@ const Settings = () => {
   const [extraTimeEnabled, setExtraTimeEnabled] = useState({});
   const [holidayEnabled, setHolidayEnabled] = useState(false);
   const [holidays, setHolidays] = useState([]);
-  
 
   const parseTime = (timeString) => {
     if (!timeString) return null;
@@ -239,15 +238,18 @@ const Settings = () => {
     if (!startTime) return "";
     const closeTime = new Date(startTime);
     closeTime.setMinutes(closeTime.getMinutes() + duration);
-  
-    const formattedCloseAt = `${closeTime.getHours().toString().padStart(2, "0")}:${closeTime
+
+    const formattedCloseAt = `${closeTime
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${closeTime
       .getMinutes()
       .toString()
       .padStart(2, "0")}:00`;
-  
+
     return formattedCloseAt;
   };
-  
+
   const handleTimeChange = (day, slotIndex, field, value) => {
     const formattedValue = value
       ? `${value.getHours().toString().padStart(2, "0")}:${value
@@ -255,7 +257,7 @@ const Settings = () => {
           .toString()
           .padStart(2, "0")}:00`
       : "";
-  
+
     setSchedule((prev) =>
       prev.map((item) =>
         item.day === day
@@ -265,8 +267,7 @@ const Settings = () => {
                 if (index === slotIndex) {
                   if (field === "from") {
                     const newCloseAt = calculateCloseAt(value, duration);
-                    console.log(newCloseAt);
-  
+
                     return { ...slot, from: formattedValue, to: newCloseAt };
                   } else {
                     return { ...slot, [field]: formattedValue };
@@ -279,7 +280,6 @@ const Settings = () => {
       )
     );
   };
-  
 
   const handleExtraTimeChange = (day, slotIndex, field, value) => {
     const formattedValue = value
@@ -325,33 +325,34 @@ const Settings = () => {
   const handleAddHoliday = () => {
     setHolidays([...holidays, { label: "", date: null }]);
   };
-  
+
   const handleRemoveHoliday = (index) => {
     const updatedHolidays = holidays.filter((_, i) => i !== index);
     setHolidays(updatedHolidays);
   };
-  
+
   const handleHolidayChange = (index, key, value) => {
     const formattedValue = key === "date" && value ? new Date(value) : value;
+
     const updatedHolidays = holidays.map((holiday, i) =>
       i === index ? { ...holiday, [key]: formattedValue } : holiday
     );
+
     setHolidays(updatedHolidays);
   };
-  
-  
+
   const handleDefaultStatusChange = (newStatus) => {
     setDefaultStatus(newStatus);
   };
 
   const handleSaveChanges = async () => {
     setLoading(true);
-
+  
     const storeWorkingTime = schedule.map((item) => {
       const isOpen = item.slots.length > 0;
       const openSlot = item.slots[0] || {};
       const weekdayIndex = daysOfWeek.indexOf(item.day);
-
+  
       return {
         id: item.id || null,
         is_open: isOpen ? "T" : "F",
@@ -366,7 +367,14 @@ const Settings = () => {
         },
       };
     });
-
+  
+    const formattedHolidays = holidays.map((holiday) => ({
+      label: holiday.label,
+      date: holiday.date
+        ? new Date(holiday.date).toISOString().split("T")[0]
+        : "",
+    }));
+  
     const params = {
       booking_type: bookingType,
       store_email: storeEmail,
@@ -374,13 +382,14 @@ const Settings = () => {
       duration: duration,
       default_booking_status: defaultStatus,
       store_working_time: storeWorkingTime,
+      holiday: formattedHolidays,
     };
-
+  
     try {
       const response = isConfigExisting
         ? await Api.updateSettings({ id: configId, ...params })
         : await Api.createSettings(params);
-
+  
       if (response.data.status === "success") {
         toast.success(response.data.message || "Settings saved successfully!");
         if (!isConfigExisting) {
@@ -397,6 +406,7 @@ const Settings = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <Box p={4}>
@@ -737,7 +747,10 @@ const Settings = () => {
                   </TableContainer>
                   {/* Holiday Table */}
                   {holidayEnabled && (
-                    <TableContainer component={Paper}  style={{ marginTop: "20px" }}>
+                    <TableContainer
+                      component={Paper}
+                      style={{ marginTop: "20px" }}
+                    >
                       <Typography
                         variant="h6"
                         gutterBottom
@@ -772,17 +785,13 @@ const Settings = () => {
                               </TableCell>
                               <TableCell>
                                 <CustomeDatePicker
-                                  value={holiday.date}
-                                  onChange={(date) =>
+                                  startDate={holiday.date}
+                                  handleDateChange={(date) =>
                                     handleHolidayChange(index, "date", date)
                                   }
-                                  renderInput={(params) => (
-                                    <TextField
-                                      {...params}
-                                      size="small"
-                                      fullWidth
-                                    />
-                                  )}
+                                  placeholderText="Select a date"
+                                  isClearable={true}
+                                  selectsRange={false}
                                 />
                               </TableCell>
                               <TableCell>
