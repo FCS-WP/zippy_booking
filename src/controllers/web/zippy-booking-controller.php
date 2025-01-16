@@ -139,21 +139,34 @@ class Zippy_Booking_Controller
                 $extra_time_data = $config_extra_time["data"];
                 if(!empty($extra_time_data)){
                     foreach ($extra_time_data as $ext_time) {
-                        if($booking_start_time >= $ext_time["from"] && $booking_end_time <= $ext_time["to"]){
 
-                            // get extra price
-                            $product_price = get_post_meta($product_id, '_extra_price', true);
-                            if(empty($product_price)){
-                                return Zippy_Response_Handler::error("This product does not have Extra Price yet");
+
+                        $booking_start_timestamp = strtotime($ext_time["from"]);
+                        $booking_end_timestamp = strtotime($ext_time["to"]);
+                        $from_timestamp = strtotime($booking_start_time);
+                        $to_timestamp = strtotime($booking_end_time);
+
+                        // Kiểm tra trường hợp khung giờ tràn qua ngày hôm sau
+                        if ($to_timestamp < $from_timestamp) { // nếu config qua nữa đêm
+                            if($from_timestamp >= $booking_start_timestamp && $to_timestamp <= $booking_start_timestamp){
+                                $product_price = get_post_meta($product_id, '_extra_price', true);
+                                if(empty($product_price)){
+                                    return Zippy_Response_Handler::error("This product does not have Extra Price yet");
+                                }
+                            }
+                        } else {
+                            if($from_timestamp >= $booking_start_timestamp && $to_timestamp >= $booking_start_timestamp){
+                                $product_price = get_post_meta($product_id, '_extra_price', true);
+                                if(empty($product_price)){
+                                    return Zippy_Response_Handler::error("This product does not have Extra Price yet");
+                                }
                             }
                         }
                     }
                 }
             }
         }
-
-
-
+        var_dump($product_price);die;
         $default_status_query = get_option("default_booking_status");   
 
         

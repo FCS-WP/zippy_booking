@@ -106,6 +106,9 @@ class Zippy_Admin_Booking_Config_Controller
 
             $insert_id = [];
 
+            // init transaction
+            $wpdb->query('START TRANSACTION');
+
             /* Insert to config table */
             foreach ($store_working_time as $key => $value) {
                 $data = [
@@ -121,6 +124,9 @@ class Zippy_Admin_Booking_Config_Controller
                 $insert = $wpdb->insert($table_name, $data);
                 $insert_id[] = $wpdb->insert_id;
                 if ($insert == 0) {
+
+                    $wpdb->query('ROLLBACK');
+
                     $message = 'Failed to insert data';
                     Zippy_Log_Action::log('create_booking_configs', json_encode($data), 'failure', $message);
                     return Zippy_Response_Handler::error($message);
@@ -139,14 +145,18 @@ class Zippy_Admin_Booking_Config_Controller
             foreach ($options as $opt) {
                 $add = add_option($opt, sanitize_text_field($request[$opt]));
                 if (!$add) {
+                    $wpdb->query('ROLLBACK');
                     return Zippy_Response_Handler::error("Failed to insert $opt");
                 }
             }
+
+            $wpdb->query('COMMIT');
 
             Zippy_Log_Action::log('create_booking_configs', json_encode($request), 'Success', 'Success');
             return Zippy_Response_Handler::success($insert_id);
 
         } catch (\Throwable $th) {
+            $wpdb->query('ROLLBACK');
             $message = $th->getMessage();
             Zippy_Log_Action::log('create_booking_configs', json_encode($request), 'failure', $message);
             return Zippy_Response_Handler::error($message);
@@ -236,6 +246,9 @@ class Zippy_Admin_Booking_Config_Controller
                 }
             }
 
+            // init transaction
+            $wpdb->query('START TRANSACTION');
+
             /* Insert to config table */
             foreach ($store_working_time as $key => $value) {        
                 $data = [
@@ -249,6 +262,9 @@ class Zippy_Admin_Booking_Config_Controller
                 $update = $wpdb->update($table_name, $data, ["weekday" => $key]);
 
                 if ($update == 0) {
+
+                    $wpdb->query('ROLLBACK');
+
                     $message = 'Failed to update data';
                     Zippy_Log_Action::log('update_booking_configs', json_encode($request), 'failure', $message);
                     return Zippy_Response_Handler::error($message);
@@ -270,15 +286,19 @@ class Zippy_Admin_Booking_Config_Controller
                 if($get !== sanitize_text_field($request[$opt])){
                     $add = update_option($opt, sanitize_text_field($request[$opt]));
                     if (!$add) {
+                        $wpdb->query('ROLLBACK');
                         return Zippy_Response_Handler::error("Failed to update $opt");
                     }
                 }
             }
 
+            $wpdb->query('COMMIT');
+
             Zippy_Log_Action::log('update_booking_configs', json_encode($request), 'Success', 'Success');
             return Zippy_Response_Handler::success($request);
 
         } catch (\Throwable $th) {
+            $wpdb->query('ROLLBACK');
             $message = $th->getMessage();
             Zippy_Log_Action::log('update_booking_configs', json_encode($request), 'failure', $message);
             return Zippy_Response_Handler::error($message);
@@ -344,5 +364,52 @@ class Zippy_Admin_Booking_Config_Controller
             Zippy_Log_Action::log('get_booking_configs', json_encode([]), 'failure', $message);
             return Zippy_Response_Handler::error($message);
         }
+    }
+
+
+        /** 
+     * 
+     * 
+     * DELETE CONFIGS
+     * 
+     * */
+    public static function zippy_booking_delete_configs(WP_REST_Request $request)
+    {
+        global $wpdb;
+        $table_name = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
+
+        $query = "DELETE * FROM $table_name WHERE 1=1";
+
+        $wpdb->query("START TRANSACTION");
+
+        $results = $wpdb->get_results($query);
+
+        if($results == 0){
+            $wpdb->query("ROLLBACK");
+            Zippy_Response_Handler::error("Failed to delete in $table_name");
+        }
+
+        $options = [
+            "store_email",
+            "default_booking_status",
+            "booking_type",
+            "allow_overlap",
+            "duration",
+        ];
+
+        foreach ($options as $opt) {
+            $get = get_option($opt);
+            if($get !== sanitize_text_field($request[$opt])){
+                $remove = delete_option($opt, sanitize_text_field($request[$opt]));
+                if (!$remove) {
+                    $wpdb->query("ROLLBACK");
+                    return Zippy_Response_Handler::error("Failed to delete $opt");
+                }
+            }
+        }
+
+        $wpdb->query('COMMIT');
+        return Zippy_Response_Handler::success([]);
+
     }
 }
