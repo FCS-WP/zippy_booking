@@ -92,6 +92,24 @@ class Zippy_Admin_Booking_Config_Controller
 
         }
 
+
+        // check if store_email, default_booking_status,... exist
+        $options = [
+            "store_email",
+            "default_booking_status",
+            "booking_type",
+            "allow_overlap",
+            "duration",
+        ];
+
+
+        foreach ($options as $opt) {
+            $get = get_option($opt);
+            if (!empty($get)) {
+                return Zippy_Response_Handler::error("$opt already exist");
+            }
+        }
+
         try {
             //insert data to config table
 
@@ -223,6 +241,24 @@ class Zippy_Admin_Booking_Config_Controller
             }
 
         }
+
+
+        // check if store_email, default_booking_status,... exist
+        $options = [
+            "store_email",
+            "default_booking_status",
+            "booking_type",
+            "allow_overlap",
+            "duration",
+        ];
+
+        foreach ($options as $opt) {
+            $get = get_option($opt, sanitize_text_field($request[$opt]));
+            if (!$get) {
+                return Zippy_Response_Handler::error("$opt not found");
+            }
+        }
+
 
         try {
             global $wpdb;
