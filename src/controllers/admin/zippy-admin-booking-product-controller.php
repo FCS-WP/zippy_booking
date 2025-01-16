@@ -13,6 +13,7 @@ use DateTime;
 use Zippy_Booking\Utils\Zippy_Utils_Core;
 use Zippy_Booking\Src\App\Zippy_Response_Handler;
 use Zippy_Booking\Src\App\Models\Zippy_Request_Validation;
+use Zippy_booking\Src\App\Models\Zippy_Log_Action;
 
 defined('ABSPATH') or die();
 
@@ -113,6 +114,84 @@ class Zippy_Admin_Booking_Product_Controller
 
         } catch (Exception $e) {
             return Zippy_Response_Handler::error($e->getMessage());
+        }
+    }
+
+
+    public static function check_product_mapping (WP_REST_Request $request){
+        
+        $required_fields = [
+            "product_id" => ["required" => true, "data_type" => "number"],
+        ];
+
+        // Validate Request Fields
+        $validate = Zippy_Request_Validation::validate_request($required_fields, $request);
+        if(!empty($validate)){
+            return Zippy_Response_Handler::error($validate);
+        }
+
+        // check if product exist or not
+        $product_id = intval($request["product_id"]);
+
+
+        //message
+        $not_support_message = "This product is NOT support for booking";
+        $support_message = "This product is support for booking";
+        
+
+        $log_data = [
+            "product_id" => $product_id,
+        ];
+
+        $product = wc_get_product($product_id);
+        
+        // product not exist
+        if(empty($product)){
+            return Zippy_Response_Handler::error(ZIPPY_BOOKING_NOT_FOUND);
+        }
+
+
+        try {
+            global $wpdb;
+            $table_name = ZIPPY_BOOKING_PRODUCT_MAPPING_TABLE_NAME;
+
+            // check if product is mapped or not
+            $query = "SELECT * FROM $table_name WHERE items_id=$product_id AND mapping_type='product'";
+            $results = $wpdb->get_results($query);
+
+            if(!empty($results)){
+                foreach ($results as $res) {
+                    $mapping_status = $res->mapping_status;
+
+                    if($mapping_status == "exclude"){
+                        Zippy_Log_Action::log('check_product_mapping', json_encode($log_data), 'failure', $not_support_message);
+                        return Zippy_Response_Handler::success([], $not_support_message);
+                    } else if($mapping_status == "include"){
+                        Zippy_Log_Action::log('check_product_mapping', json_encode($log_data), 'failure', $support_message);
+                        return Zippy_Response_Handler::success([], $support_message);
+                    }
+                }
+            }
+
+            // check if product is belong to mapped category or not
+            $product_cats_ids = wc_get_product_term_ids( $product_id, 'product_cat' );
+            if(!empty($product_cats_ids)){
+                foreach ($product_cats_ids as $cate_id) {   
+                    $query = "SELECT * FROM $table_name WHERE items_id=$cate_id AND mapping_type='category' AND mapping_status='include'";
+                    $results = $wpdb->get_results($query);
+                    // return if found
+                    if(!empty($results)){
+                        Zippy_Log_Action::log('check_product_mapping', json_encode($log_data), 'failure', $support_message);
+                        return Zippy_Response_Handler::success([], $support_message);
+                    }
+                }
+            }
+            Zippy_Log_Action::log('check_product_mapping', json_encode($log_data), 'failure', $not_support_message);
+            return Zippy_Response_Handler::success([], $not_support_message);
+        } catch (\Throwable $th) {
+            $message = $th->getMessage();
+            Zippy_Log_Action::log('check_product_mapping', json_encode($log_data), 'failure', $message);
+            return Zippy_Response_Handler::error($th->getMessage());
         }
     }
 }
