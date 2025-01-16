@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { getCustomDayOfWeek, getAvailableTimeSlots } from "../helper/datetime";
 import Message from "./single-booking/Message";
-import { duration, Tooltip } from "@mui/material";
+import { duration, Tooltip, tooltipClasses } from "@mui/material";
+import { CustomToolTip } from "../custom-mui/CustomMui";
+
 const BookingTimeSlot = (props) => {
   const {
     config,
@@ -44,40 +46,47 @@ const BookingTimeSlot = (props) => {
     const appliedExtraPrice = `The surcharge has been applied.`;
 
     return (
-      <Tooltip
-        title={
-          data.isDisabled
-            ? disabledSlotText
+      <>
+        <CustomToolTip
+          title={
+            data.isDisabled
+              ? disabledSlotText
+              : data.isExtra
+              ? appliedExtraPrice
+              : ""
+          }
+          type={data.isDisabled
+            ? 'error'
             : data.isExtra
-            ? appliedExtraPrice
-            : ""
-        }
-        arrow
-      >
-        <div
-          role="button"
-          aria-disabled={data.isDisabled}
-          onClick={() => handleTimeSelect(data, index)}
-          className={`
-              slot-item
-              ${timeActive === index ? "active" : ""} 
-              ${data.isDisabled ? "disabled" : ""} 
-              ${data.isExtra ? "extra-slot" : ""}
-            `}
+            ? 'primary'
+            : ""}
+          arrow
         >
-          <p className="slot-title">
-            {data.start} - {data.end}
-          </p>
-          <span className="slot-price">
-            ${" "}
-            {data.isExtra
-              ? product.item_extra_price
+          <div
+            role="button"
+            aria-disabled={data.isDisabled}
+            onClick={() => handleTimeSelect(data, index)}
+            className={`
+                slot-item
+                ${timeActive === index ? "active" : ""} 
+                ${data.isDisabled ? "disabled" : ""} 
+                ${data.isExtra ? "extra-slot" : ""}
+              `}
+          >
+            <p className="slot-title">
+              {data.start} - {data.end}
+            </p>
+            <span className="slot-price">
+              ${" "}
+              {data.isExtra
                 ? product.item_extra_price
-                : product.item_price
-              : product.item_price}
-          </span>
-        </div>
-      </Tooltip>
+                  ? product.item_extra_price
+                  : product.item_price
+                : product.item_price}
+            </span>
+          </div>
+        </CustomToolTip>
+      </>
     );
   };
 
