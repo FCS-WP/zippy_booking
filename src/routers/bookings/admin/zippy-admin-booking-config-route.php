@@ -28,14 +28,6 @@ class Zippy_Admin_Booking_Config_Route extends Zippy_Booking_Router
         ));
 
 
-        // UPDATE plugin config
-        register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/configs', array(
-            'methods' => 'PUT',
-            'callback' => array(Zippy_Admin_Booking_Config_Controller::class, 'zippy_booking_update_configs'),
-            'permission_callback' => array(Zippy_Booking_Permission::class, 'zippy_permission_callback'),
-        ));
-
-
         // GET plugin config
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/configs', array(
             'methods' => 'GET',
