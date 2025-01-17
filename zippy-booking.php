@@ -161,8 +161,6 @@ use Zippy_Booking\Src\Web\Zippy_Booking_Web;
 
 use Zippy_Booking\Src\Woocommerce\Zippy_Woo_Booking;
 
-use Zippy_Booking\Src\Admin\Zippy_Uninstaller;
-
 /**
  *
  * Init Zippy Booking
@@ -175,6 +173,3 @@ Zippy_Woo_Booking::get_instance();
 Zippy_Booking_Web::get_instance();
 
 Zippy_Booking_Routers::get_instance();
-
-
-register_uninstall_hook( ZIPPY_BOOKING_BASENAME, [Zippy_Uninstaller::class, 'uninstall']);

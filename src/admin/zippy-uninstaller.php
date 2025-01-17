@@ -10,40 +10,10 @@ namespace Zippy_Booking\Src\Admin;
 
 defined('ABSPATH') or die();
 
-use Zippy_Booking\Utils\Zippy_Utils_Core;
-
 class Zippy_Uninstaller
 {
-  private static $_instance = null;
 
-  /**
-   * @return Zippy_Uninstaller
-   */
-
-  public static function get_instance()
-  {
-    if (is_null(self::$_instance)) {
-      self::$_instance = new self();
-    }
-    return self::$_instance;
-  }
-
-  public function __construct()
-  {
-  }
-
-
-  public static function uninstall() {
-    $instance = self::get_instance();
-
-    $instance->delete_booking_table();
-    $instance->delete_booking_config_table();
-    $instance->delete_product_booking_mapping();
-    $instance->delete_zippy_booking_log_table();
-  }
-
-  private function delete_booking_table()
-  {
+  public static function delete_booking_table(){
     global $wpdb;
 
     $table_name = $wpdb->prefix . 'bookings';
