@@ -22,7 +22,8 @@ const BookingForm = () => {
       setIsLoading(true);
       const response = await webApi.getConfigs();
       if (response?.data?.status === "success") {
-        setPluginConfigs(response.data.data);
+        const config = response.data.data;
+        setPluginConfigs(config);
       } else {
         toast.error("Failed to fetch booking configurations.");
       }
