@@ -6,18 +6,6 @@ const BookingDatePicker = ({ handleSelectDate , config }) => {
   
   // Parse working time configuration
   const workingTime = config.store_working_time;
-<<<<<<< HEAD
-  
-  // Get valid days of the week
-  const allowedDays = workingTime
-    .filter(item => item.is_open === 'T');
-  
-  // Disable unavailable days
-  const isDayDisabled = (date) => {
-    const dayOfWeek = date.getDay().toString();
-    const isOpen = allowedDays.some(date => date.is_open === 'T' && date.weekday === dayOfWeek);
-    return !isOpen;
-=======
 
   // Get valid days of the week
   const allowedDays = workingTime
@@ -27,7 +15,6 @@ const BookingDatePicker = ({ handleSelectDate , config }) => {
   const isDayDisabled = (date) => {
     const dayOfWeek = date.getDay();
     return !allowedDays.includes(dayOfWeek);
->>>>>>> d7f5441074c7878127d72021a1cac464ded8a3ed
   };
 
   const dateOnchange = (date) => {
