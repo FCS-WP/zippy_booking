@@ -13,43 +13,35 @@ defined('ABSPATH') or die();
 class Zippy_Uninstaller
 {
 
-  public static function delete_booking_table(){
+  public static function uninstall(){
     global $wpdb;
 
-    $table_name = $wpdb->prefix . 'bookings';
+    // DROP tables
 
-    $wpdb->query("DROP TABLE IF EXISTS $table_name");
-  }
+    $table_names = [
+      "bookings",
+      "booking_configs",
+      "products_booking",
+      "zippy_booking_log",
+    ];
 
-  function delete_booking_config_table()
-  {
-    global $wpdb;
-
-    $table_name = $wpdb->prefix . 'booking_configs';
-
-    $wpdb->query("DROP TABLE IF EXISTS $table_name");
-  }
-  function delete_product_booking_mapping()
-  {
-    global $wpdb;
-
-    $table_name = $wpdb->prefix . 'products_booking';
-
-    $wpdb->query("DROP TABLE IF EXISTS $table_name");
-  }
-  function remove_zippy_booking_api_token()
-  {
-    if (get_option(ZIPPY_BOOKING_API_TOKEN_NAME) == true) {
-      delete_option(ZIPPY_BOOKING_API_TOKEN_NAME);
+    foreach ($table_names as $name) {
+      $table_name = $wpdb->prefix . $name;
+      $wpdb->query("DROP TABLE IF EXISTS $table_name");
     }
-  }
 
-  function delete_zippy_booking_log_table()
-  {
-    global $wpdb;
 
-    $table_name = $wpdb->prefix . 'zippy_booking_log';
-
-    $wpdb->query("DROP TABLE IF EXISTS $table_name");
+    // DELETE options
+    $options = [
+      "zippy_booking_api_token",
+      "store_email",
+      "default_booking_status",
+      "booking_type",
+      "allow_overlap",
+      "duration",
+    ];
+    foreach ($options as $opt) {
+      delete_option($opt);
+    }
   }
 }

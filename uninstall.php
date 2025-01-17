@@ -13,4 +13,4 @@ require ZIPPY_BOOKING_DIR_PATH . '/includes/autoload.php';
 
 use Zippy_Booking\Src\Admin\Zippy_Uninstaller;
 
-Zippy_Uninstaller::delete_booking_table();
+Zippy_Uninstaller::uninstall();
