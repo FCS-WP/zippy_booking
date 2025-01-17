@@ -12,12 +12,12 @@ defined('ABSPATH') or die();
 
 use Zippy_Booking\Utils\Zippy_Utils_Core;
 
-class Zippy_Uninstall
+class Zippy_Uninstaller
 {
   private static $_instance = null;
 
   /**
-   * @return Zippy_Uninstall
+   * @return Zippy_Uninstaller
    */
 
   public static function get_instance()
@@ -30,22 +30,19 @@ class Zippy_Uninstall
 
   public function __construct()
   {
-    /* Delete Table Booking */
-    register_uninstall_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_booking_table'));
-
-    /* Delete Table Booking Config */
-    register_uninstall_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_booking_config_table'));
-
-    register_uninstall_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_product_booking_mapping'));
-
-    register_uninstall_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_zippy_booking_log_table'));
-
-    /* Delete Zippy API Token */
-    register_uninstall_hook(ZIPPY_BOOKING_BASENAME, array($this, 'remove_zippy_booking_api_token'));
   }
 
 
-  function delete_booking_table()
+  public static function uninstall() {
+    $instance = self::get_instance();
+
+    $instance->delete_booking_table();
+    $instance->delete_booking_config_table();
+    $instance->delete_product_booking_mapping();
+    $instance->delete_zippy_booking_log_table();
+  }
+
+  private function delete_booking_table()
   {
     global $wpdb;
 
