@@ -177,4 +177,4 @@ Zippy_Booking_Web::get_instance();
 Zippy_Booking_Routers::get_instance();
 
 
-register_uninstall_hook( __FILE__, [Zippy_Uninstaller::class, 'uninstall']);
+register_uninstall_hook( ZIPPY_BOOKING_BASENAME, [Zippy_Uninstaller::class, 'uninstall']);
