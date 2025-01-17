@@ -28,11 +28,12 @@ const HolidayTable = ({
   const handleSaveHolidays = async () => {
     try {
       const response = await Api.createOptions({
+
         option_name: ["zippy_booking_holiday_config"],
         option_data: [
           holidays.map((holiday) => ({
             label: holiday.label,
-            date: holiday.date,
+            date: new Date(holiday.date),
           })),
         ],
       });
