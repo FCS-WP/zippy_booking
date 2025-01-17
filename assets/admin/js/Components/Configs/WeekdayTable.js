@@ -59,8 +59,9 @@ const WeekdayTable = ({
                   <TableRow key={slotIndex}>
                     <TableCell>{item.day}</TableCell>
                     <TableCell width={"30%"}>
-                      <Box sx={{ width: "200px", border: "1px solid #ccc", borderRadius: "5px" }}>
+                      <Box sx={{ width: "100%", border: "1px solid #ccc", borderRadius: "5px" }}>
                         <TimePicker
+                          width = "100%"
                           selectedTime={parseTime(slot.from)}
                           onChange={(time) =>
                             handleTimeChange(item.day, slotIndex, "from", time)
@@ -70,8 +71,9 @@ const WeekdayTable = ({
                       </Box>
                     </TableCell>
                     <TableCell width={"30%"}>
-                      <Box sx={{ width: "200px", border: "1px solid #ccc", borderRadius: "5px" }}>
+                      <Box sx={{ width: "100%", border: "1px solid #ccc", borderRadius: "5px" }}>
                         <TimePicker
+                          width = "100%"
                           selectedTime={parseTime(slot.to)}
                           onChange={(time) =>
                             handleTimeChange(item.day, slotIndex, "to", time)
@@ -92,7 +94,6 @@ const WeekdayTable = ({
                               disabled={bookingType === "multiple"}
                             />
                           }
-                          label="Extra Time"
                         />
                       </TableCell>
                     )}
@@ -112,8 +113,9 @@ const WeekdayTable = ({
                     <TableRow key={`extra-${dayIndex}-${slotIndex}`} style={{ backgroundColor: "#f9f9f9" }}>
                       <TableCell></TableCell>
                       <TableCell width={"30%"}>
-                        <Box sx={{ width: "200px", border: "1px solid #ccc", borderRadius: "5px" }}>
+                        <Box sx={{ width: "100%", border: "1px solid #ccc", borderRadius: "5px" }}>
                           <TimePicker
+                            width = "100%"
                             selectedTime={parseTime(slot.from)}
                             onChange={(time) =>
                               handleExtraTimeChange(item.day, slotIndex, "from", time)
@@ -122,8 +124,9 @@ const WeekdayTable = ({
                         </Box>
                       </TableCell>
                       <TableCell width={"30%"}>
-                        <Box sx={{ width: "200px", border: "1px solid #ccc", borderRadius: "5px" }}>
-                          <TimePicker
+                        <Box sx={{ width: "100%", border: "1px solid #ccc", borderRadius: "5px" }}>
+                          <TimePicker 
+                            width = "100%"
                             selectedTime={parseTime(slot.to)}
                             onChange={(time) =>
                               handleExtraTimeChange(item.day, slotIndex, "to", time)

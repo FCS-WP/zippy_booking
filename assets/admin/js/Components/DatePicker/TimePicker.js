@@ -3,9 +3,9 @@ import DatePicker from 'react-datepicker';
 import { Box } from '@mui/material';
 
 // Custom TimePicker component
-const TimePicker = ({ selectedTime, onChange, duration }) => {
+const TimePicker = ({ selectedTime, onChange, duration, width = "200px" }) => {
   return (
-    <Box sx={{ width: "200px" }}>
+    <Box sx={{ width}}>
       <DatePicker
         selected={selectedTime}
         onChange={onChange}
