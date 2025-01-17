@@ -26,6 +26,14 @@ export const webApi = {
     return await makeRequest("/support-booking", params);
   },
 
+  async signIn (params) {
+    return await makeRequest("/zippy-signin", params, 'POST');
+  },
+
+  async registerAccount (params) {
+    return await makeRequest("/zippy-register", params, 'POST');
+  },
+
 
 
 
