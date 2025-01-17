@@ -1,4 +1,5 @@
 import React from "react";
+import { format } from "date-fns";
 import {
   Table,
   TableBody,
@@ -27,14 +28,14 @@ const HolidayTable = ({
 }) => {
   const handleSaveHolidays = async () => {
     try {
+      const data = holidays.map((holiday) => ({
+        label: holiday.label,
+        date: format(new Date(holiday.date), 'yyyy-MM-dd'),
+      }));
+
       const response = await Api.createOptions({
         option_name: ["zippy_booking_holiday_config"],
-        option_data: [
-          holidays.map((holiday) => ({
-            label: holiday.label,
-            date: holiday.date,
-          })),
-        ],
+        option_data: [data]
       });
 
       if (response.data.status === "success") {
@@ -84,8 +85,8 @@ const HolidayTable = ({
               </TableCell>
               <TableCell className="holiday-date">
                 <CustomeDatePicker
-                  startDate={holiday.date}
-                  handleDateChange={(date) =>
+                  startDate={holiday?.date ?? new Date()}
+                  handleDateChange={(date) => 
                     handleHolidayChange(index, "date", date)
                   }
                   placeholderText="Select a date"

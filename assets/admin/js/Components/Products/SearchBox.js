@@ -69,7 +69,7 @@ const SearchBox = ({ updateListMapping }) => {
       const { data } = await Api.searchByKeyword(params);
       return data.data;
     } catch (error) {
-      console.log("Error when search", error);
+      toast.error("Error when search");
     }
   };
 
@@ -198,7 +198,6 @@ const SearchBox = ({ updateListMapping }) => {
       setSelectedCategories([]);
       updateListMapping();
     } catch (error) {
-      console.log(error);
       toast.error("Can not add categories!");
     }
     setTimeout(() => {
@@ -245,7 +244,6 @@ const SearchBox = ({ updateListMapping }) => {
       setSelectedProducts([]);
       updateListMapping();
     } catch (error) {
-      console.log(error);
       toast.error("Can not add products!");
     }
     setTimeout(() => {
