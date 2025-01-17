@@ -146,14 +146,7 @@ class Zippy_Admin_Booking_Config_Controller
             ];
 
             foreach ($options as $opt) {
-                $update_data = [
-                    "value" => sanitize_text_field($request[$opt]),
-                    "updated_at" => current_time("mysql"),
-                ];
-                $update = update_option($opt, maybe_serialize($update_data));
-                if ($update == 0){
-                    return Zippy_Response_Handler::error("Failed to insert $opt");
-                }
+                $update = update_option($opt, sanitize_text_field($request[$opt]));
                 $response_data[$opt] = sanitize_text_field($request[$opt]);
             }
 
@@ -196,8 +189,8 @@ class Zippy_Admin_Booking_Config_Controller
             ];
 
             foreach ($options as $opt) {
-                $get = maybe_unserialize(get_option($opt));
-                $response[$opt] = $get["value"] ?? null;
+                $get = get_option($opt);
+                $response[$opt] = $get ?? null;
             }
 
             if (empty($results)) {
