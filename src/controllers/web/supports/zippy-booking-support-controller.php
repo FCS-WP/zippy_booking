@@ -14,7 +14,7 @@ use WP_Query;
 use Zippy_Booking\Src\App\Zippy_Response_Handler;
 use Zippy_Booking\Src\App\Models\Zippy_Request_Validation;
 use Zippy_booking\Src\App\Models\Zippy_Log_Action;
-
+use Zippy_Booking\Src\Services\Zippy_Booking_Helper;
 
 defined('ABSPATH') or die();
 
@@ -95,7 +95,6 @@ class Zippy_Booking_Support_Controller
 
         return Zippy_Response_Handler::success($added_item, 'Product booking mapping created successfully.');
     }
-
 
     public static function handle_support_booking_products(WP_REST_Request $request)
     {
@@ -275,6 +274,9 @@ class Zippy_Booking_Support_Controller
 
     public static function get_support_product_by_category($category)
     {
+        global $wpdb;
+        $helperServices = new Zippy_Booking_Helper();
+        $table_name = $wpdb->prefix .'products_booking';
         $categories_data = [];
 
         $term = get_term($category, 'product_cat');
@@ -319,7 +321,7 @@ class Zippy_Booking_Support_Controller
                 }
                 wp_reset_postdata();
             }
-
+            $subcategory_products = $helperServices->handle_include_products($subcategory_products, $table_name);
             $subcategories_data[] = array(
                 'subcategory_id' => $subcategory->term_id,
                 'subcategory_name' => $subcategory->name,
@@ -369,7 +371,7 @@ class Zippy_Booking_Support_Controller
                 wp_reset_postdata();
             }
 
-            $category_data = $products_in_category;
+            $category_data = $helperServices->handle_include_products($products_in_category, $table_name);
         }
 
         $categories_data = $category_data;
@@ -700,6 +702,7 @@ class Zippy_Booking_Support_Controller
     public static function get_all_support_booking_categories(WP_REST_Request $request)
     {
         global $wpdb;
+        $helperServices = new Zippy_Booking_Helper();
 
         $table_name = $wpdb->prefix . 'products_booking';
         $requested_id = $request->get_param('category_id');
@@ -781,6 +784,8 @@ class Zippy_Booking_Support_Controller
                     wp_reset_postdata();
                 }
 
+                $subcategory_products = $helperServices->handle_include_products($subcategory_products, $table_name);
+                
                 $subcategories_data[] = array(
                     'subcategory_id' => $subcategory->term_id,
                     'subcategory_name' => $subcategory->name,
@@ -811,7 +816,6 @@ class Zippy_Booking_Support_Controller
                         $product_name = get_the_title();
                         $product_price = get_post_meta($product_id, '_price', true);
                         $extra_price = get_post_meta($product_id, '_extra_price', true);
-
                         $products_in_category[] = array(
                             'product_id' => $product_id,
                             'product_name' => $product_name,
@@ -833,41 +837,12 @@ class Zippy_Booking_Support_Controller
 
             $categories_data[] = $category_data;
         }
+
         //Get product lists in category
-        foreach ($categories_data[0]['products_in_category'] as $product) {
-            $ids[] = $product['product_id'];
-        }
-
-        if (is_array($ids) && !empty($ids)) {
-            $placeholders = implode(',', array_fill(0, count($ids), '%d'));
-
-            $query = $wpdb->prepare(
-                "SELECT items_id
-                FROM {$table_name}
-                WHERE mapping_type = %s
-                AND items_id IN ($placeholders)
-                AND mapping_status = %s",
-                array_merge(['product'], $ids, ['exclude'])
-            );
-
-            // Execute the query
-
-            $product_exclude =  json_decode(json_encode($wpdb->get_results($query)));
-        } else {
-
-            $product_exclude = [];
-        }
-
-        $exclude_ids = array_column($product_exclude, 'items_id');
-
-        if (isset($categories_data[0]['products_in_category'])) {
-            $categories_data[0]['products_in_category'] = array_filter(
-                $categories_data[0]['products_in_category'],
-                function ($product) use ($exclude_ids) {
-                    return !in_array($product['product_id'], $exclude_ids);
-                }
-            );
-        }
+        $categories_data[0]['products_in_category'] = $helperServices->handle_include_products(
+            $categories_data[0]['products_in_category'],
+            $table_name
+        );
 
         return Zippy_Response_Handler::success(
             array('categories' => $categories_data),

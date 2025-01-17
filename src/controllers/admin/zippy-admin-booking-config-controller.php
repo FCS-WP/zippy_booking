@@ -33,7 +33,7 @@ class Zippy_Admin_Booking_Config_Controller
 
         // Rules
         $required_fields = [
-            "default_booking_status" => ["required" => true, "data_type" => "range", "allowed_values" => [ZIPPY_BOOKING_BOOKING_STATUS_PROCESSING, ZIPPY_BOOKING_BOOKING_STATUS_APPROVE]],
+            "default_booking_status" => ["required" => true, "data_type" => "range", "allowed_values" => [ZIPPY_BOOKING_BOOKING_STATUS_PENDING, ZIPPY_BOOKING_BOOKING_STATUS_APPROVE]],
             "store_email" => ["required" => true, "data_type" => "email"],
             "allow_overlap" => ["required" => true, "data_type" => "boolean"],
             "booking_type" => ["required" => true, "data_type" => "range", "allowed_values" => [ZIPPY_BOOKING_BOOKING_TYPE_SINGLE, ZIPPY_BOOKING_BOOKING_TYPE_MULTIPLE]],

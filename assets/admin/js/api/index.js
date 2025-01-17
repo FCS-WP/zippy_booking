@@ -33,4 +33,7 @@ export const Api = {
   async updateBookingProductPrices(params) {
     return await makeRequest("/support-booking/products/update-price", params, "POST");
   },
+  async createOptions(params) {
+    return await makeRequest("/zippy-options", params, "POST");
+  }
 };
