@@ -147,9 +147,6 @@ class Zippy_Admin_Booking_Config_Controller
 
             foreach ($options as $opt) {
                 $update = update_option($opt, sanitize_text_field($request[$opt]));
-                if ($update == 0){
-                    return Zippy_Response_Handler::error("Failed to insert $opt");
-                }
                 $response_data[$opt] = sanitize_text_field($request[$opt]);
             }
 
