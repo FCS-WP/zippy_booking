@@ -43,7 +43,6 @@ const Settings = () => {
   const [defaultStatus, setDefaultStatus] = useState("pending");
   const [loading, setLoading] = useState(true);
   const [configId, setConfigId] = useState(null);
-  const [isConfigExisting, setIsConfigExisting] = useState(false);
   const [extraTimeEnabled, setExtraTimeEnabled] = useState({});
   const [holidayEnabled, setHolidayEnabled] = useState(false);
   const [holidays, setHolidays] = useState([]);
@@ -59,7 +58,6 @@ const Settings = () => {
           data.store_working_time &&
           data.store_working_time.length > 0
         ) {
-          setIsConfigExisting(true);
           setConfigId(data.id);
           const fetchedSchedule = daysOfWeek.map((day, index) => {
             const daySchedule = data.store_working_time.find(
@@ -105,18 +103,15 @@ const Settings = () => {
           setBookingType(data.booking_type || "single");
           setDefaultStatus(data.default_booking_status || "pending");
           const fetchedHolidays = data.holiday || [];
-          console.log(fetchedHolidays);
           setHolidays(fetchedHolidays);
           setHolidayEnabled(fetchedHolidays.length > 0);
         } else {
-          setIsConfigExisting(false);
           setSchedule(daysOfWeek.map((day) => ({ day, slots: [] })));
           setHolidays([]);
           setHolidayEnabled(false);
         }
       } catch (error) {
         console.error("Error fetching settings:", error);
-        setIsConfigExisting(false);
         setSchedule(daysOfWeek.map((day) => ({ day, slots: [] })));
         setHolidays([]);
         setHolidayEnabled(false);
@@ -355,16 +350,10 @@ const Settings = () => {
     };
 
     try {
-      const response = isConfigExisting
-        ? await Api.updateSettings({ id: configId, ...params })
-        : await Api.createSettings(params);
+      const response =await Api.createSettings(params);
 
       if (response.data.status === "success") {
         toast.success(response.data.message || "Settings saved successfully!");
-        if (!isConfigExisting) {
-          setConfigId(response.data.data.id);
-          setIsConfigExisting(true);
-        }
       } else {
         toast.error(response.data.message || "Error saving settings.");
       }

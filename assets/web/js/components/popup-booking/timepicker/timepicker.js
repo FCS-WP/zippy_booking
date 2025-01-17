@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 
 const Timepicker = ({ onStartTimeSelect, onEndTimeSelect, bookings, configs, configsDate }) => {
+
   const calculateTimeWithDurationAndRound = (durationMinutes) => {
     const initialTime = new Date();
     
@@ -47,7 +48,9 @@ const Timepicker = ({ onStartTimeSelect, onEndTimeSelect, bookings, configs, con
 
     const TimeStoreManage =  configs.store_working_time[indexDate];
 
-    const resultTime = calculateTimeWithDurationAndRound(TimeStoreManage.duration);
+    const resultTime = calculateTimeWithDurationAndRound(configs.duration);
+
+
     const [startTime, setStartTime] = useState(resultTime);
     const [endTime, setEndTime] = useState(resultTime);
 

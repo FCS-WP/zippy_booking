@@ -33,7 +33,7 @@ function BookingPopUp() {
   const [open, setOpen] = useState(false);
   const [openLogin, setOpenLogin] = useState(false);
   const [openRegister, setOpenRegister] = useState(false);
-  
+
   const handleOpen = () => {
     
     if(admin_data.userID == 0){
@@ -183,6 +183,23 @@ function BookingPopUp() {
       handleClose();
     }
   };
+
+  const checkMappingProduct = async () => {
+    
+    const params = {
+      product_id: productId,
+    };
+
+    const response = await webApi.mappingProduct(params);
+    
+    
+    if(response.data.data.booking != true){
+      console.log("Product not support");
+
+    }
+
+  }
+  checkMappingProduct();
 
   const createBooking = async () => {
     setIsLoading(true);
