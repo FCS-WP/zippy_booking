@@ -14,7 +14,7 @@ import {
   Box,
 } from "@mui/material";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import CustomeDatePicker from "../DatePicker/CustomeDatePicker";
 import { toast } from "react-toastify";
 import { Api } from "../../api";
@@ -49,13 +49,21 @@ const HolidayTable = ({
   };
 
   return (
-    <TableContainer component={Paper} style={{ marginTop: "20px" }}>
-      <Typography variant="h6" gutterBottom style={{ padding: "16px" }}>
+    <TableContainer
+      component={Paper}
+      style={{ marginTop: "20px" }}
+      className="holiday-table"
+    >
+      <Typography
+        variant="h6"
+        gutterBottom
+        style={{ padding: "16px", backgroundColor: "#f9f9f9",marginBottom:"0px" }}
+      >
         Holiday Settings
       </Typography>
       <Table>
         <TableHead>
-          <TableRow>
+          <TableRow sx={{ backgroundColor: "#f9f9f9" }}>
             <TableCell>Label</TableCell>
             <TableCell>Date</TableCell>
             <TableCell></TableCell>
@@ -97,17 +105,14 @@ const HolidayTable = ({
           ))}
           <TableRow>
             <TableCell colSpan={3} align="center">
-            <IconButton
-                  color="success"
-                  onClick={() => handleAddHoliday()}
-                >
-                  <AddCircleOutlineIcon />
-                </IconButton>
+              <IconButton color="success" onClick={() => handleAddHoliday()}>
+                <AddCircleOutlineIcon />
+              </IconButton>
             </TableCell>
           </TableRow>
         </TableBody>
       </Table>
-      <Box mt={2}>
+      <Box m={2}>
         <Button
           variant="contained"
           color="secondary"

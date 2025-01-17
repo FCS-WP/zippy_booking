@@ -1,18 +1,28 @@
 // WeekdayTable.js
-import React from 'react';
+import React from "react";
 import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, FormControlLabel, Switch, Box , Paper
-} from '@mui/material';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
-import TimePicker from '../DatePicker/TimePicker';
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  IconButton,
+  FormControlLabel,
+  Switch,
+  Box,
+  Paper,
+} from "@mui/material";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import TimePicker from "../DatePicker/TimePicker";
 const parseTime = (timeString) => {
-    if (!timeString) return null;
-    const [hours, minutes] = timeString.split(":").map(Number);
-    const now = new Date();
-    now.setHours(hours, minutes, 0);
-    return now;
-  };
+  if (!timeString) return null;
+  const [hours, minutes] = timeString.split(":").map(Number);
+  const now = new Date();
+  now.setHours(hours, minutes, 0);
+  return now;
+};
 const WeekdayTable = ({
   schedule,
   bookingType,
@@ -25,13 +35,13 @@ const WeekdayTable = ({
   handleAddExtraTimeSlot,
   handleRemoveExtraTimeSlot,
   handleExtraTimeChange,
-  duration
+  duration,
 }) => {
   return (
-    <TableContainer component={Paper}>
+    <TableContainer component={Paper} className="weekday-table">
       <Table>
         <TableHead>
-          <TableRow>
+          <TableRow sx={{ backgroundColor: "#f9f9f9" }}>
             <TableCell>Day</TableCell>
             <TableCell>From</TableCell>
             <TableCell>To</TableCell>
@@ -59,8 +69,11 @@ const WeekdayTable = ({
                   <TableRow key={slotIndex}>
                     <TableCell>{item.day}</TableCell>
                     <TableCell width={"30%"}>
-                      <Box sx={{ width: "200px", border: "1px solid #ccc", borderRadius: "5px" }}>
+                      <Box
+                        sx={{ border: "1px solid #ccc", borderRadius: "5px" }}
+                      >
                         <TimePicker
+                          width={"100%"}
                           selectedTime={parseTime(slot.from)}
                           onChange={(time) =>
                             handleTimeChange(item.day, slotIndex, "from", time)
@@ -70,8 +83,14 @@ const WeekdayTable = ({
                       </Box>
                     </TableCell>
                     <TableCell width={"30%"}>
-                      <Box sx={{ width: "200px", border: "1px solid #ccc", borderRadius: "5px" }}>
+                      <Box
+                        sx={{
+                          border: "1px solid #ccc",
+                          borderRadius: "5px",
+                        }}
+                      >
                         <TimePicker
+                        width={"100%"}
                           selectedTime={parseTime(slot.to)}
                           onChange={(time) =>
                             handleTimeChange(item.day, slotIndex, "to", time)
@@ -87,17 +106,23 @@ const WeekdayTable = ({
                             <Switch
                               checked={extraTimeEnabled[item.day] || false}
                               onChange={(e) =>
-                                handleExtraTimeToggle(item.day, e.target.checked)
+                                handleExtraTimeToggle(
+                                  item.day,
+                                  e.target.checked
+                                )
                               }
                               disabled={bookingType === "multiple"}
                             />
                           }
-                          label="Extra Time"
                         />
                       </TableCell>
                     )}
                     <TableCell>
-                      <IconButton onClick={() => handleRemoveTimeSlot(item.day, slotIndex)}>
+                      <IconButton
+                        onClick={() =>
+                          handleRemoveTimeSlot(item.day, slotIndex)
+                        }
+                      >
                         <RemoveCircleOutlineIcon color="error" />
                       </IconButton>
                     </TableCell>
@@ -109,35 +134,66 @@ const WeekdayTable = ({
                 extraTimeSlots
                   .find((extra) => extra.day === item.day)
                   ?.slots.map((slot, slotIndex) => (
-                    <TableRow key={`extra-${dayIndex}-${slotIndex}`} style={{ backgroundColor: "#f9f9f9" }}>
+                    <TableRow
+                      key={`extra-${dayIndex}-${slotIndex}`}
+                      style={{ backgroundColor: "#f9f9f9" }}
+                    >
                       <TableCell></TableCell>
                       <TableCell width={"30%"}>
-                        <Box sx={{ width: "200px", border: "1px solid #ccc", borderRadius: "5px" }}>
+                        <Box
+                          sx={{
+                            border: "1px solid #ccc",
+                            borderRadius: "5px",
+                          }}
+                        >
                           <TimePicker
+                          width={"100%"}
                             selectedTime={parseTime(slot.from)}
                             onChange={(time) =>
-                              handleExtraTimeChange(item.day, slotIndex, "from", time)
+                              handleExtraTimeChange(
+                                item.day,
+                                slotIndex,
+                                "from",
+                                time
+                              )
                             }
                           />
                         </Box>
                       </TableCell>
                       <TableCell width={"30%"}>
-                        <Box sx={{ width: "200px", border: "1px solid #ccc", borderRadius: "5px" }}>
+                        <Box
+                          sx={{
+                            border: "1px solid #ccc",
+                            borderRadius: "5px",
+                          }}
+                        >
                           <TimePicker
+                          width={"100%"}
                             selectedTime={parseTime(slot.to)}
                             onChange={(time) =>
-                              handleExtraTimeChange(item.day, slotIndex, "to", time)
+                              handleExtraTimeChange(
+                                item.day,
+                                slotIndex,
+                                "to",
+                                time
+                              )
                             }
                           />
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <IconButton onClick={() => handleAddExtraTimeSlot(item.day)}>
+                        <IconButton
+                          onClick={() => handleAddExtraTimeSlot(item.day)}
+                        >
                           <AddCircleOutlineIcon color="primary" />
                         </IconButton>
                       </TableCell>
                       <TableCell>
-                        <IconButton onClick={() => handleRemoveExtraTimeSlot(item.day, slotIndex)}>
+                        <IconButton
+                          onClick={() =>
+                            handleRemoveExtraTimeSlot(item.day, slotIndex)
+                          }
+                        >
                           <RemoveCircleOutlineIcon color="error" />
                         </IconButton>
                       </TableCell>
