@@ -9,6 +9,7 @@ import { toast, ToastContainer } from "react-toastify";
 import BookingFilter from "../../Components/BookingFilter";
 import { isInFilterDates } from "../../../../web/js/helper/datetime";
 import Loading from "../../Components/Loading";
+import { Container, Typography } from "@mui/material";
 
 const Index = () => {
   const pageTitle = "Bookings";
@@ -171,39 +172,53 @@ const Index = () => {
     setSearchQuery(value);
   };
 
+  const NoProductMessage = () => {
+    return (
+      <Container sx={{ textAlign: 'center', py: 3 }}>
+        <Typography fontWeight={'bold'} fontSize={20}>No booking found!</Typography>
+      </Container>
+    )
+  }
+
   return (
     <div className="custom-mui">
       <Header title={pageTitle} />
-      <BookingFilter
-        onChangeSearchQuery={handleChangeSearchQuery}
-        onChangeFilterDate={handleFilterDate}
-        onChangeFilterStatus={handleFilterStatus}
-      />
-      <TableView
-        cols={columns}
-        columnWidths={columnWidths}
-        rows={paginatedData.map((row) => ({
-          ...row,
-          Status: (
-            <StatusSelect
-              currentStatus={row.Status}
-              isLoading={!!loadingState.rows[row.ID]}
-              onStatusChange={(newStatus) => {
-                handleStatusChange(row.ID, newStatus);
-              }}
-            />
-          ),
-        }))}
-        showBookingFilter={true}
-      />
-
-      <TablePaginationCustom
-        count={filteredData.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      />
+      {paginatedData.length > 0 ? (
+        <>
+        <BookingFilter
+          onChangeSearchQuery={handleChangeSearchQuery}
+          onChangeFilterDate={handleFilterDate}
+          onChangeFilterStatus={handleFilterStatus}
+        />
+          <TableView
+            cols={columns}
+            columnWidths={columnWidths}
+            rows={paginatedData.map((row) => ({
+              ...row,
+              Status: (
+                <StatusSelect
+                  currentStatus={row.Status}
+                  isLoading={!!loadingState.rows[row.ID]}
+                  onStatusChange={(newStatus) => {
+                    handleStatusChange(row.ID, newStatus);
+                  }}
+                />
+              ),
+            }))}
+            showBookingFilter={true}
+          />
+    
+          <TablePaginationCustom
+            count={filteredData.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </>
+      ) : (
+        <NoProductMessage />
+      )}
       <ToastContainer />
     </div>
   );
