@@ -25,11 +25,13 @@ const BookingTimeSlot = (props) => {
       const date = getCustomDayOfWeek(selectedDate);
       const configTime = workingTimeByWeekday[date];
       const duration = config.duration;
+      const holidays = config.holiday;
       const timeSlots = getAvailableTimeSlots(
         configTime,
         bookingInfo,
         selectedDate,
-        duration
+        duration,
+        holidays
       );
       setSlots(timeSlots);
     }

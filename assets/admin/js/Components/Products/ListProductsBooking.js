@@ -95,9 +95,7 @@ const ListProductsBooking = ({ mappingData, updateListMapping }) => {
 
   return (
     <div>
-      {data.length == 0 ? (
-        <AddSupportMessage/>
-      ) : (
+      {data.length !== 0 && (
         <>
           <TableView
             cols={columns}
