@@ -138,12 +138,13 @@ class Zippy_Admin_Booking_Product_Controller
 
 
         //message
-        $not_support_message = "This product is NOT support for booking";
-        $support_message = "This product is support for booking";
+        $not_support_message = "This product is NOT use for booking";
+        $support_message = "This product is use for booking";
         
 
         $log_data = [
             "product_id" => $product_id,
+            "booking" => false,
         ];
 
         $product = wc_get_product($product_id);
@@ -177,6 +178,7 @@ class Zippy_Admin_Booking_Product_Controller
                         $response_data['regular_price'] = get_post_meta($product_id, '_regular_price', true);
                         $response_data['sale_price'] = get_post_meta($product_id, '_sale_price', true);
                         $response_data['extra_price'] = get_post_meta($product_id, '_extra_price', true);
+                        $response_data['booking'] = true;
                         
                         Zippy_Log_Action::log('check_product_mapping', json_encode($log_data), 'Success', $support_message);
                         return Zippy_Response_Handler::success($response_data, $support_message);
@@ -195,6 +197,7 @@ class Zippy_Admin_Booking_Product_Controller
                         $response_data['regular_price'] = get_post_meta($product_id, '_regular_price', true);
                         $response_data['sale_price'] = get_post_meta($product_id, '_sale_price', true);
                         $response_data['extra_price'] = get_post_meta($product_id, '_extra_price', true);
+                        $response_data['booking'] = true;
                         Zippy_Log_Action::log('check_product_mapping', json_encode($log_data), 'Success', $support_message);
                         return Zippy_Response_Handler::success($response_data, $support_message);
                     }
