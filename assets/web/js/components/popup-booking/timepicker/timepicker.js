@@ -24,10 +24,7 @@ const Timepicker = ({ onStartTimeSelect, onEndTimeSelect, bookings, configs, con
     return roundedTime;
   };
 
-    const resultTime = calculateTimeWithDurationAndRound(configs.duration);
-    const [startTime, setStartTime] = useState(resultTime);
-    const [endTime, setEndTime] = useState(resultTime);
-    
+
     const formatDate = (dateString) => {
       const dateObject = new Date(dateString);
       const year = dateObject.getFullYear();
@@ -48,23 +45,29 @@ const Timepicker = ({ onStartTimeSelect, onEndTimeSelect, bookings, configs, con
 
     const indexDate = parseInt(getDayOfWeek(new Date(formatDate(configsDate))), 10);
 
-    const TimeStore =  configs.store_working_time.find(day => day.weekday === indexDate);
+    const TimeStoreManage =  configs.store_working_time[indexDate];
+
+    const resultTime = calculateTimeWithDurationAndRound(TimeStoreManage.duration);
+    const [startTime, setStartTime] = useState(resultTime);
+    const [endTime, setEndTime] = useState(resultTime);
 
     const currentTime = new Date();
     const hoursCurrent = currentTime.getHours();
-    let minTimeConfig = 0;
-
-    if( (hoursCurrent > parseTime(TimeStore.open_at).hours) && (formatDate(currentTime) == formatDate(configsDate))  ){
-      minTimeConfig = hoursCurrent;
+    let minTimeConfigTempHour = 0;
+    let minTimeConfigTempminutes = 0;
+    
+    if( (hoursCurrent > parseTime(TimeStoreManage.open_at).hours) && (formatDate(currentTime) == formatDate(configsDate))  ){
+      minTimeConfigTempHour = startTime.getHours();
+      minTimeConfigTempminutes = startTime.getMinutes();
     }else{
-      minTimeConfig = parseTime(TimeStore.open_at).hours;
+      minTimeConfigTempHour = parseTime(TimeStoreManage.open_at).hours;
     }
 
     const minTime = new Date();
-    minTime.setHours(minTimeConfig,parseTime(TimeStore.open_at).minutes, 0); 
+    minTime.setHours(minTimeConfigTempHour,minTimeConfigTempminutes, 0); 
 
     const maxTime = new Date();
-    maxTime.setHours(parseTime(TimeStore.close_at).hours, parseTime(TimeStore.close_at).minutes, 0);
+    maxTime.setHours(parseTime(TimeStoreManage.close_at).hours, parseTime(TimeStoreManage.close_at).minutes, 0);
 
     const handleStartTimeChange = (time) => {
       setStartTime(time);
