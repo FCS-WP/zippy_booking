@@ -73,7 +73,10 @@ class Zippy_Admin_Booking_Product_Controller
                         if ($product) {
                             $response[] = [
                                 'id' => $product->get_id(),
-                                'name' => $product->get_name()
+                                'name' => $product->get_name(),
+                                'regular_price' => $product->get_meta('_regular_price'),
+                                'sale_price' => $product->get_meta('_sale_price'),
+                                'extra_price' => $product->get_meta('_extra_price')
                             ];
                         }
                     }
@@ -159,16 +162,24 @@ class Zippy_Admin_Booking_Product_Controller
             $query = "SELECT * FROM $table_name WHERE items_id=$product_id AND mapping_type='product'";
             $results = $wpdb->get_results($query);
 
+            $response_data = [
+                "product_id" => $product_id,
+            ];
+
             if(!empty($results)){
                 foreach ($results as $res) {
                     $mapping_status = $res->mapping_status;
 
                     if($mapping_status == "exclude"){
-                        Zippy_Log_Action::log('check_product_mapping', json_encode($log_data), 'failure', $not_support_message);
-                        return Zippy_Response_Handler::success([], $not_support_message);
+                        Zippy_Log_Action::log('check_product_mapping', json_encode($log_data), 'Success', $not_support_message);
+                        return Zippy_Response_Handler::success($response_data, $not_support_message);
                     } else if($mapping_status == "include"){
-                        Zippy_Log_Action::log('check_product_mapping', json_encode($log_data), 'failure', $support_message);
-                        return Zippy_Response_Handler::success([], $support_message);
+                        $response_data['regular_price'] = get_post_meta($product_id, '_regular_price', true);
+                        $response_data['sale_price'] = get_post_meta($product_id, '_sale_price', true);
+                        $response_data['extra_price'] = get_post_meta($product_id, '_extra_price', true);
+                        
+                        Zippy_Log_Action::log('check_product_mapping', json_encode($log_data), 'Success', $support_message);
+                        return Zippy_Response_Handler::success($response_data, $support_message);
                     }
                 }
             }
@@ -181,16 +192,19 @@ class Zippy_Admin_Booking_Product_Controller
                     $results = $wpdb->get_results($query);
                     // return if found
                     if(!empty($results)){
-                        Zippy_Log_Action::log('check_product_mapping', json_encode($log_data), 'failure', $support_message);
-                        return Zippy_Response_Handler::success([], $support_message);
+                        $response_data['regular_price'] = get_post_meta($product_id, '_regular_price', true);
+                        $response_data['sale_price'] = get_post_meta($product_id, '_sale_price', true);
+                        $response_data['extra_price'] = get_post_meta($product_id, '_extra_price', true);
+                        Zippy_Log_Action::log('check_product_mapping', json_encode($log_data), 'Success', $support_message);
+                        return Zippy_Response_Handler::success($response_data, $support_message);
                     }
                 }
             }
-            Zippy_Log_Action::log('check_product_mapping', json_encode($log_data), 'failure', $not_support_message);
-            return Zippy_Response_Handler::success([], $not_support_message);
+            Zippy_Log_Action::log('check_product_mapping', json_encode($log_data), 'Success', $not_support_message);
+            return Zippy_Response_Handler::success($response_data, $not_support_message);
         } catch (\Throwable $th) {
             $message = $th->getMessage();
-            Zippy_Log_Action::log('check_product_mapping', json_encode($log_data), 'failure', $message);
+            Zippy_Log_Action::log('check_product_mapping', json_encode($log_data), 'Failure', $message);
             return Zippy_Response_Handler::error($th->getMessage());
         }
     }
