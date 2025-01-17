@@ -144,7 +144,6 @@ class Zippy_Admin_Booking_Product_Controller
 
         $log_data = [
             "product_id" => $product_id,
-            "booking" => false,
         ];
 
         $product = wc_get_product($product_id);
@@ -165,6 +164,7 @@ class Zippy_Admin_Booking_Product_Controller
 
             $response_data = [
                 "product_id" => $product_id,
+                "booking" => false,
             ];
 
             if(!empty($results)){
