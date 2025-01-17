@@ -128,7 +128,7 @@ class Zippy_Booking_Controller
                 return Zippy_Response_Handler::error("Missing config for $booking_end_date");
             }
 
-            $config_extra_time = json_decode($config_results[0]->extra_time, true);
+            $config_extra_time = maybe_unserialize($config_results[0]->extra_time);
             // check if $booking_start_time and $booking_end_time is extra_time or not
             if (!empty($config_extra_time)) {
                 $convert_start_time = new DateTime($booking_start_time);
