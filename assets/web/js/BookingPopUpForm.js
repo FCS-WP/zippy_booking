@@ -21,6 +21,11 @@ function BookingPopUp() {
   const [configs, setConfigs] = useState([]);
   const [configsDate, setConfigsDate] = useState([new Date()]);
   const [isLoading, setIsLoading] = useState(false);
+  const [priceProduct, setPriceProduct] = useState("0");
+  const [priceExtraTime, setExtraTime] = useState("0");
+  const [statusExtraTime, setStatusExtraTime] = useState(false);
+  const [startExtraTime, setStartExtraTime] = useState("");
+  const [endExtraTime, setEndExtraTime] = useState("");
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -33,6 +38,16 @@ function BookingPopUp() {
   const [open, setOpen] = useState(false);
   const [openLogin, setOpenLogin] = useState(false);
   const [openRegister, setOpenRegister] = useState(false);
+
+  const [isBookingVisible, setIsBookingVisible] = useState(false);
+
+  const btnBooking = document.getElementById("btn_booking");
+  const productid = btnBooking?.dataset.idProduct;
+
+  const getDayOfWeek = (date) => {
+    const daysOfWeek = ["0", "1", "2", "3", "4", "5", "6"];
+    return daysOfWeek[date.getDay()];
+  };
 
   const handleOpen = () => {
     
@@ -168,11 +183,11 @@ function BookingPopUp() {
 
   const handleEndTimeSelect = (time) => {
     setSelectedEndTime(time);
+    
   };
 
   useEffect(() => {
-    const btnBooking = document.getElementById("btn_booking");
-    const productid = btnBooking?.dataset.idProduct;
+    
     setProductId(productid);
   }, []);
 
@@ -185,21 +200,25 @@ function BookingPopUp() {
   };
 
   const checkMappingProduct = async () => {
-    
-    const params = {
-      product_id: productId,
-    };
 
-    const response = await webApi.mappingProduct(params);
-    
-    
-    if(response.data.data.booking != true){
-      console.log("Product not support");
+    try {
+      const params = {
+        product_id: productId,
+      };
 
+      const response = await webApi.mappingProduct(params);
+
+      if (response.data.data.booking === true) {
+        setIsBookingVisible(true);
+      } else {
+        setIsBookingVisible(false);
+      }
+    } catch (error) {
+      console.error("Error fetching mapping product:", error);
+      setIsBookingVisible(false); 
     }
+  };
 
-  }
-  checkMappingProduct();
 
   const createBooking = async () => {
     setIsLoading(true);
@@ -285,7 +304,8 @@ function BookingPopUp() {
 
   useEffect(() => {
     getConfig();
-  }, []);
+    checkMappingProduct();
+  }, [productId]);
 
   const getAllBooking = async () => {
     try {
@@ -296,6 +316,31 @@ function BookingPopUp() {
       };
       const bookingsResponse = await webApi.getBookings(params);
       setBookings(bookingsResponse.data.data.bookings || []);
+      
+      const indexDate = parseInt(getDayOfWeek(new Date(format(selectedDate, "yyyy-MM-dd"))));
+      const configResponse = await webApi.getConfigs();
+      let extraTime = configResponse.data.data.store_working_time;
+
+      if(extraTime[indexDate].extra_time.is_active == 'T'){
+        setStatusExtraTime(true);
+        const responseMapping = await webApi.mappingProduct(params);
+        
+        const mappingInfor = responseMapping.data.data;
+        if(mappingInfor.sale_price == null){
+          setPriceProduct(mappingInfor.regular_price);
+        }else{
+          setPriceProduct(mappingInfor.sale_price);
+        }
+        setExtraTime(mappingInfor.extra_price);
+        setStartExtraTime(extraTime[indexDate].extra_time.data[0].from);
+        setEndExtraTime(extraTime[indexDate].extra_time.data[0].to);
+
+      }else{
+        setStatusExtraTime(false);
+      }
+
+      
+      
     } catch (err) {
       showAlert(
         "error",
@@ -313,9 +358,14 @@ function BookingPopUp() {
   
   return (
     <>
-      <button className="booking_popup_form" onClick={handleOpen}>
-        Booking
-      </button>
+      {isBookingVisible && (
+        <button
+          className="booking_popup_form"
+          onClick={handleOpen}
+        >
+          Booking
+        </button>
+      )}
       <Modal className="zippy-booking-popup" open={openRegister} onClose={handleClose}>
         <Box>
           <div className="booking_login_page">
@@ -437,6 +487,11 @@ function BookingPopUp() {
                     bookings={bookings}
                     configs={configs}
                     configsDate={configsDate}
+                    statusExtraTime={statusExtraTime}
+                    priceProduct={priceProduct}
+                    priceExtraTime={priceExtraTime}
+                    startExtraTime={startExtraTime}
+                    endExtraTime={endExtraTime}
                   />
                   <Prebooking bookings={bookings} />
                   {isLoading && <CustomLoader />}
