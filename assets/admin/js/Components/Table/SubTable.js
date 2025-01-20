@@ -58,22 +58,6 @@ const SubTableHeader = (props) => {
   return (
     <TableHead>
       <TableRow>
-        <TableCell
-          padding="checkbox"
-          style={{ width: "50px", textAlign: "center" }}
-        >
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={isMasterChecked}
-                indeterminate={isMasterIndeterminate}
-                onChange={handleChangeMasterCheckbox}
-                sx={{ textAlign: "center" }}
-              />
-            }
-            style={{ marginRight: 0 }}
-          />
-        </TableCell>
         {cols &&
           cols.map((col, index) => (
             <TableCell

@@ -23,7 +23,6 @@ const ProductsBooking = () => {
       setMappingData(data.data);
     } catch (error) {
       toast.error("Can not get data!");
-      console.log(error);
     }
     setTimeout(() => {
       setIsLoading(false);

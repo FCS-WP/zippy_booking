@@ -99,17 +99,19 @@ const CustomTableRow = memo(
             backgroundColor: rowIndex % 2 === 0 && !hover ? "#fafafa" : "#fff",
           }}
         >
-          <TableCell padding="checkbox" style={{ textAlign: "center" }}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={selectedRows[rowIndex] || false}
-                  onChange={() => onChangeCheckbox(rowIndex)}
-                />
-              }
-              style={{ marginRight: 0 }}
-            />
-          </TableCell>
+          {!isSubtableRow && (
+            <TableCell padding="checkbox" style={{ textAlign: "center" }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={selectedRows[rowIndex] || false}
+                    onChange={() => onChangeCheckbox(rowIndex)}
+                  />
+                }
+                style={{ marginRight: 0 }}
+              />
+            </TableCell>
+          )}
           {cols.map((col, colIndex) => (
             <TableCell
               key={colIndex}

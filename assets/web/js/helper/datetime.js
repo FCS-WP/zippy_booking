@@ -37,9 +37,14 @@ export const getTimeFromBooking = (booking) => {
 export const parseTime = (timeStr) => parse(timeStr, "HH:mm:ss", new Date());
 export const formatTime = (time) => format(time, "HH:mm:ss");
 
-export const getAvailableTimeSlots = (configTime, bookings = [], selectedDate = new Date(), duration) => {
+export const getAvailableTimeSlots = (
+  configTime,
+  bookings = [],
+  selectedDate = new Date(),
+  duration,
+  holidays = []
+) => {
   const { open_at, close_at } = configTime;
-
   // Generate time slots
   let timeSlots = handleTimeSlots(bookings, open_at, close_at, duration);
   let extraSlots = [];
@@ -59,8 +64,7 @@ export const getAvailableTimeSlots = (configTime, bookings = [], selectedDate = 
   }
 
   const filteredSlots = filterExtraSlots(timeSlots, extraSlots);
-  const results = handleDisablePastTime(filteredSlots, selectedDate);
-
+  const results = handleCheckbookingDate(filteredSlots, selectedDate, holidays);
   return results;
 };
 
@@ -81,27 +85,50 @@ const filterExtraSlots = (timeSlots, extraSlots) => {
   return sortSlots(results);
 };
 
-const handleDisablePastTime = (slots, selectedDate) => {
+const handleCheckbookingDate = (slots, selectedDate, holidays) => {
   const today = getBookingDate(new Date());
   const compareDate = getBookingDate(selectedDate);
+  let results = slots;
+  if (holidays.length > 0) {
+    let flag = false;
+    try {
+      const checkHoliday = holidays.find((holiday) => {
+        const holidate = getBookingDate(holiday.date);
+        if (holidate) {
+          return compareDate == holidate;
+        }
+      });
+      flag = checkHoliday ? true : false;
+    } catch (error) {
+      return false;
+    }
 
-  if (today !== compareDate) {
-    return slots;
+    if (flag) {
+      const changeSlots = slots.map((slot) => {
+        slot.isExtra = true;
+        return slot;
+      });
+      results = [...changeSlots];
+    }
   }
+  // Check today
+  if (today !== compareDate) {
+    return results;
+  }
+
   const now = formatTime(new Date());
   const timeNow = parseTime(now);
 
-  const results = slots.map((slot)=>{
+  const newResults = results.map((slot) => {
     const startTime = parseTime(slot.start);
     if (startTime <= timeNow) {
       slot.isDisabled = true;
     }
     return slot;
-  })
+  });
 
-  return results;
-}
-
+  return newResults;
+};
 
 const handleTimeSlots = (
   bookings,
