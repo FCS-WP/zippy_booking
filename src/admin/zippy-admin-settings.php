@@ -54,17 +54,17 @@ class Zippy_Admin_Settings
     register_activation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'create_zippy_booking_log_table'));
 
     /* Delete Table Booking */
-    register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_booking_table'));
+    // register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_booking_table'));
 
-    /* Delete Table Booking Config */
-    register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_booking_config_table'));
+    // /* Delete Table Booking Config */
+    // register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_booking_config_table'));
 
-    register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_product_booking_mapping'));
+    // register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_product_booking_mapping'));
 
-    register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_zippy_booking_log_table'));
+    // register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'delete_zippy_booking_log_table'));
 
-    /* Delete Zippy API Token */
-    register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'remove_zippy_booking_api_token'));
+    // /* Delete Zippy API Token */
+    // register_deactivation_hook(ZIPPY_BOOKING_BASENAME, array($this, 'remove_zippy_booking_api_token'));
   }
 
   public function admin_booking_assets()

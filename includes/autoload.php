@@ -4,6 +4,7 @@
  * file names whenever they are instantiated.
  *
  */
+
 spl_autoload_register(function( $filename ) {
 
 	// First, separate the components of the incoming file.
