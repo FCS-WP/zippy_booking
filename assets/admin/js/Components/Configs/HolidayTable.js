@@ -34,6 +34,7 @@ const HolidayTable = ({
       }));
 
       const response = await Api.createOptions({
+
         option_name: ["zippy_booking_holiday_config"],
         option_data: [data]
       });
