@@ -30,6 +30,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "@aldabil/react-scheduler": "^2.9.5",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^6.3.0",
