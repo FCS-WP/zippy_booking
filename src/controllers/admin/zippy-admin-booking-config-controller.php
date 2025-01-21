@@ -133,6 +133,7 @@ class Zippy_Admin_Booking_Config_Controller
                         return Zippy_Response_Handler::error($message);
                     }
                 }
+                $data["extra_time"] = $value['extra_time'];
                 $response_data["store_working_time"][] = $data;
             }
 
