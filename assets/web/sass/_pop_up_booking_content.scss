@@ -87,3 +87,19 @@
     }
   }
 }
+
+.flex-right{
+  display: flex;
+  justify-content: right;
+}
+
+.col_booking_time_price{
+  margin-bottom: 20px;
+  width: 100%;
+  .col_booking_time_price_row{
+    text-align: right;
+    span{
+      font-weight: bolder;
+    }
+  }
+}

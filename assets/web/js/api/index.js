@@ -34,7 +34,9 @@ export const webApi = {
     return await makeRequest("/zippy-register", params, 'POST');
   },
 
-
+  async mappingProduct (params) {
+    return await makeRequest("/mapping-product", params, 'GET');
+  },
 
 
   // async getWooCategories (params) {
