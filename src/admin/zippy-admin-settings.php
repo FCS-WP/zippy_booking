@@ -34,7 +34,7 @@ class Zippy_Admin_Settings
 
     /* Register Menu Admin Part */
     add_action('admin_menu',  array($this, 'zippy_booking_page'));
-
+    add_action('admin_enqueue_scripts', array($this, 'remove_default_stylesheets'));
     /* Register Assets Admin Part */
     add_action('admin_enqueue_scripts', array($this, 'admin_booking_assets'));
     add_action('woocommerce_order_status_changed', array($this, 'update_booking_status_in_db_on_order_status_change'), 10, 3);
@@ -89,9 +89,9 @@ class Zippy_Admin_Settings
   public function zippy_booking_page()
   {
     add_menu_page('Zippy Bookings', 'Zippy Bookings', 'manage_options', 'zippy-bookings', array($this, 'render'), 'dashicons-list-view', 6);
-    // SubPage 
+    // SubPage
     add_submenu_page('zippy-bookings', 'Bookings', 'Bookings', 'manage_options', 'bookings', array($this, 'bookings_render'));
-    add_submenu_page('zippy-bookings', 'Calander', 'Calander', 'manage_options', 'calander', array($this, 'render_calendar'));
+    add_submenu_page('zippy-bookings', 'Calander', 'Calander', 'manage_options', 'calander', array($this, 'calander_render'));
     add_submenu_page('zippy-bookings', 'Settings', 'Settings', 'manage_options', 'settings', array($this, 'settings_render'));
     add_submenu_page('zippy-bookings', 'Products Booking', 'Products Booking', 'manage_options', 'products-booking', array($this, 'render_products_booking'));
     add_submenu_page('zippy-bookings', 'Customize', 'Customize', 'manage_options', 'customize', array($this, 'render'));
@@ -210,18 +210,66 @@ class Zippy_Admin_Settings
     echo Zippy_Utils_Core::get_template('settings.php', [], dirname(__FILE__), '/templates');
   }
 
-  public function render_products_booking ()
+  public function render_products_booking()
   {
     echo Zippy_Utils_Core::get_template('booking-products.php', [], dirname(__FILE__), '/templates');
   }
-
-  public function render_calendar ()
+  public function calander_render()
   {
-    echo Zippy_Utils_Core::get_template('booking-calendar.php', [], dirname(__FILE__), '/templates');
+    echo Zippy_Utils_Core::get_template('booking-calander.php', [], dirname(__FILE__), '/templates');
+  }
+  public function remove_default_stylesheets($handle)
+  {
+    $apply_urls = [
+      'toplevel_page_zippy-bookings',
+      'zippy-bookings_page_bookings',
+      'zippy-bookings_page_calander',
+      'zippy-bookings_page_products-booking',
+      'zippy-bookings_page_customize'
+    ];
+
+    if (in_array($handle, $apply_urls)) {
+      // Deregister the 'forms' stylesheet
+      wp_deregister_style('forms');
+
+      add_action('admin_head', function () {
+        $admin_url = get_admin_url();
+        $styles_to_load = [
+          'dashicons',
+          'admin-bar',
+          'common',
+          'admin-menu',
+          'dashboard',
+          'list-tables',
+          'edit',
+          'revisions',
+          'media',
+          'themes',
+          'about',
+          'nav-menus',
+          'wp-pointer',
+          'widgets',
+          'site-icon',
+          'l10n',
+          'buttons',
+          'wp-auth-check'
+        ];
+
+        $wp_version = get_bloginfo('version');
+
+        // Generate the styles URL
+        $styles_url = $admin_url . '/load-styles.php?c=0&dir=ltr&load=' . implode(',', $styles_to_load) . '&ver=' . $wp_version;
+
+        // Enqueue the stylesheet
+        echo '<link rel="stylesheet" href="' . esc_url($styles_url) . '" media="all">';
+      });
+    }
   }
 
-  function generate_zippy_booking_api_token(){
-    if(get_option(ZIPPY_BOOKING_API_TOKEN_NAME) == false){
+
+  function generate_zippy_booking_api_token()
+  {
+    if (get_option(ZIPPY_BOOKING_API_TOKEN_NAME) == false) {
       add_option(ZIPPY_BOOKING_API_TOKEN_NAME, ZIPPY_BOOKING_API_TOKEN);
     }
   }
@@ -263,51 +311,50 @@ class Zippy_Admin_Settings
     $wpdb->query("DROP TABLE IF EXISTS $table_name");
   }
   public function update_booking_status_in_db_on_order_status_change($order_id, $old_status, $new_status)
-{
+  {
     global $wpdb;
 
     $order = wc_get_order($order_id);
 
     $booking_status = '';
     switch ($new_status) {
-        case 'on-hold':
-            $booking_status = 'pending';
-            break;
-        case 'pending':
-            $booking_status = 'approved';
-            break;
-        case 'completed':
-            $booking_status = 'completed';
-            break;
-        case 'cancelled':
-            $booking_status = 'cancelled';
-            break;
-        default:
-            return; 
+      case 'on-hold':
+        $booking_status = 'pending';
+        break;
+      case 'pending':
+        $booking_status = 'approved';
+        break;
+      case 'completed':
+        $booking_status = 'completed';
+        break;
+      case 'cancelled':
+        $booking_status = 'cancelled';
+        break;
+      default:
+        return;
     }
 
 
     $booking_id = $order->get_meta('booking_id');
     if (!$booking_id) {
-        error_log("Booking ID not found for order ID: " . $order_id);
-        return;
+      error_log("Booking ID not found for order ID: " . $order_id);
+      return;
     }
 
     $table_name = $wpdb->prefix . 'bookings';
-    
+
     $wpdb->update(
-        $table_name,
-        array('booking_status' => $booking_status),  
-        array('order_id' => $order_id),        
-        array('%s'), 
-        array('%d') 
+      $table_name,
+      array('booking_status' => $booking_status),
+      array('order_id' => $order_id),
+      array('%s'),
+      array('%d')
     );
 
     if ($wpdb->last_error) {
-        error_log("Error updating booking status for order ID " . $order_id . ": " . $wpdb->last_error);
+      error_log("Error updating booking status for order ID " . $order_id . ": " . $wpdb->last_error);
     } else {
-        error_log("Booking status updated to '$booking_status' for order ID " . $order_id);
+      error_log("Booking status updated to '$booking_status' for order ID " . $order_id);
     }
-}
-
+  }
 }
