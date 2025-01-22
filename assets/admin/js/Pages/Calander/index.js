@@ -1,30 +1,43 @@
-import { Stack } from "immutable";
 import React, { useState, useEffect } from "react";
 import Header from "../../Components/Layouts/Header";
-import { Scheduler } from "@aldabil/react-scheduler";
+import AdminLoader from "../../Components/AdminLoader";
+import { toast, ToastContainer } from "react-toastify";
+import ViewCalendar from "../../Components/Calendar/ViewCalendar";
+import { Box } from "@mui/material";
+import { Api } from "../../api";
 const Calander = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const title = "Bookings Canlander";
+  const [configs, setConfigs] = useState(null);
+
+  const getConfigs = async () => {
+    setIsLoading(true);
+    const { data: response } = await Api.getSettings();
+    if (response.status !== "success") {
+      toast.error("Can not get settings!!!");
+    } else {
+      setConfigs(response.data);
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    getConfigs();
+  }, []);
 
   return (
     <>
       <Header title={title}></Header>
-      <Scheduler
-        view="month"
-        events={[
-          {
-            event_id: 1,
-            title: "Event 1",
-            start: new Date("2021/5/2 09:30"),
-            end: new Date("2021/5/2 10:30"),
-          },
-          {
-            event_id: 2,
-            title: "Event 2",
-            start: new Date("2021/5/4 10:00"),
-            end: new Date("2021/5/4 11:00"),
-          },
-        ]}
-      />
+      <Box className="calendar-page">
+        {isLoading ? (
+          <Box sx={{ position: "relative", marginRight: "3rem" }}>
+            <AdminLoader />
+          </Box>
+        ) : (
+          <ViewCalendar configs={configs} />
+        )}
+        <ToastContainer />
+      </Box>
     </>
   );
 };
