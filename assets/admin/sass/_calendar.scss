@@ -1,0 +1,12 @@
+.custom-calendar {
+    .MuiPaper-root {
+        padding: 0 !important;
+        h2 {
+            font-weight: 600;
+        }
+        span.MuiTypography-root {
+            left: 0 !important;
+            text-align: end !important;
+        }
+    }
+}
