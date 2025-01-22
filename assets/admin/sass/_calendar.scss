@@ -1,4 +1,5 @@
 .custom-calendar {
+    position: relative;
     .MuiPaper-root {
         padding: 0 !important;
         h2 {
@@ -7,6 +8,14 @@
         span.MuiTypography-root {
             left: 0 !important;
             text-align: end !important;
+        }
+    }
+
+    .rs__cell {
+        .MuiTypography-root.MuiTypography-body1.rs__multi_day.rs__hover__op.css-aotdgp-MuiTypography-root  {
+            left: 0;
+            text-align: end;
+            font-size: 13px !important;
         }
     }
 }

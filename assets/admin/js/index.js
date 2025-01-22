@@ -9,7 +9,6 @@ import Calander from "./Pages/Calander";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import theme from "../theme/theme";
-import BookingCalendar from "./Pages/Calendar/BookingCalendar";
 
 function initializeApp() {
   const zippyBookings = document.getElementById("root_app");
