@@ -8,6 +8,8 @@ const theme = createTheme({
       pending: "#feb600",
       approve: "#009588",
       complete: "#007c00",
+      approved: "#90caf9",
+      cancelled: "#ef9a9a"
     },
     secondary: {
       main: "#216ba5",

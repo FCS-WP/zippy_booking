@@ -49,4 +49,48 @@ class Zippy_Booking_Helper
         
         return $data_products;
     }
+
+    public function filter_mapping_product ($products) {
+        global $wpdb;
+        $results = [];
+        $mapping_data = $wpdb->get_results("SELECT * FROM fcs_data_products_booking WHERE mapping_status != 'exclude'", ARRAY_A);
+        $mapping_ids = wp_list_pluck($mapping_data, 'items_id');
+        
+        foreach ($products as $product) {
+            $is_mapped = false;
+            $product_id = $product->get_id();
+            // Check if product is in the mapping table
+            if (in_array($product_id, $mapping_ids)) {
+                $is_mapped = true;
+            }
+
+            if (!$is_mapped) {
+                $check_exclude = $wpdb->get_results($wpdb->prepare(
+                    "SELECT * FROM fcs_data_products_booking WHERE items_id = %d AND mapping_status = 'exclude'", 
+                    $product_id
+                ));
+
+                if (!$check_exclude) {
+                    $category_ids = wp_get_post_terms($product_id, 'product_cat', ['fields' => 'ids']);
+                    foreach ($category_ids as $key => $cat_id) {
+                        if (in_array($cat_id, $mapping_ids)) {
+                            $is_mapped = true;
+                        }
+                    }
+                }
+            }
+            
+            if ($is_mapped) {
+                $results[] = [
+                    'item_id'    => $product->get_id(),
+                    'item_name'  => $product->get_name(),
+                    'item_price' => $product->get_price(),
+                    'item_extra_price' => get_post_meta($product->get_id(), '_extra_price', true),
+                ];
+            }
+           
+        }
+
+        return $results;
+    }
 }

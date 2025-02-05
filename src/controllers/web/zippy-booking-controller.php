@@ -232,6 +232,17 @@ class Zippy_Booking_Controller
             $order_payment_url = $order->get_checkout_payment_url();
         }
 
+        // Check order status and add payment link if pending
+        if (!empty($order)) {
+            $order_data = [
+                'ID' => $order_id,
+                'order_status' => $order ? $order->get_status() : 'invalid',
+                'order_total' => $order ? $order->get_total() : 0,
+                'payment_link' => ($order && $order->get_status() === 'pending') ? $order->get_checkout_payment_url() : null
+            ];
+            $order->order_data = $order_data;
+        }
+
         return Zippy_Response_Handler::success(
             array(
                 'booking_id' => $booking_id,
@@ -244,6 +255,7 @@ class Zippy_Booking_Controller
                 'booking_end_time' => $booking_end_time,
                 'booking_status' => $default_status_query,
                 'order_id' => $order_id,
+                'order' => $order->order_data,
                 'order_name' => $custom_order_name,
                 'order_payment_url' => $order_payment_url
             ),

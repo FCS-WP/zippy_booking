@@ -31,20 +31,22 @@ const Index = () => {
       const { data: responseData } = await Bookings.getBookings();
 
       if (responseData.status === "success") {
-        const bookings = responseData.data.bookings; 
-        const formattedData = bookings ? bookings.map((booking) => {
-          return {
-            ID: booking.ID,
-            Date:
-              formatDate(booking.booking_start_date) +
-              " - " +
-              formatDate(booking.booking_end_date),
-            Customer: booking.email,
-            Product: booking.product.name,
-            Status: booking.booking_status,
-            "Created Date": formatDate(booking.created_at),
-          };
-        }) : [];
+        const bookings = responseData.data.bookings;
+        const formattedData = bookings
+          ? bookings.map((booking) => {
+              return {
+                ID: booking.ID,
+                Date:
+                  formatDate(booking.booking_start_date) +
+                  " - " +
+                  formatDate(booking.booking_end_date),
+                Customer: booking.email,
+                Product: booking.product.name,
+                Status: booking.booking_status,
+                "Created Date": formatDate(booking.created_at),
+              };
+            })
+          : [];
 
         setData(formattedData);
       }
@@ -174,22 +176,24 @@ const Index = () => {
 
   const NoProductMessage = () => {
     return (
-      <Container sx={{ textAlign: 'center', py: 3 }}>
-        <Typography fontWeight={'bold'} fontSize={20}>No booking found!</Typography>
+      <Container sx={{ textAlign: "center", py: 3 }}>
+        <Typography fontWeight={"bold"} fontSize={20}>
+          No booking found!
+        </Typography>
       </Container>
-    )
-  }
+    );
+  };
 
   return (
     <div className="custom-mui">
       <Header title={pageTitle} />
+      <BookingFilter
+        onChangeSearchQuery={handleChangeSearchQuery}
+        onChangeFilterDate={handleFilterDate}
+        onChangeFilterStatus={handleFilterStatus}
+      />
       {paginatedData.length > 0 ? (
         <>
-        <BookingFilter
-          onChangeSearchQuery={handleChangeSearchQuery}
-          onChangeFilterDate={handleFilterDate}
-          onChangeFilterStatus={handleFilterStatus}
-        />
           <TableView
             cols={columns}
             columnWidths={columnWidths}
@@ -207,7 +211,6 @@ const Index = () => {
             }))}
             showBookingFilter={true}
           />
-    
           <TablePaginationCustom
             count={filteredData.length}
             rowsPerPage={rowsPerPage}
@@ -219,6 +222,7 @@ const Index = () => {
       ) : (
         <NoProductMessage />
       )}
+
       <ToastContainer />
     </div>
   );

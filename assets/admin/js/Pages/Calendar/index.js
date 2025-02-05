@@ -5,7 +5,7 @@ import { toast, ToastContainer } from "react-toastify";
 import ViewCalendar from "../../Components/Calendar/ViewCalendar";
 import { Box } from "@mui/material";
 import { Api } from "../../api";
-const Calander = () => {
+const Calendar = () => {
   const [isLoading, setIsLoading] = useState(false);
   const title = "Bookings Canlander";
   const [configs, setConfigs] = useState(null);
@@ -42,4 +42,4 @@ const Calander = () => {
   );
 };
 
-export default Calander;
+export default Calendar;
