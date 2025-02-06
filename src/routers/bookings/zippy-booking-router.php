@@ -110,9 +110,16 @@ class Zippy_Booking_Router
             'args' => Zippy_Api_Booking_Model::get_delete_category_args(),
             'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
         ));
+        
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/products/update-price', array(
             'methods' => 'POST',
             'callback' => [Zippy_Booking_Support_Controller::class, 'update_product_price'],
+            'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
+        ));
+
+        register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/search-mapping-products', array(
+            'methods' => 'GET',
+            'callback' => [Zippy_Booking_Support_Controller::class, 'search_mapping_products'],
             'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
         ));
     }

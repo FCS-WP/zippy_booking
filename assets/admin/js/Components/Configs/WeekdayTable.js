@@ -16,13 +16,8 @@ import {
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import TimePicker from "../DatePicker/TimePicker";
-const parseTime = (timeString) => {
-  if (!timeString) return null;
-  const [hours, minutes] = timeString.split(":").map(Number);
-  const now = new Date();
-  now.setHours(hours, minutes, 0);
-  return now;
-};
+import { parseTime } from "../../utils/dateHelper";
+
 const WeekdayTable = ({
   schedule,
   bookingType,

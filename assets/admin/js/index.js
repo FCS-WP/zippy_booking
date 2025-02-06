@@ -4,7 +4,7 @@ import Index from "./Pages/Bookings";
 import Dashboard from "./Pages/Dashboard";
 import Settings from "./Pages/Settings";
 import ProductsBooking from "./Pages/ProductsBooking";
-import Calander from "./Pages/Calander";
+import Calendar from "./Pages/Calendar";
 
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -62,7 +62,7 @@ function initializeApp() {
     root.render(
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Calander />
+        <Calendar />
       </ThemeProvider>
     );
   }
