@@ -6,7 +6,6 @@ import { Bookings } from "../../api/bookings";
 import { format } from "date-fns";
 import { toast } from "react-toastify";
 import EventView from "./EventView";
-import theme from "../../../theme/theme";
 import EditEventView from "./EditEventView";
 import { getEventColors } from "../../utils/bookingHelper";
 import { Box } from "@mui/material";
@@ -83,7 +82,7 @@ const ViewCalendar = ({ configs }) => {
           navigation: true,
         }}
         editable={true}
-        customEditor={(scheduler) => <EditEventView scheduler={scheduler} />}
+        customEditor={(scheduler) => <EditEventView configs={configs} scheduler={scheduler} />}
         getRemoteEvents={getScheduleEvent}
       />
     </Box>

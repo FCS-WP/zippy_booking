@@ -42,6 +42,12 @@ const EventView = ({ event, close }) => {
       </Grid2>
       <Grid2 container my={3} spacing={2}>
         <Grid2 size={{ xs: 12, sm: 6 }}>
+          <Typography fontWeight={600}>Product:</Typography>
+          <Typography variant="h6" fontSize={16}>
+             {booking?.product.name}
+          </Typography>
+        </Grid2>
+        <Grid2 size={{ xs: 12, sm: 6 }}>
           <Typography fontWeight={600}>Price:</Typography>
           <Typography variant="h6" fontSize={16}>
             $ {booking?.order?.order_total ?? ""}
@@ -52,6 +58,16 @@ const EventView = ({ event, close }) => {
           <Typography variant="h6" fontSize={16}>
             {booking?.email ?? ""}
           </Typography>
+        </Grid2>
+        <Grid2 size={{ xs: 12, sm: 6 }}>
+          <Typography fontWeight={600}>Status:</Typography>
+          <StatusSelect
+            currentStatus={bookingStatus}
+            isLoading={isStatusLoading}
+            onStatusChange={(newStatus) => {
+              handleStatusChange(booking.ID, newStatus);
+            }}
+          />
         </Grid2>
         <Grid2 size={{ xs: 12, sm: 6 }}>
           <Typography fontWeight={600}>Booking Start Date:</Typography>
@@ -65,17 +81,7 @@ const EventView = ({ event, close }) => {
             {`${booking.booking_end_date} ${booking.booking_end_time}`}
           </Typography>
         </Grid2>
-
-        <Grid2 size={{ xs: 12 }}>
-          <Typography fontWeight={600}>Status:</Typography>
-          <StatusSelect
-            currentStatus={bookingStatus}
-            isLoading={isStatusLoading}
-            onStatusChange={(newStatus) => {
-              handleStatusChange(booking.ID, newStatus);
-            }}
-          />
-        </Grid2>
+       
       </Grid2>
 
       <Divider />
