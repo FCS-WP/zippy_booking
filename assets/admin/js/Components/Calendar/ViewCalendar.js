@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Scheduler } from "@aldabil/react-scheduler";
 
 
@@ -12,6 +12,7 @@ import { Box } from "@mui/material";
 
 const ViewCalendar = ({ configs }) => {
   const [events, setEvents] = useState([]);
+  const timeRef = useRef([]);
   const duration = configs?.duration ?? 60;
   const [scheduleTimes, setScheduleTimes] = useState();
 
@@ -51,6 +52,7 @@ const ViewCalendar = ({ configs }) => {
     const newEvents = convertBookingsToEvents(response.data.bookings);
     setEvents(newEvents);
   };
+  
 
   const getScheduleEvent = (props) => {
     const { start, end, view } = props;
@@ -58,13 +60,23 @@ const ViewCalendar = ({ configs }) => {
     getEventsByTime(start, end);
   };  
 
+
+  const updateEvents = () => {
+    getScheduleEvent(timeRef.current);
+  }
+  
+  useEffect(()=>{
+    timeRef.current = scheduleTimes;
+  }, [scheduleTimes])
+
+
   return (
     <Box className="custom-calendar custom-mui">
       <Scheduler
         view="month"
         events={events}
         customViewer={(event, close) => (
-          <EventView event={event} close={close} />
+          <EventView updateEvents={updateEvents} event={event} close={close} />
         )}
         week={{
           weekDays: [0, 1, 2, 3, 4, 5, 6],

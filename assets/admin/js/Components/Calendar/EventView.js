@@ -4,7 +4,7 @@ import StatusSelect from "../StatusSelect";
 import { Bookings } from "../../api/bookings";
 import { toast } from "react-toastify";
 
-const EventView = ({ event, close }) => {
+const EventView = ({ event, close, updateEvents }) => {
   const booking = event?.booking_data;
   const [bookingStatus, setBookingStatus] = useState(booking.booking_status);
   const [isStatusLoading, setIsStatusLoading] = useState(false);
@@ -27,6 +27,7 @@ const EventView = ({ event, close }) => {
       toast.error("This booking cannot be updated");
     } finally {
       setIsStatusLoading(false);
+      updateEvents();
     }
   };
 
