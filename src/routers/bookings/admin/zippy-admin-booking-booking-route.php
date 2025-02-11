@@ -37,7 +37,6 @@ class Zippy_Admin_Booking_Booking_Route extends Zippy_Booking_Router
             'permission_callback' => '__return_true',
         ));
 
-
         /* UPDATE a Booking */
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/update-booking', array(
             'methods' => 'PUT',
@@ -54,8 +53,6 @@ class Zippy_Admin_Booking_Booking_Route extends Zippy_Booking_Router
             'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
         ));
 
-
-
         /* GET Booking List */
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/bookings', array(
             'methods' => 'GET',
@@ -63,7 +60,6 @@ class Zippy_Admin_Booking_Booking_Route extends Zippy_Booking_Router
             'args' => Zippy_Api_Booking_Model::get_bookings_args(),
             'permission_callback' => array(Zippy_Booking_Permission::class, 'zippy_permission_callback'),
         ));
-
 
         /* GET Booking Stats */
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/stats', array(

@@ -20,8 +20,6 @@ defined('ABSPATH') or die();
 
 class Zippy_Admin_Booking_Config_Controller
 {
-
-
     /**
      * 
      * 
@@ -30,8 +28,9 @@ class Zippy_Admin_Booking_Config_Controller
      */
     public static function zippy_booking_create_configs(WP_REST_Request $request)
     {
-
-        // Rules
+        /**
+         * Vailidate request
+         */
         $required_fields = [
             "default_booking_status" => ["required" => true, "data_type" => "range", "allowed_values" => [ZIPPY_BOOKING_BOOKING_STATUS_PENDING, ZIPPY_BOOKING_BOOKING_STATUS_APPROVE]],
             "store_email" => ["required" => true, "data_type" => "email"],
@@ -41,7 +40,6 @@ class Zippy_Admin_Booking_Config_Controller
             "duration" => ["required" => true, "data_type" => "number"],
         ];
 
-        // Validate Fields
         $validate = Zippy_Request_Validation::validate_request($required_fields, $request);
         if (!empty($validate)) {
             return Zippy_Response_Handler::error($validate);
@@ -49,7 +47,6 @@ class Zippy_Admin_Booking_Config_Controller
 
         $store_working_time = $request["store_working_time"];
 
-        // Validate store_working_time
         $required_weekdays = Zippy_Request_Validation::get_weekdays();
         $weekdays = array_keys($store_working_time);
 
@@ -71,29 +68,29 @@ class Zippy_Admin_Booking_Config_Controller
                 return Zippy_Response_Handler::error($validate);
             }
 
-            // validate extra_time
+            /**
+             * Validate Extra time
+             * 1. check if is_active exist
+             * 2. check for extra_time has both from and to
+             */
             if (!empty($value["extra_time"])) {
                 $extra_time = $value["extra_time"];
 
-
-                // check if is_active exist
                 if (empty($extra_time["is_active"])) {
                     return Zippy_Response_Handler::error("is_active is required");
                 }
 
-
-                //check for extra_time has both from and to
                 $time_data = $extra_time["data"];
                 $validate_from_to = empty(array_filter($time_data, fn($item) => !isset($item["from"], $item["to"])));
-                if($validate_from_to == false){
+                if ($validate_from_to == false) {
                     return Zippy_Response_Handler::error("extra_time data must have both from and to");
                 }
             }
-
         }
 
         try {
-            //insert data to config table
+
+            /* insert data to config table */
             global $wpdb;
             $table_name = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
 
@@ -113,19 +110,19 @@ class Zippy_Admin_Booking_Config_Controller
 
                 $result = $wpdb->get_results("SELECT ID from $table_name WHERE weekday = $key");
 
-                // update if config exist
+                /**
+                 * 1. update if config exist
+                 * 2. create if config not exist
+                 */
                 if (!empty($result)) {
                     unset($data['created_at']);
-                    
                     $update = $wpdb->update($table_name, $data, ["weekday" => $key]);
-    
                     if ($update == 0) {
                         $message = 'Failed to update data';
                         Zippy_Log_Action::log('update_booking_configs', json_encode($request), 'failure', $message);
                         return Zippy_Response_Handler::error($message);
                     }
                 } else {
-                    // create if config not exist
                     $insert = $wpdb->insert($table_name, $data);
                     if ($insert == 0) {
                         $message = 'Failed to insert data';
@@ -137,7 +134,7 @@ class Zippy_Admin_Booking_Config_Controller
                 $response_data["store_working_time"][] = $data;
             }
 
-            // insert/update store_email, default_booking_status,.... to wp_option
+            /* Insert/Update store_email, default_booking_status,.... to wp_option */
             $options = [
                 "store_email",
                 "default_booking_status",
@@ -151,17 +148,14 @@ class Zippy_Admin_Booking_Config_Controller
                 $response_data[$opt] = sanitize_text_field($request[$opt]);
             }
 
-
             Zippy_Log_Action::log('create_booking_configs', json_encode($response_data), 'Success', 'Success');
             return Zippy_Response_Handler::success($response_data);
-
         } catch (\Throwable $th) {
             $message = $th->getMessage();
             Zippy_Log_Action::log('create_booking_configs', json_encode($request), 'Failure', $message);
             return Zippy_Response_Handler::error($message);
         }
     }
-
 
     /** 
      * 
@@ -180,7 +174,7 @@ class Zippy_Admin_Booking_Config_Controller
 
             $response = [];
 
-            // insert store_email, default_booking_status to wp_option
+            // Insert store_email, default_booking_status to wp_option
             $options = [
                 "store_email",
                 "default_booking_status",
@@ -205,9 +199,8 @@ class Zippy_Admin_Booking_Config_Controller
                 $response["store_working_time"][] = $value;
             }
 
-            //Get booking holidays
+            // Get booking holidays
             $holiday = get_option("zippy_booking_holiday_config");
-
             $response["holiday"] = !empty($holiday) ? maybe_unserialize($holiday) : null;
 
             Zippy_Log_Action::log('get_booking_configs', json_encode($response), 'Success', 'Success');

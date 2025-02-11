@@ -16,7 +16,6 @@ class Zippy_Admin_Booking_Product_Route extends Zippy_Booking_Router
         add_action('rest_api_init', array($this, 'zippy_booking_init_product_api'));
     }
 
-
     public function zippy_booking_init_product_api()
     {
         /* GET product/category */
@@ -25,7 +24,6 @@ class Zippy_Admin_Booking_Product_Route extends Zippy_Booking_Router
             'callback' => array(Zippy_Admin_Booking_Product_Controller::class, 'get_products_or_categories'),
             'permission_callback' => array(Zippy_Booking_Permission::class, 'zippy_permission_callback'),
         ));
-
 
         /* GET product/category */
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/mapping-product', array(

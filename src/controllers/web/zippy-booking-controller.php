@@ -13,6 +13,7 @@ use WP_Query;
 use DateTime;
 
 use Zippy_Booking\Src\App\Zippy_Response_Handler;
+use Zippy_Booking\Src\Services\Zippy_Booking_Helper;
 
 defined('ABSPATH') or die();
 
@@ -22,7 +23,7 @@ class Zippy_Booking_Controller
     {
         global $wpdb;
         global $product;
-
+        $booking_helper = new Zippy_Booking_Helper;
 
         $table_name = ZIPPY_BOOKING_TABLE_NAME;
 
@@ -97,10 +98,11 @@ class Zippy_Booking_Controller
                     $result_start_timestamp = strtotime($result->booking_start_date . ' ' . $result->booking_start_time);
                     $result_end_timestamp = strtotime($result->booking_end_date . ' ' . $result->booking_end_time);
 
-                    if (($start_datetime >= $result_start_timestamp && $start_datetime <= $result_end_timestamp) ||
-                        ($end_datetime >= $result_start_timestamp && $end_datetime <= $result_end_timestamp) ||
-                        ($start_datetime <= $result_start_timestamp && $end_datetime >= $result_end_timestamp)
-                    ) {
+                    $first_condition = ($start_datetime >= $result_start_timestamp && $start_datetime <= $result_end_timestamp);
+                    $second_condition = ($end_datetime >= $result_start_timestamp && $end_datetime <= $result_end_timestamp);
+                    $third_condition = ($start_datetime <= $result_start_timestamp && $end_datetime >= $result_end_timestamp);
+
+                    if ($first_condition || $second_condition || $third_condition) {
                         return Zippy_Response_Handler::error('This range of time is already booked for this product.');
                     }
                 }
@@ -120,7 +122,7 @@ class Zippy_Booking_Controller
             /* check if time is extra or not. If is extra, use extra_price */
             $table_config = ZIPPY_BOOKING_CONFIG_TABLE_NAME;
             $query = "SELECT extra_time FROM $table_config WHERE weekday = $weekday";
-            
+
             $config_results = $wpdb->get_results($query);
 
             if (empty($config_results)) {
@@ -128,59 +130,21 @@ class Zippy_Booking_Controller
             }
 
             $config_extra_time = maybe_unserialize($config_results[0]->extra_time);
-       
-            // check if $booking_start_time and $booking_end_time is extra_time or not
+            
+            /* Handle extra time or holidays */
             if (!empty($config_extra_time)) {
-                $convert_start_time = new DateTime($booking_start_time);
-                $convert_end_time = new DateTime($booking_end_time);
-                $extra_time_data = $config_extra_time["data"];
-                if (!empty($extra_time_data)) {
-                    foreach ($extra_time_data as $ext_time) {
-                        $ext_from = new DateTime($ext_time['from']);
-                        $ext_to = new DateTime($ext_time['to']);
-                        
-                        if ($ext_to < $ext_from) {
-                            $start_of_date = new DateTime('00:00:00');
-                            $end_of_date = new DateTime('00:00:00');
-                            $end_of_date->modify('+1 day');
-                            $first_condition = $convert_start_time >= $ext_from && $convert_end_time <= $end_of_date;
-                            $second_condition = $convert_start_time >= $start_of_date && $convert_end_time <= $ext_to;
-                            
-                            if ($first_condition || $second_condition) {
-                                $product_price = get_post_meta($product_id, '_extra_price', true) ?? $product_price;
-                                if (empty($product_price)) {
-                                    return Zippy_Response_Handler::error("This product does not have Extra Price yet");
-                                }
-                            }
-                        } else {
-                            if ($convert_start_time >= $ext_from && $convert_end_time <= $ext_to) {
-                                // Set new product price
-                                $product_price = get_post_meta($product_id, '_extra_price', true) ?? $product_price;
-                                if (empty($product_price)) {
-                                    return Zippy_Response_Handler::error("This product does not have Extra Price yet");
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            // check Holidays
-            $config_holidays = maybe_unserialize(get_option('zippy_booking_holiday_config'));
-            $start_date = (new DateTime($booking_start_date))->format('Y-m-d');
-            if (count($config_holidays)) {
-                $filter = array_filter($config_holidays, function($holiday) use ($start_date) {
-                    $compareDate = (new DateTime($holiday['date']))->format('Y-m-d');
-                    return $compareDate === $start_date;
-                });
-                if (count($filter) > 0) {
-                    $product_price = get_post_meta($product_id, '_extra_price', true) ?? $product_price;
-                    if (empty($product_price)) {
-                        return Zippy_Response_Handler::error("This product does not have Extra Price yet");
-                    }
-                }
+                $data_get_extra_price = array(
+                    'product_id' => $product_id,
+                    'booking_start_date' => $booking_start_date,
+                    'booking_start_time' => $booking_start_time,
+                    'booking_end_date' => $booking_end_date,
+                    'booking_end_time' => $booking_end_time,
+                    'config_extra_time' => $config_extra_time,
+                );
+                $extra_price = $booking_helper->handle_extra_price($data_get_extra_price);
+                $product_price = $extra_price > 0 ? $extra_price : $product_price;
             }
         }
-
 
         $default_status_query = get_option("default_booking_status");
 
