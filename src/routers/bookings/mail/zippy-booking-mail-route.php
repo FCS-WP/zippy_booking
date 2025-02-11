@@ -15,7 +15,6 @@ class Zippy_Booking_Mail_Route extends Zippy_Booking_Router
         add_action('rest_api_init', array($this, 'zippy_booking_init_plugin_config_api'));
     }
 
-
     public function zippy_booking_init_plugin_config_api()
     {
         // UPDATE plugin config

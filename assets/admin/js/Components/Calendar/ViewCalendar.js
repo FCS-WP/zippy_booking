@@ -13,7 +13,6 @@ import { Box } from "@mui/material";
 const ViewCalendar = ({ configs }) => {
   const [events, setEvents] = useState([]);
   const timeRef = useRef([]);
-  const duration = configs?.duration ?? 60;
   const [scheduleTimes, setScheduleTimes] = useState();
 
   const convertBookingsToEvents = (bookings = []) => {
@@ -78,21 +77,7 @@ const ViewCalendar = ({ configs }) => {
         customViewer={(event, close) => (
           <EventView updateEvents={updateEvents} event={event} close={close} />
         )}
-        week={{
-          weekDays: [0, 1, 2, 3, 4, 5, 6],
-          weekStartOn: 1,
-          startHour: 0,
-          endHour: 24,
-          step: duration,
-          navigation: true,
-          disableGoToDay: false,
-        }}
-        day={{
-          startHour: 0,
-          endHour: 24,
-          step: 60,
-          navigation: true,
-        }}
+        disableViewNavigator
         editable={true}
         customEditor={(scheduler) => <EditEventView configs={configs} scheduler={scheduler} />}
         getRemoteEvents={getScheduleEvent}
