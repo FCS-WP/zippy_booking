@@ -2,26 +2,21 @@ import {
   Box,
   Button,
   Collapse,
-  Container,
   DialogActions,
-  DialogTitle,
   Grid2,
   TextField,
   Typography,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import theme from "../../../theme/theme";
 import ProductSearch from "./ProductSearch";
-import TimePicker from "../DatePicker/TimePicker";
-import { parseTime } from "../../utils/dateHelper";
-import DatePicker from "react-datepicker";
 import CustomSelectTime from "./CustomSelectTime";
 import { toast } from "react-toastify";
 import { getEventColors, isValidEmail } from "../../utils/bookingHelper";
 import { format } from "date-fns";
-import { Bookings } from "../../api/bookings";
+import { Bookings, getBookingsByDate } from "../../api/bookings";
+import { getAvailableTimeSlots } from "../../../../web/js/helper/datetime";
 
-const EditEventView = ({ scheduler }) => {
+const EditEventView = ({ configs, scheduler }) => {
   const event = scheduler.edited;
   const [state, setState] = useState({
     title: "Testing title",
@@ -29,9 +24,11 @@ const EditEventView = ({ scheduler }) => {
   });
   const [bookingEmail, setBookingEmail] = useState("");
   const [editAble, setEditAble] = useState(true);
-  const [duration, setDuration] = useState(30);
+  const duration = configs?.duration ?? 60;
   const [selectedProduct, setSelectedProduct] = useState();
   const [showCollapse, setShowCollapse] = useState(false);
+  const [timeSlots, setTimeSlots] = useState();
+
   const [slot, setSlot] = useState({
     from: null,
     to: null,
@@ -44,8 +41,42 @@ const EditEventView = ({ scheduler }) => {
     });
   };
 
+  const handletimeSlots = (bookings, configs) => {
+    const date = new Date(scheduler.state.start.value);
+    const workingTimeByWeekday = configs.store_working_time.reduce((acc, time) => {
+      acc[time.weekday] = time;
+      return acc;
+    }, {});
+    const configTime = workingTimeByWeekday[date.getDay()];
+    const duration = configs.duration;
+    const holidays = configs.holiday;
+    const timeSlots = getAvailableTimeSlots(
+      configTime,
+      bookings,
+      date,
+      duration,
+      holidays
+    );
+    setTimeSlots(timeSlots);
+  }
+
+  const getCreatedBookings = async () => {
+    if (selectedProduct) {
+      const date = scheduler.state.start.value;
+      const bookings = await getBookingsByDate(selectedProduct.item_id, date, ['pending', 'approved']);
+      handletimeSlots(bookings, configs);
+    }
+  };
+
+
+  
   const prepareData = () => {
     const checkEmail = isValidEmail(bookingEmail);
+    if (!selectedProduct) {
+      toast.error("Select a product to continue!");
+      return null;
+    }
+
     if (!checkEmail) {
       toast.error("Invalid Email");
       return null;
@@ -139,6 +170,10 @@ const EditEventView = ({ scheduler }) => {
     checkEditAble();
   }, [])
 
+  useEffect(()=>{
+    getCreatedBookings();
+  }, [selectedProduct]);
+
   return (
     <Box px={3} overflow={"visible"} className="event-dialog">
       {!editAble ? (
@@ -207,6 +242,11 @@ const EditEventView = ({ scheduler }) => {
                   onChangeTime={handleTimeChange}
                   type={"from"}
                   duration={duration}
+                  timeSlots={timeSlots}
+                  bookingConfig={{
+                    booking_type: configs?.booking_type,
+                    allow_overlap: configs?.allow_overlap,
+                  }}
                 />
               </Grid2>
               <Grid2 size={6}>
@@ -222,6 +262,11 @@ const EditEventView = ({ scheduler }) => {
                   onChangeTime={handleTimeChange}
                   type={"to"}
                   duration={duration}
+                  timeSlots={timeSlots}
+                  bookingConfig={{
+                    booking_type: configs?.booking_type,
+                    allow_overlap: configs?.allow_overlap,
+                  }}
                 />
               </Grid2>
             </Grid2>

@@ -117,6 +117,9 @@ class Zippy_Booking_Router
             'permission_callback' => [Zippy_Booking_Controller::class, 'check_permission'],
         ));
 
+        /**
+         * Search product had been mapped
+         */
         register_rest_route(ZIPPY_BOOKING_API_NAMESPACE, '/support-booking/search-mapping-products', array(
             'methods' => 'GET',
             'callback' => [Zippy_Booking_Support_Controller::class, 'search_mapping_products'],
