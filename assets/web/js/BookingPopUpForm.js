@@ -29,7 +29,7 @@ function BookingPopUp() {
   const [startExtraTime, setStartExtraTime] = useState("");
   const [endExtraTime, setEndExtraTime] = useState("");
   const [switchStatus, setSwitchStatus] = useState("");
-
+  const [configFull, setConfigFull] = useState("");
   const [modalType, setModalType] = useState(null); // "login", "register", "booking"
 
   const productid = document.getElementById("btn_booking")?.dataset.idProduct;
@@ -38,6 +38,7 @@ function BookingPopUp() {
   const getConfig = async () => {
     try {
       const configResponse = await webApi.getConfigs();
+      setConfigFull(configResponse);
       setConfigs(configResponse.data.data || []);
     } catch (err) {
       showAlert(
@@ -90,13 +91,13 @@ function BookingPopUp() {
 
     try {
       if (!productId || !selectedDate || !selectedStartTime || !selectedEndTime) {
-        showAlert("warning", "Thiếu dữ liệu", "Vui lòng chọn đầy đủ thông tin đặt lịch.");
+        showAlert("warning", "Missing data", "Please select complete booking information.");
         return;
       }
 
       let email = admin_data.user_email || (await alertInputEmail());
       if (!email) {
-        showAlert("warning", "Hủy bỏ", "Bạn chưa nhập email hợp lệ.");
+        showAlert("warning", "Cancel", "You have not entered a valid email.");
         return;
       }
 
@@ -115,11 +116,11 @@ function BookingPopUp() {
       if (response.data?.status === "success") {
         bookingSuccessfully(() => (window.location.href = "/booking-history"));
       } else {
-        showAlert("error", "Lỗi đặt lịch", response.data?.message || "Có lỗi xảy ra.");
+        showAlert("error", "Booking error", response.data?.message || "An error occurred.");
       }
     } catch (err) {
-      console.error("Lỗi đặt lịch:", err);
-      showAlert("error", "Lỗi đặt lịch", err.message || "Có lỗi xảy ra.");
+      console.error("Booking error:", err);
+      showAlert("error", "Booking error", err.message || "An error occurred.");
     } finally {
       setIsLoading(false);
     }
