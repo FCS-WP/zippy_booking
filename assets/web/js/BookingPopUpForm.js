@@ -11,284 +11,30 @@ import {
 import CustomLoader from "./components/CustomLoader";
 import { Modal, Box } from "@mui/material";
 import { format } from "date-fns";
+import Login from "./components/Login";
+import Register from "./components/Register";
 
 function BookingPopUp() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedStartTime, setSelectedStartTime] = useState(null);
   const [selectedEndTime, setSelectedEndTime] = useState(null);
-  const [productId, setProductId] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [configs, setConfigs] = useState([]);
   const [configsDate, setConfigsDate] = useState([new Date()]);
   const [isLoading, setIsLoading] = useState(false);
   const [priceProduct, setPriceProduct] = useState("0");
   const [priceExtraTime, setExtraTime] = useState("0");
+  const [isBookingVisible, setIsBookingVisible] = useState(false);
   const [statusExtraTime, setStatusExtraTime] = useState(false);
   const [startExtraTime, setStartExtraTime] = useState("");
   const [endExtraTime, setEndExtraTime] = useState("");
+  const [switchStatus, setSwitchStatus] = useState("");
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const [modalType, setModalType] = useState(null); // "login", "register", "booking"
 
-  const [emailRegister, setEmailRegister] = useState("");
-  const [passwordRegister, setPasswordRegister] = useState("");
-  const [ConfirmPasswordRegister, setConfirmPasswordRegister] = useState("");
-
-  const [open, setOpen] = useState(false);
-  const [openLogin, setOpenLogin] = useState(false);
-  const [openRegister, setOpenRegister] = useState(false);
-
-  const [isBookingVisible, setIsBookingVisible] = useState(false);
-
-  const btnBooking = document.getElementById("btn_booking");
-  const productid = btnBooking?.dataset.idProduct;
-
-  const getDayOfWeek = (date) => {
-    const daysOfWeek = ["0", "1", "2", "3", "4", "5", "6"];
-    return daysOfWeek[date.getDay()];
-  };
-
-  const handleOpen = () => {
-    
-    if(admin_data.userID == 0){
-      setOpenLogin(true);
-    }else{
-      setOpen(true);
-    }
-    
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    let usernameValue = username;
-    let passwordValue = password;
-
-    // Prepare sign in parameters
-    const params = {
-      username: usernameValue,
-      password: passwordValue,
-    };
-    
-    const response = await webApi.signIn(params);
-
-    window.admin_data.userID = response.data.data.data.ID;
-    window.admin_data.user_email = response.data.data.data.email;
-    
-    if(response.data.status == "success"){
-      showAlert(
-        "success",
-        "Login Success",
-        "Continute booking"
-      );
-      setOpen(true);
-      setOpenLogin(false);
-      
-    }else{
-      showAlert(
-        "warning",
-        "Login Fails",
-        "Wrong username or password"
-      );
-    }
-    return;
-  };
-
-  const handleOpenRegister = async (e) =>{
-    e.preventDefault();
-    setOpen(false);
-    setOpenLogin(false);
-    setOpenRegister(true);
-
-  };
-
-  const handleRegister = async (e) =>{
-    e.preventDefault();
-
-    let emailRegisterValue = emailRegister;
-    let passwordRegisterValue = passwordRegister;
-    let ConfirmPasswordRegisterValue = ConfirmPasswordRegister;
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(emailRegisterValue)) {
-        showAlert(
-          "warning",
-          "Invalid email",
-          "Please enter the correct email format."
-        );
-        return;
-    }
-
-    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordRegex.test(passwordRegisterValue)) {
-        showAlert(
-          "warning",
-          "Invalid password",
-          "Password must have at least 8 characters, including letters, numbers and special characters."
-        );
-        return;
-    }
-
-    if (passwordRegisterValue !== ConfirmPasswordRegisterValue) {
-        showAlert(
-          "warning",
-          "Invalid confirm password",
-          "Confirm passwords do not match. Please check again."
-        );
-        return;
-    }
-    
-    // Prepare register parameters
-    const params = {
-      email: emailRegisterValue,
-      password: passwordRegisterValue,
-    };
-
-    const response = await webApi.registerAccount(params);
-
-    if(response.data.status == "success"){
-      showAlert(
-        "success",
-        "Register Success",
-        "Continute Sign In"
-      );
-      setOpenRegister(false);
-      setOpenLogin(true);
-      
-    }else{
-      showAlert(
-        "warning",
-        "Register Fails",
-        "Please register again"
-      );
-    }
-    return;
-
-  };
+  const productid = document.getElementById("btn_booking")?.dataset.idProduct;
+  const [productId, setProductId] = useState(productid);
   
-  const handleClose = () => {
-    setOpen(false);
-    setOpenLogin(false);
-  };
-
-  const handleSelectDate = (date) => {
-    setSelectedDate(date);
-    setConfigsDate(date);
-  };
-
-  const handleStartTimeSelect = (time) => {
-    setSelectedStartTime(time);
-  };
-
-  const handleEndTimeSelect = (time) => {
-    setSelectedEndTime(time);
-    
-  };
-
-  useEffect(() => {
-    
-    setProductId(productid);
-  }, []);
-
-  const handleConfirm = (result) => {
-    if (result.isConfirmed) {
-      window.location.href = "/booking-history";
-    } else if (result.isDismissed) {
-      handleClose();
-    }
-  };
-
-  const checkMappingProduct = async () => {
-
-    try {
-      const params = {
-        product_id: productId,
-      };
-
-      const response = await webApi.mappingProduct(params);
-
-      if (response.data.data.booking === true) {
-        setIsBookingVisible(true);
-      } else {
-        setIsBookingVisible(false);
-      }
-    } catch (error) {
-      console.error("Error fetching mapping product:", error);
-      setIsBookingVisible(false); 
-    }
-  };
-
-
-  const createBooking = async () => {
-    setIsLoading(true);
-
-    try {
-      // Ensure essential data is available
-      if (
-        !productId ||
-        !selectedDate ||
-        !selectedStartTime ||
-        !selectedEndTime
-      ) {
-        showAlert(
-          "warning",
-          "Missing Data",
-          "Please ensure all required booking details are selected."
-        );
-        return;
-      }
-
-      // Get email
-      let email = admin_data.user_email;
-      if (!email) {
-        email = await alertInputEmail();
-        if (!email) {
-          showAlert(
-            "warning",
-            "Canceled",
-            "You did not enter a valid email or canceled the booking."
-          );
-          return;
-        }
-      }
-
-      // Prepare booking parameters
-      const params = {
-        product_id: productId,
-        user_id: admin_data.userID,
-        email,
-        booking_start_date: format(selectedDate, "yyyy-MM-dd"),
-        booking_end_date: format(selectedDate, "yyyy-MM-dd"),
-        booking_start_time: format(selectedStartTime, "HH:mm"),
-        booking_end_time: format(selectedEndTime, "HH:mm"),
-      };
-
-      // Create booking
-      const response = await webApi.createBooking(params);
-
-      // Handle response
-      if (response.data?.status === "success") {
-        bookingSuccessfully(handleConfirm);
-      } else {
-        showAlert(
-          "error",
-          "Booking Failed",
-          response.data?.message || "An unknown error occurred."
-        );
-      }
-    } catch (err) {
-      console.error("Booking Error:", err);
-      showAlert(
-        "error",
-        "Booking Failed",
-        err.message || "An unknown error occurred."
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const getConfig = async () => {
     try {
       const configResponse = await webApi.getConfigs();
@@ -303,9 +49,81 @@ function BookingPopUp() {
   };
 
   useEffect(() => {
+    setProductId(productid);
     getConfig();
     checkMappingProduct();
-  }, [productId]);
+  }, [productid]);
+
+  const handleOpenModal = (type) => {
+    setModalType(type);
+  };
+
+  const handleCloseModal = () => {
+    setModalType(null);
+  };
+
+  const handleSelectDate = (date) => {
+    setSelectedDate(date);
+    setConfigsDate(date);
+  };
+
+  const handleStartTimeSelect = (time) => {
+    setSelectedStartTime(time);
+  };
+
+  const handleEndTimeSelect = (time) => {
+    setSelectedEndTime(time);
+  };
+
+  const checkMappingProduct = async () => {
+    try {
+      const response = await webApi.mappingProduct({ product_id: productId });
+      setIsBookingVisible(response.data.data.booking === true);
+    } catch (error) {
+      console.error("Error fetching mapping product:", error);
+      setIsBookingVisible(false);
+    }
+  };
+
+  const createBooking = async () => {
+    setIsLoading(true);
+
+    try {
+      if (!productId || !selectedDate || !selectedStartTime || !selectedEndTime) {
+        showAlert("warning", "Thiếu dữ liệu", "Vui lòng chọn đầy đủ thông tin đặt lịch.");
+        return;
+      }
+
+      let email = admin_data.user_email || (await alertInputEmail());
+      if (!email) {
+        showAlert("warning", "Hủy bỏ", "Bạn chưa nhập email hợp lệ.");
+        return;
+      }
+
+      const params = {
+        product_id: productId,
+        user_id: admin_data.userID,
+        email,
+        booking_start_date: format(selectedDate, "yyyy-MM-dd"),
+        booking_end_date: format(selectedDate, "yyyy-MM-dd"),
+        booking_start_time: format(selectedStartTime, "HH:mm"),
+        booking_end_time: format(selectedEndTime, "HH:mm"),
+      };
+
+      const response = await webApi.createBooking(params);
+
+      if (response.data?.status === "success") {
+        bookingSuccessfully(() => (window.location.href = "/booking-history"));
+      } else {
+        showAlert("error", "Lỗi đặt lịch", response.data?.message || "Có lỗi xảy ra.");
+      }
+    } catch (err) {
+      console.error("Lỗi đặt lịch:", err);
+      showAlert("error", "Lỗi đặt lịch", err.message || "Có lỗi xảy ra.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const getAllBooking = async () => {
     try {
@@ -316,6 +134,12 @@ function BookingPopUp() {
       };
       const bookingsResponse = await webApi.getBookings(params);
       setBookings(bookingsResponse.data.data.bookings || []);
+
+      const getDayOfWeek = (date) => {
+        const daysOfWeek = ["0", "1", "2", "3", "4", "5", "6"];
+        return daysOfWeek[date.getDay()];
+      };
+    
       
       const indexDate = parseInt(getDayOfWeek(new Date(format(selectedDate, "yyyy-MM-dd"))));
       const configResponse = await webApi.getConfigs();
@@ -354,114 +178,36 @@ function BookingPopUp() {
     if (productId && selectedDate) {
       getAllBooking();
     }
-  }, [selectedDate, productId]);
+    if(switchStatus == "register"){
+      handleOpenModal("register");
+    }
+    else if(switchStatus == "login"){
+      handleOpenModal("login");
+    }
+    
+  }, [selectedDate, productId, switchStatus]);
+
   
+  
+
   return (
     <>
       {isBookingVisible && (
-        <button
-          className="booking_popup_form"
-          onClick={handleOpen}
-        >
+        <button className="booking_popup_form" onClick={() => handleOpenModal(admin_data.userID == 0 ? "login" : "booking")}>
           Booking
         </button>
       )}
-      <Modal className="zippy-booking-popup" open={openRegister} onClose={handleClose}>
-        <Box>
-          <div className="booking_login_page">
-            <form onSubmit={handleRegister}>
-              <h2 className="login100-form-title">
-                Register
-              </h2>
-              <div className="box_input">
-                <input
-                  type="text"
-                  id="emailRegister"
-                  name="emailRegister"
-                  required
-                  value={emailRegister}
-                  onChange={(e) => setEmailRegister(e.target.value)}
-                  placeholder="Email"
-                />
-                <input
-                  type="password"
-                  id="passwordRegister"
-                  name="passwordRegister"
-                  required
-                  value={passwordRegister}
-                  onChange={(e) => setPasswordRegister(e.target.value)}
-                  placeholder="Password"
-                />
-                <input
-                  type="password"
-                  id="ConfirmPasswordRegister"
-                  name="ConfirmPasswordRegister"
-                  required
-                  value={ConfirmPasswordRegister}
-                  onChange={(e) => setConfirmPasswordRegister(e.target.value)}
-                  placeholder="Confirm Password"
-                />
-                <div className="button_submit_login">
-                  <input type="submit" value="Register Account" />
-                </div>
-              </div>
-              <div className="register_label">
-                <span className="register_label_span">
-                  You already have an account?
-                </span>
-                <a href="#" className="register_label_link" onClick={handleOpen}>
-                  Sign in now
-                </a>
-              </div>
-            </form>
-            {message && <p>{message}</p>}
-          </div>
-        </Box>
+      
+      <Modal className="zippy-booking-popup" open={modalType === "register"} onClose={handleCloseModal}>
+        <Register onSuccess={handleCloseModal} onSwitch={setSwitchStatus}/>
       </Modal>
-      <Modal className="zippy-booking-popup" open={openLogin} onClose={handleClose}>
-        <Box>
-          <div className="booking_login_page">
-            <form onSubmit={handleSubmit}>
-              <h2 className="login100-form-title">
-                Sign In
-              </h2>
-              <div className="box_input">
-                <input
-                  type="text"
-                  id="username"
-                  name="username"
-                  required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Username"
-                />
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password"
-                />
-                <div className="button_submit_login">
-                  <input type="submit" value="Sign In" />
-                </div>
-              </div>
-              <div className="register_label">
-                <span className="register_label_span">
-                  Don’t have an account?
-                </span>
-                <a href="#" className="register_label_link" onClick={handleOpenRegister}>
-                  Sign up now
-                </a>
-              </div>
-            </form>
-            {message && <p>{message}</p>}
-          </div>
-        </Box>
+      
+      <Modal className="zippy-booking-popup" open={modalType === "login"} onClose={handleCloseModal}>
+        <Login onSuccess={handleCloseModal} onSwitch={setSwitchStatus}/>
       </Modal>
-      <Modal className="zippy-booking-popup" open={open} onClose={handleClose}>
+
+      
+      <Modal className="zippy-booking-popup" open={modalType === "booking"} onClose={handleCloseModal}>
         <Box>
           <div className="box_pop_up">
             <div className="box_pop_up--content">
@@ -475,10 +221,7 @@ function BookingPopUp() {
               </p>
               <div className="row_booking">
                 <div className="col_booking_5">
-                  <BookingDatePicker
-                    handleSelectDate={handleSelectDate}
-                    config={configs}
-                  />
+                  <BookingDatePicker handleSelectDate={handleSelectDate} config={configs} />
                 </div>
                 <div className="col_booking_5">
                   <Timepicker
@@ -498,16 +241,11 @@ function BookingPopUp() {
                 </div>
               </div>
               <div className="flex-space-between">
-                <button className="cancel_popup_button" onClick={handleClose}>
+                <button className="cancel_popup_button" onClick={handleCloseModal}>
                   Cancel
                 </button>
-                <button
-                  className="continute_popup_button"
-                  onClick={() => {
-                    createBooking();
-                  }}
-                >
-                  Continue
+                <button className="continute_popup_button" onClick={createBooking} disabled={isLoading}>
+                  Confirm Booking
                 </button>
               </div>
             </div>
